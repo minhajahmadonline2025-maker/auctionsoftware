@@ -358,8 +358,8 @@ select.form-input option { background: var(--surface2); }
         </div>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>Player</th><th>Role</th><th>Nationality</th><th>Base Price</th><th>Status</th><th>Sold To</th><th>Actions</th></tr></thead>
-        <tbody id="players-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading...</td></tr></tbody>
+        <table><thead><tr><th>Player</th><th>Role</th><th>Nationality</th><th>Played For</th><th>Base Price</th><th>Status</th><th>Sold To</th><th>Actions</th></tr></thead>
+        <tbody id="players-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -511,6 +511,7 @@ select.form-input option { background: var(--surface2); }
       <div class="form-group"><label class="form-label">Nationality</label><input class="form-input" id="player-nation" placeholder="e.g. England"></div>
       <div class="form-group"><label class="form-label">Base Price *</label><input class="form-input" id="player-price" type="number" placeholder="1000000" min="100000"></div>
     </div>
+    <div class="form-group"><label class="form-label">Played For (Previous Team)</label><input class="form-input" id="player-played-for" placeholder="e.g. Mumbai Indians, Real Madrid..."></div>
     <div class="form-group">
       <label class="form-label">Player Photo</label>
       <div class="photo-upload-wrap" id="photo-upload-wrap" onclick="document.getElementById('photo-file-input').click()">
@@ -700,8 +701,8 @@ async function doLogin() {
   if (!u || !p) return toast('Enter username and password', 'error');
 
   // Check super admin first (stored in settings)
-  const superAdminUser = s.adminUser || 'minhajahmad0103@gmail.com';
-  const superAdminPass = s.adminPass || 'Minnu@786';
+  const superAdminUser = s.adminUser || 'admin';
+  const superAdminPass = s.adminPass || 'admin123';
   if (u === superAdminUser && p === superAdminPass) {
     setSession({ username: u, status: 'approved', role: 'superadmin', full_name: 'Super Admin' });
     enterApp({ username: u, status: 'approved', role: 'superadmin', full_name: 'Super Admin' });
@@ -1174,6 +1175,7 @@ async function loadPlayers() {
       </div></td>
       <td>${p.role}</td>
       <td>${p.nationality || '—'}</td>
+      <td>${p.played_for || '—'}</td>
       <td>${fmt(p.base_price)}</td>
       <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
       <td>${p.sold_to ? `<span class="team-dot" style="background:${p.sold_to.color||'#64748b'}"></span>${p.sold_to.name}` : '—'}</td>
@@ -1181,13 +1183,13 @@ async function loadPlayers() {
         <button class="btn btn-outline btn-sm" onclick="editPlayer(${JSON.stringify(p).replace(/"/g,'&quot;')})">Edit</button>
         <button class="btn btn-danger btn-sm" onclick="deletePlayer('${p.id}','${p.status}','${p.sold_to?.id||''}',${p.final_price||0})">Del</button>
       </td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No players. Add some!</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">No players. Add some!</td></tr>';
   } catch(e) { console.warn(e); }
 }
 
 function openAddPlayer() {
   document.getElementById('player-id').value = '';
-  ['player-name','player-nation'].forEach(id => document.getElementById(id).value = '');
+  ['player-name','player-nation','player-played-for'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('player-price').value = '';
   document.getElementById('player-photo').value = '';
   document.getElementById('photo-preview-img').style.display = 'none';
@@ -1203,6 +1205,7 @@ function editPlayer(p) {
   document.getElementById('player-role').value = p.role;
   document.getElementById('player-nation').value = p.nationality || '';
   document.getElementById('player-price').value = p.base_price;
+  document.getElementById('player-played-for').value = p.played_for || '';
   document.getElementById('player-photo').value = p.photo_url || '';
   const img = document.getElementById('photo-preview-img');
   const prev = document.getElementById('photo-preview');
@@ -1254,7 +1257,7 @@ async function savePlayer() {
   try {
     let photoUrl = document.getElementById('player-photo').value || null;
     if (pendingPhotoFile) { photoUrl = await uploadPhoto(pendingPhotoFile, name); pendingPhotoFile = null; }
-    const data = { name, role: document.getElementById('player-role').value, nationality: document.getElementById('player-nation').value || null, base_price: parseInt(document.getElementById('player-price').value), photo_url: photoUrl };
+    const data = { name, role: document.getElementById('player-role').value, nationality: document.getElementById('player-nation').value || null, played_for: document.getElementById('player-played-for').value || null, base_price: parseInt(document.getElementById('player-price').value), photo_url: photoUrl };
     if (!data.base_price) return toast('Base price required', 'error');
     if (id) { await sb('players?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(data) }); toast('Player updated ✓'); }
     else { await sb('players', { method: 'POST', body: JSON.stringify(data) }); toast('Player added ✓'); }
