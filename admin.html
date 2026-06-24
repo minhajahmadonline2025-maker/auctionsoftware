@@ -177,7 +177,7 @@ select.form-input option { background: var(--surface2); }
     <div class="sub">Full control panel — Pro Auction</div>
     <div class="form-group">
       <label class="form-label">Master Username</label>
-      <input class="form-input" id="login-username" placeholder="minhajahmad0103@gmail.com" onkeydown="if(event.key==='Enter')doLogin()">
+      <input class="form-input" id="login-username" placeholder="Enter master username" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div class="form-group">
       <label class="form-label">Master Password</label>
@@ -185,6 +185,50 @@ select.form-input option { background: var(--surface2); }
     </div>
     <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;margin-top:4px" onclick="doLogin()">Sign In →</button>
     <div id="login-err" style="color:var(--red);font-size:12px;text-align:center;margin-top:10px"></div>
+    <div style="text-align:center;margin-top:14px">
+      <button onclick="showOtpScreen()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline">Forgot Password? Reset via OTP</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- OTP RESET SCREEN -->
+<div id="screen-otp" class="auth-screen">
+  <div class="auth-logo">🔐</div>
+  <div class="auth-league-name">MASTER ADMIN</div>
+  <div class="auth-card" style="width:400px">
+    <h2 id="otp-screen-title">Reset Password</h2>
+    <div class="sub" id="otp-screen-sub">An OTP will be sent to the registered phone number.</div>
+
+    <!-- Step 1: Request OTP -->
+    <div id="otp-step1">
+      <div class="info-box" style="margin-bottom:16px">OTP will be sent to the registered admin phone number. Contact your service provider if you don't receive it.</div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="requestOtp()">Send OTP →</button>
+      <button onclick="showScreen('auth')" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;width:100%;margin-top:12px;text-decoration:underline">← Back to Login</button>
+    </div>
+
+    <!-- Step 2: Enter OTP -->
+    <div id="otp-step2" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Enter OTP (6 digits)</label>
+        <input class="form-input" id="otp-input" placeholder="••••••" maxlength="6" style="letter-spacing:8px;font-size:20px;text-align:center" onkeydown="if(event.key==='Enter')verifyOtp()">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="verifyOtp()">Verify OTP →</button>
+      <button onclick="requestOtp()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;width:100%;margin-top:12px;text-decoration:underline">Resend OTP</button>
+    </div>
+
+    <!-- Step 3: New Password -->
+    <div id="otp-step3" style="display:none">
+      <div class="form-group">
+        <label class="form-label">New Password</label>
+        <input class="form-input" type="password" id="new-pass-1" placeholder="Enter new password" onkeydown="if(event.key==='Enter')saveNewPass()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <input class="form-input" type="password" id="new-pass-2" placeholder="Repeat new password" onkeydown="if(event.key==='Enter')saveNewPass()">
+      </div>
+      <button class="btn btn-success" style="width:100%;justify-content:center;padding:12px" onclick="saveNewPass()">✓ Set New Password</button>
+    </div>
   </div>
 </div>
 
@@ -559,9 +603,11 @@ function saveSettings(obj) {
 // ─── SCREEN CONTROL ────────────────────────────────────────────
 function showScreen(name) {
   document.getElementById('screen-auth').classList.remove('active');
+  document.getElementById('screen-otp').classList.remove('active');
   document.getElementById('screen-app').style.display = 'none';
   if (name === 'auth') document.getElementById('screen-auth').classList.add('active');
   else if (name === 'app') document.getElementById('screen-app').style.display = 'block';
+  else if (name === 'otp') document.getElementById('screen-otp').classList.add('active');
 }
 
 // ─── LOGIN ─────────────────────────────────────────────────────
@@ -716,7 +762,13 @@ async function loadUsers() {
   const tbody = document.getElementById('users-body');
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading...</td></tr>';
   let supabaseUsers = [];
-  try { supabaseUsers = await sb('auction_users?select=*&order=created_at.desc') || []; } catch(e) { }
+  try { 
+    supabaseUsers = await sb('auction_users?select=*&order=created_at.desc') || []; 
+  } catch(e) { 
+    console.error('loadUsers error:', e);
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red);padding:24px">⚠️ Cannot load users: ' + (e.message||'Supabase error') + '<br><small>Check Supabase RLS policies on auction_users table</small></td></tr>';
+    return;
+  }
   allUsers = [...supabaseUsers];
   const pending = allUsers.filter(u => u.status === 'pending');
   const countBox = document.getElementById('pending-count-box');
@@ -857,13 +909,23 @@ async function saveNewUser() {
   };
 
   try {
-    await sb('auction_users', { method: 'POST', body: JSON.stringify(data) });
+    const result = await sb('auction_users', { method: 'POST', body: JSON.stringify(data) });
     toast('User created ✓');
+    closeModal('modal-add-user');
+    loadUsers();
   } catch(e) {
-    toast('User creation failed', 'error');
+    let msg = e.message || '';
+    if (msg.includes('duplicate') || msg.includes('unique')) {
+      toast('Username already exists. Choose a different one.', 'error');
+    } else if (msg.includes('violates') || msg.includes('null value')) {
+      toast('Missing required field: ' + msg.substring(0, 80), 'error');
+    } else if (msg.includes('permission') || msg.includes('policy') || msg.includes('RLS') || msg.includes('row-level')) {
+      toast('Supabase permission error. Check RLS policies on auction_users table.', 'error');
+    } else {
+      toast('Error: ' + (msg.substring(0, 100) || 'Unknown error'), 'error');
+    }
+    console.error('saveNewUser error:', e);
   }
-  closeModal('modal-add-user');
-  loadUsers();
 }
 
 // ─── DASHBOARD ─────────────────────────────────────────────────
@@ -1192,6 +1254,70 @@ function subscribeRealtime() {
       if (msg.event === 'INSERT' && msg.topic === 'realtime:public:bids') loadDashboard();
     };
   } catch(e) {}
+}
+
+
+// ─── OTP RESET ─────────────────────────────────────────────────
+const OTP_PHONE = '9496042530'; // registered admin phone
+let _generatedOtp = null;
+let _otpVerified = false;
+
+function showOtpScreen() {
+  _generatedOtp = null;
+  _otpVerified = false;
+  document.getElementById('otp-step1').style.display = 'block';
+  document.getElementById('otp-step2').style.display = 'none';
+  document.getElementById('otp-step3').style.display = 'none';
+  showScreen('otp');
+}
+
+async function requestOtp() {
+  _generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  // Save OTP to Supabase for reference (expires in 10 min)
+  try {
+    await sb('admin_otp?select=id', { method: 'HEAD' }).catch(() => null);
+    const expiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    await fetch(SUPABASE_URL + '/rest/v1/admin_otp', {
+      method: 'POST',
+      headers: { ...headers, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ otp: _generatedOtp, expires_at: expiry, used: false })
+    }).catch(() => null);
+  } catch(e) {}
+
+  // Open WhatsApp to send OTP to admin phone
+  const msg = encodeURIComponent('Pro Auction Master Admin OTP: ' + _generatedOtp + ' (valid 10 min). Do not share.');
+  window.open('https://wa.me/91' + OTP_PHONE + '?text=' + msg, '_blank');
+  
+  toast('OTP sent via WhatsApp to registered number ✓');
+  document.getElementById('otp-step1').style.display = 'none';
+  document.getElementById('otp-step2').style.display = 'block';
+  document.getElementById('otp-input').value = '';
+  document.getElementById('otp-input').focus();
+}
+
+function verifyOtp() {
+  const entered = document.getElementById('otp-input').value.trim();
+  if (!_generatedOtp) return toast('Request OTP first', 'error');
+  if (entered !== _generatedOtp) return toast('Incorrect OTP. Try again.', 'error');
+  _otpVerified = true;
+  toast('OTP verified ✓');
+  document.getElementById('otp-step2').style.display = 'none';
+  document.getElementById('otp-step3').style.display = 'block';
+  document.getElementById('new-pass-1').focus();
+}
+
+function saveNewPass() {
+  if (!_otpVerified) return toast('Verify OTP first', 'error');
+  const p1 = document.getElementById('new-pass-1').value;
+  const p2 = document.getElementById('new-pass-2').value;
+  if (!p1 || p1.length < 6) return toast('Password must be at least 6 characters', 'error');
+  if (p1 !== p2) return toast('Passwords do not match', 'error');
+  saveSettings({ adminPass: p1 });
+  _generatedOtp = null;
+  _otpVerified = false;
+  toast('Password reset successfully! Please login with new password.', 'success');
+  setTimeout(() => showScreen('auth'), 1500);
 }
 
 // ─── INIT ──────────────────────────────────────────────────────
