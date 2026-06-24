@@ -23,7 +23,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-/* Auth screens */
 .auth-screen { display:none; align-items:center; justify-content:center; min-height:100vh; flex-direction:column; gap:16px; }
 .auth-screen.active { display:flex; }
 .auth-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:40px; width:380px; }
@@ -35,7 +34,6 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .auth-tab { flex:1; padding:9px; font-size:13px; font-weight:600; cursor:pointer; background:transparent; color:var(--muted); border:none; transition:0.15s; }
 .auth-tab.active { background:var(--accent); color:white; }
 
-/* Pending screen */
 .pending-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:40px; width:420px; text-align:center; }
 .pending-icon { font-size:56px; margin-bottom:16px; }
 .pending-title { font-size:20px; font-weight:700; color:var(--amber); margin-bottom:10px; }
@@ -47,7 +45,6 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .info-steps ol { padding-left:18px; }
 .info-steps li { font-size:13px; color:var(--text); margin-bottom:6px; line-height:1.5; }
 
-/* Layout */
 .layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
 .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; }
 .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; display:flex; align-items:center; gap:10px; }
@@ -62,12 +59,10 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .page { display: none; }
 .page.active { display: block; }
 
-/* Header */
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .page-title { font-size: 20px; font-weight: 700; }
 .page-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
-/* Cards */
 .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
 .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
@@ -75,7 +70,6 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .stat-val.accent { color: var(--accent); }
 .stat-val.green { color: var(--green); }
 
-/* Table */
 .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
 .table-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border); }
 .table-head-title { font-size: 14px; font-weight: 600; }
@@ -84,7 +78,6 @@ th { text-align: left; padding: 10px 16px; color: var(--muted); font-weight: 600
 td { padding: 12px 16px; border-top: 1px solid var(--border); vertical-align: middle; }
 tr:hover td { background: rgba(255,255,255,0.02); }
 
-/* Badges */
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .badge-live { background: rgba(16,185,129,0.15); color: var(--green); }
 .badge-sold { background: rgba(59,130,246,0.15); color: var(--accent); }
@@ -95,7 +88,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .badge-rejected { background: rgba(239,68,68,0.15); color: var(--red); }
 .badge-suspended { background: rgba(239,68,68,0.1); color: var(--red); }
 
-/* Buttons */
 .btn { padding: 8px 16px; border-radius: 7px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
 .btn-primary { background: var(--accent); color: white; }
 .btn-primary:hover { background: #2563eb; }
@@ -111,7 +103,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .btn-whatsapp { background: #25d366; color: white; }
 .btn-whatsapp:hover { background: #1da851; }
 
-/* Auction control strip */
 .auction-strip { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .auction-live-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); }
 .auction-live-dot.live { background: var(--green); animation: pulse 1.5s infinite; }
@@ -120,7 +111,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .current-bid-display { font-size: 28px; font-weight: 800; color: var(--green); }
 .auction-btns { display: flex; gap: 10px; }
 
-/* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 100; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
 .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
@@ -133,23 +123,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .color-preview { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: inline-block; margin-left: 8px; vertical-align: middle; }
 
-/* Player cell */
 .player-cell { display: flex; align-items: center; gap: 10px; }
 .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--muted); flex-shrink: 0; overflow:hidden; }
 .team-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
 
-/* Photo upload */
 .photo-upload-wrap { border: 2px dashed var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 16px; }
 .photo-upload-wrap:hover { border-color: var(--accent); background: rgba(59,130,246,0.04); }
 .photo-preview { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 90px; flex-shrink: 0; }
 
-/* Settings page */
 .settings-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:20px; }
 .settings-section h3 { font-size:14px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border); }
 .info-box { background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--accent); margin-bottom:16px; }
 .warn-box { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--amber); margin-bottom:16px; }
 
-/* Toast */
 .toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
 .toast { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; font-size: 13px; animation: slideIn 0.2s; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 .toast.success { border-left: 3px solid var(--green); }
@@ -157,21 +143,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 select.form-input option { background: var(--surface2); }
 
-/* User management */
 .user-row-pending td { background: rgba(245,158,11,0.04); }
 .notif-dot { width:8px; height:8px; border-radius:50%; background:var(--red); display:inline-block; margin-left:4px; vertical-align:middle; }
 
-/* Import area */
 .import-area { border: 2px dashed var(--border); border-radius: 10px; padding: 40px; text-align: center; cursor: pointer; transition: 0.2s; }
 .import-area:hover { border-color: var(--accent); background: rgba(59,130,246,0.04); }
 .import-area p { color: var(--muted); font-size: 14px; margin-top: 8px; }
+
+/* Drag-and-drop highlight */
+tr.drag-over td { background: rgba(59,130,246,0.08); }
 </style>
 </head>
 <body>
 
-<!-- ============================================================ -->
-<!-- SCREEN 1: LOGIN / REGISTER                                    -->
-<!-- ============================================================ -->
 <div id="screen-auth" class="auth-screen active">
   <div class="auth-logo" id="login-logo-display">⚡</div>
   <div class="auth-league-name" id="login-league-display">PRO AUCTION</div>
@@ -180,8 +164,6 @@ select.form-input option { background: var(--surface2); }
       <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
       <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</button>
     </div>
-
-    <!-- LOGIN FORM -->
     <div id="form-login">
       <div class="form-group">
         <label class="form-label">Username</label>
@@ -193,8 +175,6 @@ select.form-input option { background: var(--surface2); }
       </div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;margin-top:4px" onclick="doLogin()">Sign In →</button>
     </div>
-
-    <!-- REGISTER FORM -->
     <div id="form-register" style="display:none">
       <div class="form-group">
         <label class="form-label">Full Name</label>
@@ -232,9 +212,6 @@ select.form-input option { background: var(--surface2); }
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- SCREEN 2: PENDING APPROVAL                                    -->
-<!-- ============================================================ -->
 <div id="screen-pending" class="auth-screen">
   <div class="pending-card">
     <div class="pending-icon">⏳</div>
@@ -244,11 +221,9 @@ select.form-input option { background: var(--surface2); }
       Your subscription is <strong>not yet active</strong>. Please contact the admin on WhatsApp to make payment and get your account approved.<br><br>
       Once approved, you will get full access to the auction dashboard.
     </div>
-
     <a id="whatsapp-link" href="#" target="_blank" class="whatsapp-btn">
       <span style="font-size:20px">💬</span> Contact Admin on WhatsApp
     </a>
-
     <div class="info-steps">
       <p>How to get activated:</p>
       <ol>
@@ -258,14 +233,10 @@ select.form-input option { background: var(--surface2); }
         <li>Come back here and sign in</li>
       </ol>
     </div>
-
     <button class="btn btn-outline" style="margin-top:20px;width:100%;justify-content:center" onclick="doLogout()">← Back to Login</button>
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- SCREEN 3: ADMIN APP (approved users only)                    -->
-<!-- ============================================================ -->
 <div id="screen-app" style="display:none">
 <div class="layout">
   <aside class="sidebar">
@@ -281,12 +252,9 @@ select.form-input option { background: var(--surface2); }
     <div class="nav-item" onclick="showPage('players',this)"><span class="nav-icon">⚽</span> Players</div>
     <div class="nav-item" onclick="showPage('teams',this)"><span class="nav-icon">🏟️</span> Teams</div>
     <div class="nav-item" onclick="showPage('results',this)"><span class="nav-icon">📋</span> Results</div>
-
-    <!-- Super admin only -->
     <div id="nav-users" class="nav-item" style="display:none" onclick="showPage('users',this)">
       <span class="nav-icon">👥</span> Users <span id="pending-notif-dot" class="notif-dot" style="display:none"></span>
     </div>
-
     <div class="nav-item" onclick="showPage('settings',this)"><span class="nav-icon">⚙️</span> Settings</div>
     <div style="margin-top:auto; padding: 16px 20px;">
       <div style="font-size:11px; color:var(--muted); margin-bottom:8px" id="sidebar-role-label">Connected to Supabase ✓</div>
@@ -336,10 +304,14 @@ select.form-input option { background: var(--surface2); }
           <button class="btn btn-danger" onclick="stopAuction()">⏸ Pause</button>
           <button class="btn btn-primary" onclick="soldPlayer()">✓ SOLD</button>
           <button class="btn btn-outline" onclick="unsoldPlayer()">✕ Unsold</button>
+          <button class="btn btn-outline" onclick="nextPlayer()">⏭ Next</button>
         </div>
       </div>
       <div class="table-wrap">
-        <div class="table-head"><div class="table-head-title">Player Queue</div></div>
+        <div class="table-head">
+          <div class="table-head-title">Player Queue (drag rows to reorder)</div>
+          <button class="btn btn-primary btn-sm" onclick="saveQueueOrder()">💾 Save Order</button>
+        </div>
         <table><thead><tr><th>Player</th><th>Role</th><th>Base Price</th><th>Status</th><th>Action</th></tr></thead>
         <tbody id="queue-body"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Loading...</td></tr></tbody>
         </table>
@@ -390,7 +362,7 @@ select.form-input option { background: var(--surface2); }
       </div>
     </div>
 
-    <!-- USERS (Super Admin only) -->
+    <!-- USERS -->
     <div id="page-users" class="page">
       <div class="page-header">
         <div><div class="page-title">User Management</div><div class="page-sub">Approve, suspend, and manage subscriber accounts</div></div>
@@ -428,7 +400,6 @@ select.form-input option { background: var(--surface2); }
         </div>
         <button class="btn btn-primary" onclick="saveLeagueSettings()">Save Branding</button>
       </div>
-
       <div class="settings-section">
         <h3>🔐 My Credentials</h3>
         <div class="info-box">Change your login username and password.</div>
@@ -444,8 +415,6 @@ select.form-input option { background: var(--surface2); }
         </div>
         <button class="btn btn-primary" onclick="saveAdminCreds()">Update Credentials</button>
       </div>
-
-      <!-- Super admin WhatsApp config -->
       <div class="settings-section" id="settings-superadmin-section" style="display:none">
         <h3>💬 WhatsApp Contact (Shown to pending users)</h3>
         <div class="info-box">This number appears on the "pending approval" page so users can reach you to pay and get activated.</div>
@@ -465,7 +434,7 @@ select.form-input option { background: var(--surface2); }
 
   </main>
 </div>
-</div><!-- end screen-app -->
+</div>
 
 <!-- ADD TEAM MODAL -->
 <div class="modal-overlay" id="modal-team">
@@ -538,7 +507,7 @@ select.form-input option { background: var(--surface2); }
   </div>
 </div>
 
-<!-- ADD USER MODAL (Super Admin) -->
+<!-- ADD USER MODAL -->
 <div class="modal-overlay" id="modal-add-user">
   <div class="modal">
     <h3>👤 Add New User Account</h3>
@@ -590,7 +559,6 @@ select.form-input option { background: var(--surface2); }
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
@@ -660,7 +628,6 @@ async function doRegister() {
   if (pass !== confirm) return toast('Passwords do not match', 'error');
 
   try {
-    // Check username uniqueness
     const existing = await sb('auction_users?username=eq.' + username + '&select=id');
     if (existing && existing.length > 0) return toast('Username already taken. Choose another.', 'error');
 
@@ -669,19 +636,16 @@ async function doRegister() {
       full_name: name || username,
       phone: phone || null,
       event_name: event || null,
-      password_hash: btoa(pass), // simple encoding — replace with real hash in production
+      password_hash: btoa(pass),
       status: 'pending',
       created_at: new Date().toISOString()
     };
 
-    const result = await sb('auction_users', { method: 'POST', body: JSON.stringify(userData) });
+    await sb('auction_users', { method: 'POST', body: JSON.stringify(userData) });
     toast('Account created! Please contact admin for approval.', 'success');
-
-    // Store session as pending
     setSession({ username, status: 'pending', full_name: name || username });
     setTimeout(() => showPendingScreen(username), 800);
   } catch(e) {
-    // If table doesn't exist yet, fall back to localStorage-only
     console.warn('Supabase users table not found, using local storage fallback:', e.message);
     const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
     if (users.find(u => u.username === username)) return toast('Username already taken.', 'error');
@@ -700,7 +664,6 @@ async function doLogin() {
   const p = document.getElementById('login-password').value;
   if (!u || !p) return toast('Enter username and password', 'error');
 
-  // Check super admin first (stored in settings)
   const superAdminUser = s.adminUser || 'admin';
   const superAdminPass = s.adminPass || 'admin123';
   if (u === superAdminUser && p === superAdminPass) {
@@ -709,12 +672,10 @@ async function doLogin() {
     return;
   }
 
-  // Check Supabase users table
   try {
     const users = await sb('auction_users?username=eq.' + u + '&select=*');
     if (users && users.length > 0) {
       const user = users[0];
-      // Simple password check (btoa encoded)
       if (user.password_hash !== btoa(p)) return toast('Wrong password', 'error');
       if (user.status === 'pending') {
         setSession({ username: u, status: 'pending', full_name: user.full_name });
@@ -723,7 +684,6 @@ async function doLogin() {
       }
       if (user.status === 'suspended') return toast('Account suspended. Contact admin.', 'error');
       if (user.status === 'rejected') return toast('Account rejected. Contact admin.', 'error');
-      // Check expiry
       if (user.expiry_date && new Date(user.expiry_date) < new Date()) {
         toast('Subscription expired. Contact admin to renew.', 'error');
         setSession({ username: u, status: 'pending', full_name: user.full_name });
@@ -736,7 +696,6 @@ async function doLogin() {
     }
   } catch(e) { console.warn('Supabase check failed:', e.message); }
 
-  // Fallback: local storage users
   const localUsers = JSON.parse(localStorage.getItem('localUsers') || '[]');
   const localUser = localUsers.find(lu => lu.username === u && lu.password === p);
   if (localUser) {
@@ -769,7 +728,6 @@ function enterApp(session) {
   const isSuperAdmin = session.role === 'superadmin';
   document.getElementById('sidebar-username-display').textContent = session.full_name || session.username;
   document.getElementById('sidebar-role-label').textContent = isSuperAdmin ? '👑 Super Admin' : '✓ Subscription Active';
-  // Show Users menu only for super admin
   document.getElementById('nav-users').style.display = isSuperAdmin ? 'flex' : 'none';
   document.getElementById('settings-superadmin-section').style.display = isSuperAdmin ? 'block' : 'none';
   loadDashboard();
@@ -868,7 +826,6 @@ async function checkPendingUsers() {
   try {
     const users = await sb('auction_users?status=eq.pending&select=id');
     const count = users ? users.length : 0;
-    // Also check local
     const local = JSON.parse(localStorage.getItem('localUsers') || '[]').filter(u => u.status === 'pending');
     const total = count + local.length;
     const dot = document.getElementById('pending-notif-dot');
@@ -889,7 +846,6 @@ async function loadUsers() {
   } catch(e) { console.warn('Users table not found in Supabase, using localStorage'); }
 
   const localUsers = JSON.parse(localStorage.getItem('localUsers') || '[]');
-  // Merge: avoid duplicates by username
   const sbUsernames = supabaseUsers.map(u => u.username);
   const mergedLocalOnly = localUsers.filter(u => !sbUsernames.includes(u.username));
   allUsers = [...supabaseUsers, ...mergedLocalOnly.map(u => ({ ...u, _local: true }))];
@@ -953,7 +909,6 @@ function openApproveModal(id, user) {
     📱 ${user.phone || 'No phone'} &nbsp;|&nbsp; Event: ${user.event_name || 'Not set'}<br>
     Registered: ${fmtDateShort(user.created_at)}
   `;
-  // Default expiry: 30 days from now
   const d = new Date(); d.setDate(d.getDate() + 30);
   document.getElementById('approve-expiry').value = d.toISOString().split('T')[0];
   document.getElementById('approve-plan').value = '';
@@ -1119,12 +1074,14 @@ async function loadQueue() {
     document.getElementById('ctrl-player-name').textContent = current?.name || '— No player selected —';
     document.getElementById('ctrl-bid').textContent = auctionState.current_bid ? fmt(auctionState.current_bid) : '—';
     const tbody = document.getElementById('queue-body');
-    tbody.innerHTML = players.map(p => `<tr>
-      <td><strong>${p.name}</strong></td>
+    tbody.innerHTML = players.map(p => `<tr draggable="true" data-id="${p.id}"
+        ondragstart="dragStart(event)" ondragover="dragOver(event)"
+        ondrop="dropRow(event)" ondragend="dragEnd(event)" style="cursor:grab">
+      <td>⠿ <strong>${p.name}</strong></td>
       <td>${p.role}</td>
       <td>${fmt(p.base_price)}</td>
       <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
-      <td>${p.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="setLive('${p.id}','${p.name}',${p.base_price})">Set Live</button>` : '—'}</td>
+      <td>${(p.status === 'pending' || p.status === 'unsold') ? `<button class="btn btn-primary btn-sm" onclick="setLive('${p.id}','${p.name}',${p.base_price})">Set Live</button>` : '—'}</td>
     </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">No players added</td></tr>';
   } catch(e) { console.warn(e); }
 }
@@ -1134,6 +1091,17 @@ async function setLive(playerId, name, base) {
   await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ current_player_id: playerId, current_bid: base, current_leader_team_id: null }) });
   toast('Now on block: ' + name); loadQueue();
 }
+
+// ─── NEW: Next Player ───────────────────────────────────────────
+async function nextPlayer() {
+  try {
+    const players = await sb('players?select=id,name,base_price&status=in.(pending,unsold)&order=lot_number.asc&limit=1');
+    if (!players || !players.length) { toast('Queue empty — no more players', 'error'); return; }
+    const p = players[0];
+    await setLive(p.id, p.name, p.base_price);
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
 async function startAuction() {
   await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ is_live: true }) });
   document.getElementById('live-dot').className = 'auction-live-dot live'; toast('Auction started ▶');
@@ -1161,6 +1129,50 @@ async function unsoldPlayer() {
   await sb('players?id=eq.' + pid, { method: 'PATCH', body: JSON.stringify({ status: 'unsold' }) });
   await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null }) });
   toast('Marked as Unsold'); loadQueue();
+}
+
+// ─── DRAG AND DROP ─────────────────────────────────────────────
+let dragSrc = null;
+
+function dragStart(e) {
+  dragSrc = e.currentTarget;
+  e.currentTarget.style.opacity = '0.4';
+  e.dataTransfer.effectAllowed = 'move';
+}
+function dragEnd(e) {
+  e.currentTarget.style.opacity = '1';
+  document.querySelectorAll('#queue-body tr').forEach(r => r.classList.remove('drag-over'));
+}
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const target = e.currentTarget;
+  if (target === dragSrc || !dragSrc) return;
+  document.querySelectorAll('#queue-body tr').forEach(r => r.classList.remove('drag-over'));
+  target.classList.add('drag-over');
+  const tbody = target.parentNode;
+  const rows = [...tbody.children];
+  const srcIdx = rows.indexOf(dragSrc);
+  const tgtIdx = rows.indexOf(target);
+  if (srcIdx < tgtIdx) tbody.insertBefore(dragSrc, target.nextSibling);
+  else tbody.insertBefore(dragSrc, target);
+}
+function dropRow(e) {
+  e.preventDefault();
+  document.querySelectorAll('#queue-body tr').forEach(r => r.classList.remove('drag-over'));
+}
+
+async function saveQueueOrder() {
+  const rows = [...document.getElementById('queue-body').children];
+  const ids = rows.map(r => r.dataset.id).filter(Boolean);
+  if (!ids.length) return toast('No players in queue', 'error');
+  try {
+    await Promise.all(ids.map((id, i) =>
+      sb('players?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ lot_number: i + 1 }) })
+    ));
+    toast('Queue order saved ✓');
+    loadQueue();
+  } catch(e) { toast('Error saving order: ' + e.message, 'error'); }
 }
 
 // ─── PLAYERS ───────────────────────────────────────────────────
@@ -1420,3 +1432,4 @@ function subscribeRealtime() {
 </script>
 </body>
 </html>
+
