@@ -700,8 +700,8 @@ async function doLogin() {
   if (!u || !p) return toast('Enter username and password', 'error');
 
   // Check super admin first (stored in settings)
-  const superAdminUser = s.adminUser || 'admin';
-  const superAdminPass = s.adminPass || 'admin123';
+  const superAdminUser = s.adminUser || 'minhajahmad0103@gmail.com';
+  const superAdminPass = s.adminPass || 'Minnu@786';
   if (u === superAdminUser && p === superAdminPass) {
     setSession({ username: u, status: 'approved', role: 'superadmin', full_name: 'Super Admin' });
     enterApp({ username: u, status: 'approved', role: 'superadmin', full_name: 'Super Admin' });
