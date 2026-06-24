@@ -109,7 +109,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 .current-player-info { flex: 1; }
 .current-bid-display { font-size: 28px; font-weight: 800; color: var(--green); }
-.auction-btns { display: flex; gap: 10px; }
+.auction-btns { display: flex; gap: 10px; flex-wrap: wrap; }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 100; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
@@ -121,15 +121,43 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .form-input:focus { border-color: var(--accent); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-.color-preview { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: inline-block; margin-left: 8px; vertical-align: middle; }
 
 .player-cell { display: flex; align-items: center; gap: 10px; }
 .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--muted); flex-shrink: 0; overflow:hidden; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
 .team-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+
+/* Lot number badge in queue */
+.lot-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-right: 6px;
+}
+.lot-num.live-num {
+  background: rgba(16,185,129,0.15);
+  border-color: var(--green);
+  color: var(--green);
+}
 
 .photo-upload-wrap { border: 2px dashed var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 16px; }
 .photo-upload-wrap:hover { border-color: var(--accent); background: rgba(59,130,246,0.04); }
 .photo-preview { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 90px; flex-shrink: 0; }
+
+/* Team photo upload in modal */
+.team-photo-wrap { border: 2px dashed var(--border); border-radius: 10px; padding: 12px; cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 14px; }
+.team-photo-wrap:hover { border-color: var(--accent); background: rgba(59,130,246,0.04); }
+.team-photo-thumb { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--border); object-fit: cover; display: none; }
+.team-photo-placeholder { width: 60px; height: 60px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
 
 .settings-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:20px; }
 .settings-section h3 { font-size:14px; font-weight:700; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border); }
@@ -146,12 +174,11 @@ select.form-input option { background: var(--surface2); }
 .user-row-pending td { background: rgba(245,158,11,0.04); }
 .notif-dot { width:8px; height:8px; border-radius:50%; background:var(--red); display:inline-block; margin-left:4px; vertical-align:middle; }
 
-.import-area { border: 2px dashed var(--border); border-radius: 10px; padding: 40px; text-align: center; cursor: pointer; transition: 0.2s; }
-.import-area:hover { border-color: var(--accent); background: rgba(59,130,246,0.04); }
-.import-area p { color: var(--muted); font-size: 14px; margin-top: 8px; }
-
-/* Drag-and-drop highlight */
 tr.drag-over td { background: rgba(59,130,246,0.08); }
+
+/* Row highlight for live player */
+tr.row-live td { background: rgba(16,185,129,0.04); }
+tr.row-unsold td { background: rgba(239,68,68,0.03); opacity: 0.7; }
 </style>
 </head>
 <body>
@@ -309,11 +336,11 @@ tr.drag-over td { background: rgba(59,130,246,0.08); }
       </div>
       <div class="table-wrap">
         <div class="table-head">
-          <div class="table-head-title">Player Queue (drag rows to reorder)</div>
+          <div class="table-head-title">Player Queue — drag rows to reorder</div>
           <button class="btn btn-primary btn-sm" onclick="saveQueueOrder()">💾 Save Order</button>
         </div>
-        <table><thead><tr><th>Player</th><th>Role</th><th>Base Price</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody id="queue-body"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Loading...</td></tr></tbody>
+        <table><thead><tr><th style="width:44px">#</th><th>Player</th><th>Role</th><th>Base Price</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="queue-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -446,6 +473,24 @@ tr.drag-over td { background: rgba(59,130,246,0.08); }
       <div class="form-group"><label class="form-label">Short Code *</label><input class="form-input" id="team-code" placeholder="ARS" maxlength="4"></div>
     </div>
     <div class="form-group"><label class="form-label">Team Color</label><input type="color" class="form-input" id="team-color" value="#3b82f6" style="height:42px;padding:4px"></div>
+
+    <!-- Team Logo Upload -->
+    <div class="form-group">
+      <label class="form-label">Team Logo / Photo</label>
+      <div class="team-photo-wrap" onclick="document.getElementById('team-logo-file').click()">
+        <div id="team-logo-placeholder" class="team-photo-placeholder">🏟️</div>
+        <img id="team-logo-thumb" class="team-photo-thumb" alt="Team logo">
+        <div>
+          <div style="font-size:13px;font-weight:600">Upload Team Logo</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">JPG, PNG, WEBP · max 5MB</div>
+          <div style="font-size:11px;color:var(--accent);margin-top:6px" id="team-logo-name">Or enter URL below</div>
+        </div>
+      </div>
+      <input type="file" id="team-logo-file" accept="image/*" style="display:none" onchange="handleTeamLogoSelect(event)">
+      <input class="form-input" id="team-logo" placeholder="https://... (or upload above)" style="margin-top:8px" oninput="previewTeamLogoUrl(this.value)">
+      <input type="hidden" id="team-logo-data">
+    </div>
+
     <div class="form-row">
       <div class="form-group"><label class="form-label">Leader Name</label><input class="form-input" id="team-leader" placeholder="Team captain / manager"></div>
       <div class="form-group"><label class="form-label">Leader Username</label><input class="form-input" id="team-leader-username" placeholder="leader123"></div>
@@ -453,10 +498,9 @@ tr.drag-over td { background: rgba(59,130,246,0.08); }
     <div class="form-group"><label class="form-label">Leader Password</label><input class="form-input" type="password" id="team-leader-pass" placeholder="Set a password for team leader login"></div>
     <div class="form-group"><label class="form-label">Owner / Franchise Owner</label><input class="form-input" id="team-owner" placeholder="Franchise owner name"></div>
     <div class="form-group"><label class="form-label">Total Purse (₹)</label><input class="form-input" id="team-purse" type="number" placeholder="100000000" min="1000000"></div>
-    <div class="form-group"><label class="form-label">Logo URL (optional)</label><input class="form-input" id="team-logo" placeholder="https://..."></div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-team')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveTeam()">Save Team</button>
+      <button class="btn btn-primary" id="save-team-btn" onclick="saveTeam()">Save Team</button>
     </div>
   </div>
 </div>
@@ -490,6 +534,11 @@ tr.drag-over td { background: rgba(59,130,246,0.08); }
           <span style="font-size:11px;color:var(--muted)">JPG, PNG, WEBP · max 5MB</span>
         </div>
         <img id="photo-preview-img" style="display:none;width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)" />
+        <div id="photo-upload-info" style="flex:1">
+          <div style="font-size:13px;font-weight:600">Upload Player Photo</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Click anywhere here to choose a photo</div>
+          <div style="font-size:11px;color:var(--accent);margin-top:6px" id="photo-filename">No file selected</div>
+        </div>
       </div>
       <input type="file" id="photo-file-input" accept="image/*" style="display:none" onchange="handlePhotoSelect(event)">
       <input type="hidden" id="player-photo">
@@ -587,7 +636,6 @@ function getSession() {
 function setSession(obj) { localStorage.setItem('auctionSession', JSON.stringify(obj)); }
 function clearSession() { localStorage.removeItem('auctionSession'); }
 
-// ─── SETTINGS ──────────────────────────────────────────────────
 function getSettings() {
   try { return JSON.parse(localStorage.getItem('auctionSettings') || '{}'); } catch(e) { return {}; }
 }
@@ -596,7 +644,6 @@ function saveSettings(obj) {
   localStorage.setItem('auctionSettings', JSON.stringify({ ...cur, ...obj }));
 }
 
-// ─── AUTH TAB SWITCH ───────────────────────────────────────────
 function switchAuthTab(tab) {
   document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
@@ -604,7 +651,6 @@ function switchAuthTab(tab) {
   document.getElementById('tab-register').classList.toggle('active', tab === 'register');
 }
 
-// ─── SCREEN CONTROL ────────────────────────────────────────────
 function showScreen(name) {
   document.getElementById('screen-auth').classList.remove('active');
   document.getElementById('screen-pending').classList.remove('active');
@@ -614,7 +660,6 @@ function showScreen(name) {
   else if (name === 'app') document.getElementById('screen-app').style.display = 'block';
 }
 
-// ─── REGISTRATION ──────────────────────────────────────────────
 async function doRegister() {
   const name = document.getElementById('reg-name').value.trim();
   const username = document.getElementById('reg-username').value.trim().toLowerCase();
@@ -622,31 +667,18 @@ async function doRegister() {
   const pass = document.getElementById('reg-password').value;
   const confirm = document.getElementById('reg-confirm').value;
   const event = document.getElementById('reg-event').value.trim();
-
   if (!username || !pass) return toast('Username and password are required', 'error');
   if (pass.length < 6) return toast('Password must be at least 6 characters', 'error');
   if (pass !== confirm) return toast('Passwords do not match', 'error');
-
   try {
     const existing = await sb('auction_users?username=eq.' + username + '&select=id');
     if (existing && existing.length > 0) return toast('Username already taken. Choose another.', 'error');
-
-    const userData = {
-      username,
-      full_name: name || username,
-      phone: phone || null,
-      event_name: event || null,
-      password_hash: btoa(pass),
-      status: 'pending',
-      created_at: new Date().toISOString()
-    };
-
+    const userData = { username, full_name: name || username, phone: phone || null, event_name: event || null, password_hash: btoa(pass), status: 'pending', created_at: new Date().toISOString() };
     await sb('auction_users', { method: 'POST', body: JSON.stringify(userData) });
     toast('Account created! Please contact admin for approval.', 'success');
     setSession({ username, status: 'pending', full_name: name || username });
     setTimeout(() => showPendingScreen(username), 800);
   } catch(e) {
-    console.warn('Supabase users table not found, using local storage fallback:', e.message);
     const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
     if (users.find(u => u.username === username)) return toast('Username already taken.', 'error');
     users.push({ username, full_name: name || username, phone, event_name: event, password: pass, status: 'pending', created_at: new Date().toISOString() });
@@ -657,13 +689,11 @@ async function doRegister() {
   }
 }
 
-// ─── LOGIN ─────────────────────────────────────────────────────
 async function doLogin() {
   const s = getSettings();
   const u = document.getElementById('login-username').value.trim();
   const p = document.getElementById('login-password').value;
   if (!u || !p) return toast('Enter username and password', 'error');
-
   const superAdminUser = s.adminUser || 'admin';
   const superAdminPass = s.adminPass || 'admin123';
   if (u === superAdminUser && p === superAdminPass) {
@@ -671,45 +701,29 @@ async function doLogin() {
     enterApp({ username: u, status: 'approved', role: 'superadmin', full_name: 'Super Admin' });
     return;
   }
-
   try {
     const users = await sb('auction_users?username=eq.' + u + '&select=*');
     if (users && users.length > 0) {
       const user = users[0];
       if (user.password_hash !== btoa(p)) return toast('Wrong password', 'error');
-      if (user.status === 'pending') {
-        setSession({ username: u, status: 'pending', full_name: user.full_name });
-        showPendingScreen(u);
-        return;
-      }
+      if (user.status === 'pending') { setSession({ username: u, status: 'pending', full_name: user.full_name }); showPendingScreen(u); return; }
       if (user.status === 'suspended') return toast('Account suspended. Contact admin.', 'error');
       if (user.status === 'rejected') return toast('Account rejected. Contact admin.', 'error');
-      if (user.expiry_date && new Date(user.expiry_date) < new Date()) {
-        toast('Subscription expired. Contact admin to renew.', 'error');
-        setSession({ username: u, status: 'pending', full_name: user.full_name });
-        showPendingScreen(u);
-        return;
-      }
+      if (user.expiry_date && new Date(user.expiry_date) < new Date()) { toast('Subscription expired. Contact admin to renew.', 'error'); setSession({ username: u, status: 'pending', full_name: user.full_name }); showPendingScreen(u); return; }
       setSession({ username: u, status: 'approved', role: 'user', full_name: user.full_name, id: user.id });
       enterApp({ username: u, status: 'approved', role: 'user', full_name: user.full_name });
       return;
     }
   } catch(e) { console.warn('Supabase check failed:', e.message); }
-
   const localUsers = JSON.parse(localStorage.getItem('localUsers') || '[]');
   const localUser = localUsers.find(lu => lu.username === u && lu.password === p);
   if (localUser) {
-    if (localUser.status === 'pending') {
-      setSession({ username: u, status: 'pending', full_name: localUser.full_name });
-      showPendingScreen(u);
-      return;
-    }
+    if (localUser.status === 'pending') { setSession({ username: u, status: 'pending', full_name: localUser.full_name }); showPendingScreen(u); return; }
     if (localUser.status === 'suspended') return toast('Account suspended. Contact admin.', 'error');
     setSession({ username: u, status: 'approved', role: 'user', full_name: localUser.full_name });
     enterApp({ username: u, status: 'approved', role: 'user', full_name: localUser.full_name });
     return;
   }
-
   toast('Invalid username or password', 'error');
 }
 
@@ -742,7 +756,6 @@ function doLogout() {
   document.getElementById('login-password').value = '';
 }
 
-// ─── BRANDING ──────────────────────────────────────────────────
 function applyBranding() {
   const s = getSettings();
   const name = s.leagueName || 'PRO AUCTION';
@@ -769,7 +782,6 @@ function saveLeagueSettings() {
   applyBranding();
   toast('Branding saved ✓');
 }
-
 function saveAdminCreds() {
   const user = document.getElementById('set-admin-user').value.trim();
   const pass = document.getElementById('set-admin-pass').value;
@@ -780,7 +792,6 @@ function saveAdminCreds() {
   document.getElementById('set-admin-pass').value = '';
   toast('Credentials updated ✓');
 }
-
 function saveWhatsappSettings() {
   const num = document.getElementById('set-whatsapp').value.trim();
   const msg = document.getElementById('set-whatsapp-msg').value.trim();
@@ -789,7 +800,6 @@ function saveWhatsappSettings() {
   toast('WhatsApp settings saved ✓');
 }
 
-// ─── NAV ───────────────────────────────────────────────────────
 function showPage(name, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -804,7 +814,6 @@ function showPage(name, el) {
   if (name === 'settings') applyBranding();
 }
 
-// ─── TOAST ─────────────────────────────────────────────────────
 function toast(msg, type = 'success') {
   const el = document.createElement('div');
   el.className = 'toast ' + type;
@@ -828,8 +837,7 @@ async function checkPendingUsers() {
     const count = users ? users.length : 0;
     const local = JSON.parse(localStorage.getItem('localUsers') || '[]').filter(u => u.status === 'pending');
     const total = count + local.length;
-    const dot = document.getElementById('pending-notif-dot');
-    dot.style.display = total > 0 ? 'inline-block' : 'none';
+    document.getElementById('pending-notif-dot').style.display = total > 0 ? 'inline-block' : 'none';
   } catch(e) {
     const local = JSON.parse(localStorage.getItem('localUsers') || '[]').filter(u => u.status === 'pending');
     document.getElementById('pending-notif-dot').style.display = local.length > 0 ? 'inline-block' : 'none';
@@ -839,76 +847,50 @@ async function checkPendingUsers() {
 async function loadUsers() {
   const tbody = document.getElementById('users-body');
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading...</td></tr>';
-
   let supabaseUsers = [];
-  try {
-    supabaseUsers = await sb('auction_users?select=*&order=created_at.desc') || [];
-  } catch(e) { console.warn('Users table not found in Supabase, using localStorage'); }
-
+  try { supabaseUsers = await sb('auction_users?select=*&order=created_at.desc') || []; } catch(e) {}
   const localUsers = JSON.parse(localStorage.getItem('localUsers') || '[]');
   const sbUsernames = supabaseUsers.map(u => u.username);
   const mergedLocalOnly = localUsers.filter(u => !sbUsernames.includes(u.username));
   allUsers = [...supabaseUsers, ...mergedLocalOnly.map(u => ({ ...u, _local: true }))];
-
   const pending = allUsers.filter(u => u.status === 'pending');
   const countBox = document.getElementById('pending-count-box');
-  if (pending.length > 0) {
-    countBox.style.display = 'block';
-    countBox.innerHTML = `⏳ <strong>${pending.length} account${pending.length > 1 ? 's' : ''} awaiting approval.</strong> Review and approve below to give access.`;
-  } else {
-    countBox.style.display = 'none';
-  }
-
+  if (pending.length > 0) { countBox.style.display = 'block'; countBox.innerHTML = `⏳ <strong>${pending.length} account${pending.length > 1 ? 's' : ''} awaiting approval.</strong> Review and approve below to give access.`; }
+  else { countBox.style.display = 'none'; }
   renderUsers(allUsers);
   document.getElementById('pending-notif-dot').style.display = pending.length > 0 ? 'inline-block' : 'none';
 }
 
 function renderUsers(users) {
   const tbody = document.getElementById('users-body');
-  if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No users registered yet</td></tr>';
-    return;
-  }
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No users registered yet</td></tr>'; return; }
   tbody.innerHTML = users.map(u => {
     const isPending = u.status === 'pending';
     return `<tr class="${isPending ? 'user-row-pending' : ''}">
-      <td>
-        <div style="font-weight:600">${u.full_name || u.username}</div>
-        <div style="font-size:11px;color:var(--muted)">@${u.username}</div>
-      </td>
+      <td><div style="font-weight:600">${u.full_name || u.username}</div><div style="font-size:11px;color:var(--muted)">@${u.username}</div></td>
       <td>${u.phone ? `<a href="https://wa.me/${u.phone.replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none">💬 ${u.phone}</a>` : '—'}</td>
       <td>${u.event_name || '—'}</td>
       <td><span class="badge badge-${u.status === 'approved' ? 'approved' : u.status === 'pending' ? 'waiting' : u.status === 'suspended' ? 'suspended' : 'rejected'}">${u.status.toUpperCase()}</span></td>
       <td style="font-size:12px;color:var(--muted)">${u.approved_by || '—'}</td>
       <td style="font-size:12px;color:${u.expiry_date && new Date(u.expiry_date) < new Date() ? 'var(--red)' : 'var(--muted)'}">${fmtDateShort(u.expiry_date)}</td>
-      <td>
-        <div style="display:flex;gap:4px;flex-wrap:wrap">
-          ${isPending ? `<button class="btn btn-success btn-sm" onclick="openApproveModal('${u._local ? 'local:' : ''}${u.id || u.username}', ${JSON.stringify(u).replace(/"/g,'&quot;')})">✓ Approve</button>` : ''}
-          ${u.status === 'approved' ? `<button class="btn btn-amber btn-sm" onclick="suspendUser('${u._local ? 'local:' : ''}${u.id || u.username}')">Suspend</button>` : ''}
-          ${u.status === 'suspended' ? `<button class="btn btn-success btn-sm" onclick="unsuspendUser('${u._local ? 'local:' : ''}${u.id || u.username}')">Reactivate</button>` : ''}
-          <button class="btn btn-danger btn-sm" onclick="deleteUser('${u._local ? 'local:' : ''}${u.id || u.username}')">Del</button>
-        </div>
-      </td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+        ${isPending ? `<button class="btn btn-success btn-sm" onclick="openApproveModal('${u._local ? 'local:' : ''}${u.id || u.username}', ${JSON.stringify(u).replace(/"/g,'&quot;')})">✓ Approve</button>` : ''}
+        ${u.status === 'approved' ? `<button class="btn btn-amber btn-sm" onclick="suspendUser('${u._local ? 'local:' : ''}${u.id || u.username}')">Suspend</button>` : ''}
+        ${u.status === 'suspended' ? `<button class="btn btn-success btn-sm" onclick="unsuspendUser('${u._local ? 'local:' : ''}${u.id || u.username}')">Reactivate</button>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="deleteUser('${u._local ? 'local:' : ''}${u.id || u.username}')">Del</button>
+      </div></td>
     </tr>`;
   }).join('');
 }
 
 function filterUsers(q) {
-  const filtered = allUsers.filter(u =>
-    (u.username || '').includes(q) ||
-    (u.full_name || '').toLowerCase().includes(q.toLowerCase()) ||
-    (u.event_name || '').toLowerCase().includes(q.toLowerCase())
-  );
+  const filtered = allUsers.filter(u => (u.username||'').includes(q) || (u.full_name||'').toLowerCase().includes(q.toLowerCase()) || (u.event_name||'').toLowerCase().includes(q.toLowerCase()));
   renderUsers(filtered);
 }
 
 function openApproveModal(id, user) {
   document.getElementById('approve-user-id').value = id;
-  document.getElementById('approve-user-info').innerHTML = `
-    <strong>${user.full_name || user.username}</strong> (@${user.username})<br>
-    📱 ${user.phone || 'No phone'} &nbsp;|&nbsp; Event: ${user.event_name || 'Not set'}<br>
-    Registered: ${fmtDateShort(user.created_at)}
-  `;
+  document.getElementById('approve-user-info').innerHTML = `<strong>${user.full_name || user.username}</strong> (@${user.username})<br>📱 ${user.phone || 'No phone'} &nbsp;|&nbsp; Event: ${user.event_name || 'Not set'}<br>Registered: ${fmtDateShort(user.created_at)}`;
   const d = new Date(); d.setDate(d.getDate() + 30);
   document.getElementById('approve-expiry').value = d.toISOString().split('T')[0];
   document.getElementById('approve-plan').value = '';
@@ -921,15 +903,7 @@ async function confirmApprove() {
   const plan = document.getElementById('approve-plan').value;
   if (!expiry) return toast('Set an expiry date', 'error');
   const session = getSession();
-
-  const updateData = {
-    status: 'approved',
-    expiry_date: expiry,
-    approved_by: session?.username || 'admin',
-    plan_note: plan || null,
-    approved_at: new Date().toISOString()
-  };
-
+  const updateData = { status: 'approved', expiry_date: expiry, approved_by: session?.username || 'admin', plan_note: plan || null, approved_at: new Date().toISOString() };
   if (id.startsWith('local:')) {
     const localKey = id.replace('local:', '');
     const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
@@ -937,27 +911,21 @@ async function confirmApprove() {
     if (idx >= 0) { users[idx] = { ...users[idx], ...updateData }; localStorage.setItem('localUsers', JSON.stringify(users)); }
     toast('Account approved ✓ (local)');
   } else {
-    try {
-      await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(updateData) });
-      toast('Account approved ✓');
-    } catch(e) { toast('Error: ' + e.message, 'error'); return; }
+    try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(updateData) }); toast('Account approved ✓'); } catch(e) { toast('Error: ' + e.message, 'error'); return; }
   }
   closeModal('modal-approve-user');
   loadUsers();
 }
 
 async function suspendUser(id) {
-  if (!confirm('Suspend this user? They will lose access immediately.')) return;
+  if (!confirm('Suspend this user?')) return;
   if (id.startsWith('local:')) {
     const key = id.replace('local:', '');
     const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
     const idx = users.findIndex(u => u.username === key);
     if (idx >= 0) { users[idx].status = 'suspended'; localStorage.setItem('localUsers', JSON.stringify(users)); }
-  } else {
-    try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'suspended' }) }); } catch(e) {}
-  }
-  toast('User suspended');
-  loadUsers();
+  } else { try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'suspended' }) }); } catch(e) {} }
+  toast('User suspended'); loadUsers();
 }
 
 async function unsuspendUser(id) {
@@ -966,11 +934,8 @@ async function unsuspendUser(id) {
     const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
     const idx = users.findIndex(u => u.username === key);
     if (idx >= 0) { users[idx].status = 'approved'; localStorage.setItem('localUsers', JSON.stringify(users)); }
-  } else {
-    try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) }); } catch(e) {}
-  }
-  toast('User reactivated ✓');
-  loadUsers();
+  } else { try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) }); } catch(e) {} }
+  toast('User reactivated ✓'); loadUsers();
 }
 
 async function deleteUser(id) {
@@ -981,14 +946,9 @@ async function deleteUser(id) {
     users = users.filter(u => u.username !== key);
     localStorage.setItem('localUsers', JSON.stringify(users));
   } else {
-    try {
-      await fetch(SUPABASE_URL + '/rest/v1/auction_users?id=eq.' + id, {
-        method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' }
-      });
-    } catch(e) {}
+    try { await fetch(SUPABASE_URL + '/rest/v1/auction_users?id=eq.' + id, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' } }); } catch(e) {}
   }
-  toast('User deleted');
-  loadUsers();
+  toast('User deleted'); loadUsers();
 }
 
 function openAddUserModal() {
@@ -1008,26 +968,15 @@ async function saveNewUser() {
   const phone = document.getElementById('new-user-phone').value.trim();
   const event = document.getElementById('new-user-event').value.trim();
   if (!username || !pass) return toast('Username and password required', 'error');
-
-  const data = {
-    username, full_name: name || username, phone: phone || null, event_name: event || null,
-    password_hash: btoa(pass), status,
-    expiry_date: status === 'approved' ? expiry : null,
-    approved_by: status === 'approved' ? (getSession()?.username || 'admin') : null,
-    created_at: new Date().toISOString()
-  };
-
-  try {
-    await sb('auction_users', { method: 'POST', body: JSON.stringify(data) });
-    toast('User created ✓');
-  } catch(e) {
+  const data = { username, full_name: name || username, phone: phone || null, event_name: event || null, password_hash: btoa(pass), status, expiry_date: status === 'approved' ? expiry : null, approved_by: status === 'approved' ? (getSession()?.username || 'admin') : null, created_at: new Date().toISOString() };
+  try { await sb('auction_users', { method: 'POST', body: JSON.stringify(data) }); toast('User created ✓'); }
+  catch(e) {
     const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
     users.push({ ...data, password: pass });
     localStorage.setItem('localUsers', JSON.stringify(users));
     toast('User created ✓ (local)');
   }
-  closeModal('modal-add-user');
-  loadUsers();
+  closeModal('modal-add-user'); loadUsers();
 }
 
 // ─── DASHBOARD ─────────────────────────────────────────────────
@@ -1065,7 +1014,7 @@ let auctionState = {};
 async function loadQueue() {
   try {
     const [players, state] = await Promise.all([
-      sb('players?select=id,name,role,base_price,status&order=lot_number.asc'),
+      sb('players?select=id,name,role,base_price,status,lot_number&order=lot_number.asc'),
       sb('auction_state?id=eq.1&select=*,current_player_id(id,name),current_leader_team_id(id,name,color)')
     ]);
     auctionState = state[0] || {};
@@ -1073,31 +1022,79 @@ async function loadQueue() {
     document.getElementById('live-dot').className = 'auction-live-dot' + (auctionState.is_live ? ' live' : '');
     document.getElementById('ctrl-player-name').textContent = current?.name || '— No player selected —';
     document.getElementById('ctrl-bid').textContent = auctionState.current_bid ? fmt(auctionState.current_bid) : '—';
+
+    // Sort: live/pending first (by lot_number), then unsold at bottom
+    const active = players.filter(p => p.status !== 'unsold' && p.status !== 'sold');
+    const unsold = players.filter(p => p.status === 'unsold');
+    const sold = players.filter(p => p.status === 'sold');
+    const sorted = [...active, ...unsold, ...sold];
+
     const tbody = document.getElementById('queue-body');
-    tbody.innerHTML = players.map(p => `<tr draggable="true" data-id="${p.id}"
-        ondragstart="dragStart(event)" ondragover="dragOver(event)"
-        ondrop="dropRow(event)" ondragend="dragEnd(event)" style="cursor:grab">
-      <td>⠿ <strong>${p.name}</strong></td>
-      <td>${p.role}</td>
-      <td>${fmt(p.base_price)}</td>
-      <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
-      <td>${(p.status === 'pending' || p.status === 'unsold') ? `<button class="btn btn-primary btn-sm" onclick="setLive('${p.id}','${p.name}',${p.base_price})">Set Live</button>` : '—'}</td>
-    </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">No players added</td></tr>';
+    tbody.innerHTML = sorted.map((p, idx) => {
+      const isLive = p.status === 'live';
+      const isUnsold = p.status === 'unsold';
+      const isSold = p.status === 'sold';
+      const displayNum = isSold ? '✓' : (isUnsold ? '↓' : (p.lot_number || idx + 1));
+      return `<tr draggable="${!isSold}" data-id="${p.id}" class="${isLive ? 'row-live' : isUnsold ? 'row-unsold' : ''}"
+          ondragstart="dragStart(event)" ondragover="dragOver(event)"
+          ondrop="dropRow(event)" ondragend="dragEnd(event)" style="cursor:${isSold ? 'default' : 'grab'}">
+        <td>
+          <span class="lot-num ${isLive ? 'live-num' : ''}">${displayNum}</span>
+        </td>
+        <td><strong>${p.name}</strong>${isLive ? ' <span style="font-size:10px;color:var(--green);font-weight:800">● LIVE</span>' : ''}</td>
+        <td>${p.role}</td>
+        <td>${fmt(p.base_price)}</td>
+        <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
+        <td>${(p.status === 'pending') ? `<button class="btn btn-primary btn-sm" onclick="setLive('${p.id}','${p.name}',${p.base_price})">Set Live</button>` : (p.status === 'unsold' ? `<button class="btn btn-outline btn-sm" onclick="requeuePlayer('${p.id}')">Re-queue</button>` : '—')}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No players added</td></tr>';
   } catch(e) { console.warn(e); }
 }
 
+// Set a player live — first make sure any current live player goes back to pending
 async function setLive(playerId, name, base) {
-  await sb('players?id=eq.' + playerId, { method: 'PATCH', body: JSON.stringify({ status: 'live' }) });
-  await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ current_player_id: playerId, current_bid: base, current_leader_team_id: null }) });
-  toast('Now on block: ' + name); loadQueue();
+  try {
+    // Check if another player is already live — reset them to pending first
+    const livePlayers = await sb('players?status=eq.live&select=id');
+    if (livePlayers && livePlayers.length > 0) {
+      for (const lp of livePlayers) {
+        if (lp.id !== playerId) {
+          await sb('players?id=eq.' + lp.id, { method: 'PATCH', body: JSON.stringify({ status: 'pending' }) });
+        }
+      }
+    }
+    await sb('players?id=eq.' + playerId, { method: 'PATCH', body: JSON.stringify({ status: 'live' }) });
+    await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ current_player_id: playerId, current_bid: base, current_leader_team_id: null }) });
+    toast('Now on block: ' + name);
+    loadQueue();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
-// ─── NEW: Next Player ───────────────────────────────────────────
+// Re-queue an unsold player — send them to bottom of pending (high lot number)
+async function requeuePlayer(playerId) {
+  try {
+    const allPlayers = await sb('players?select=lot_number&order=lot_number.desc&limit=1');
+    const maxLot = allPlayers && allPlayers[0] ? (allPlayers[0].lot_number || 0) : 0;
+    await sb('players?id=eq.' + playerId, { method: 'PATCH', body: JSON.stringify({ status: 'pending', lot_number: maxLot + 1 }) });
+    toast('Player re-queued at bottom ✓');
+    loadQueue();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// Next Player — current live → pending, next pending in queue → live
 async function nextPlayer() {
   try {
-    const players = await sb('players?select=id,name,base_price&status=in.(pending,unsold)&order=lot_number.asc&limit=1');
-    if (!players || !players.length) { toast('Queue empty — no more players', 'error'); return; }
-    const p = players[0];
+    // Step 1: Reset current live player back to pending
+    const livePlayers = await sb('players?status=eq.live&select=id');
+    if (livePlayers && livePlayers.length > 0) {
+      await sb('players?id=eq.' + livePlayers[0].id, { method: 'PATCH', body: JSON.stringify({ status: 'pending' }) });
+    }
+    // Step 2: Clear auction state
+    await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null }) });
+    // Step 3: Pick next pending player in lot order
+    const next = await sb('players?status=eq.pending&order=lot_number.asc&limit=1&select=id,name,base_price');
+    if (!next || !next.length) { toast('Queue empty — no more players', 'error'); loadQueue(); return; }
+    const p = next[0];
     await setLive(p.id, p.name, p.base_price);
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
@@ -1122,13 +1119,18 @@ async function soldPlayer() {
   await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null }) });
   toast('Player SOLD! 🎉'); loadQueue();
 }
+
+// Unsold — mark unsold and push to bottom of queue
 async function unsoldPlayer() {
   const st = await sb('auction_state?id=eq.1&select=current_player_id');
   const pid = st[0]?.current_player_id;
   if (!pid) return toast('No player on block', 'error');
-  await sb('players?id=eq.' + pid, { method: 'PATCH', body: JSON.stringify({ status: 'unsold' }) });
+  // Find max lot number so unsold goes to bottom
+  const allPlayers = await sb('players?select=lot_number&order=lot_number.desc&limit=1');
+  const maxLot = allPlayers && allPlayers[0] ? (allPlayers[0].lot_number || 0) : 0;
+  await sb('players?id=eq.' + pid, { method: 'PATCH', body: JSON.stringify({ status: 'unsold', lot_number: maxLot + 1 }) });
   await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null }) });
-  toast('Marked as Unsold'); loadQueue();
+  toast('Marked as Unsold — moved to bottom'); loadQueue();
 }
 
 // ─── DRAG AND DROP ─────────────────────────────────────────────
@@ -1182,7 +1184,7 @@ async function loadPlayers() {
     const tbody = document.getElementById('players-body');
     tbody.innerHTML = players.map(p => `<tr>
       <td><div class="player-cell">
-        <div class="avatar">${p.photo_url ? `<img src="${p.photo_url}" style="width:100%;height:100%;object-fit:cover">` : p.name[0]}</div>
+        <div class="avatar">${p.photo_url ? `<img src="${p.photo_url}" alt="${p.name[0]}" onerror="this.style.display='none';this.parentElement.textContent='${p.name[0]}'">` : p.name[0]}</div>
         <div><strong>${p.name}</strong><div style="font-size:11px;color:var(--muted)">Lot #${p.lot_number || '—'}</div></div>
       </div></td>
       <td>${p.role}</td>
@@ -1207,6 +1209,7 @@ function openAddPlayer() {
   document.getElementById('photo-preview-img').style.display = 'none';
   document.getElementById('photo-preview-img').src = '';
   document.getElementById('photo-preview').style.display = 'flex';
+  document.getElementById('photo-filename').textContent = 'No file selected';
   pendingPhotoFile = null;
   openModal('modal-player');
 }
@@ -1221,43 +1224,116 @@ function editPlayer(p) {
   document.getElementById('player-photo').value = p.photo_url || '';
   const img = document.getElementById('photo-preview-img');
   const prev = document.getElementById('photo-preview');
-  if (p.photo_url) { img.src = p.photo_url; img.style.display = 'block'; prev.style.display = 'none'; }
-  else { img.style.display = 'none'; img.src = ''; prev.style.display = 'flex'; }
+  if (p.photo_url) { img.src = p.photo_url; img.style.display = 'block'; prev.style.display = 'none'; document.getElementById('photo-filename').textContent = 'Current photo loaded'; }
+  else { img.style.display = 'none'; img.src = ''; prev.style.display = 'flex'; document.getElementById('photo-filename').textContent = 'No file selected'; }
   pendingPhotoFile = null;
   openModal('modal-player');
 }
 
 let pendingPhotoFile = null;
+let pendingTeamLogoFile = null;
 
 function handlePhotoSelect(event) {
   const file = event.target.files[0]; if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('File too large — max 5MB', 'error'); return; }
   pendingPhotoFile = file;
+  document.getElementById('photo-filename').textContent = file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
   const reader = new FileReader();
   reader.onload = e => {
     const img = document.getElementById('photo-preview-img');
     const prev = document.getElementById('photo-preview');
-    img.src = e.target.result; img.style.display = 'block'; prev.style.display = 'none';
+    img.src = e.target.result;
+    img.style.display = 'block';
+    prev.style.display = 'none';
   };
   reader.readAsDataURL(file);
 }
 
-async function uploadPhoto(file, playerName) {
+function handleTeamLogoSelect(event) {
+  const file = event.target.files[0]; if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('File too large — max 5MB', 'error'); return; }
+  pendingTeamLogoFile = file;
+  document.getElementById('team-logo-name').textContent = file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const thumb = document.getElementById('team-logo-thumb');
+    const placeholder = document.getElementById('team-logo-placeholder');
+    thumb.src = e.target.result;
+    thumb.style.display = 'block';
+    placeholder.style.display = 'none';
+    document.getElementById('team-logo-data').value = e.target.result; // store base64 as fallback
+  };
+  reader.readAsDataURL(file);
+}
+
+function previewTeamLogoUrl(url) {
+  if (!url) return;
+  const thumb = document.getElementById('team-logo-thumb');
+  const placeholder = document.getElementById('team-logo-placeholder');
+  thumb.src = url;
+  thumb.style.display = 'block';
+  placeholder.style.display = 'none';
+  thumb.onerror = () => { thumb.style.display = 'none'; placeholder.style.display = 'flex'; };
+}
+
+async function uploadPhoto(file, name, bucket = 'player-images') {
   const ext = file.name.split('.').pop();
-  const filename = `${Date.now()}-${playerName.replace(/\s+/g,'-').toLowerCase()}.${ext}`;
+  const filename = `${Date.now()}-${name.replace(/\s+/g,'-').toLowerCase()}.${ext}`;
   document.getElementById('upload-progress').style.display = 'block';
   document.getElementById('upload-bar').style.width = '30%';
   document.getElementById('upload-label').textContent = 'Uploading photo...';
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/player-images/${filename}`, {
+
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${filename}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': file.type,
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+
+  document.getElementById('upload-bar').style.width = '100%';
+  document.getElementById('upload-label').textContent = 'Upload complete ✓';
+
+  if (!res.ok) {
+    const errText = await res.text();
+    // Fallback: store as base64 data URL (works without storage bucket)
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        setTimeout(() => document.getElementById('upload-progress').style.display = 'none', 1200);
+        resolve(e.target.result); // base64 data URL
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filename}`;
+  setTimeout(() => document.getElementById('upload-progress').style.display = 'none', 1200);
+  return publicUrl;
+}
+
+async function uploadTeamLogo(file, teamName) {
+  const ext = file.name.split('.').pop();
+  const filename = `${Date.now()}-${teamName.replace(/\s+/g,'-').toLowerCase()}.${ext}`;
+
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/team-logos/${filename}`, {
     method: 'POST',
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
     body: file
   });
-  document.getElementById('upload-bar').style.width = '100%';
-  document.getElementById('upload-label').textContent = 'Upload complete ✓';
-  if (!res.ok) throw new Error('Upload failed: ' + await res.text());
-  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/player-images/${filename}`;
-  setTimeout(() => document.getElementById('upload-progress').style.display = 'none', 1200);
-  return publicUrl;
+
+  if (!res.ok) {
+    // Fallback: return base64 data URL
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  }
+  return `${SUPABASE_URL}/storage/v1/object/public/team-logos/${filename}`;
 }
 
 async function savePlayer() {
@@ -1268,9 +1344,19 @@ async function savePlayer() {
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     let photoUrl = document.getElementById('player-photo').value || null;
-    if (pendingPhotoFile) { photoUrl = await uploadPhoto(pendingPhotoFile, name); pendingPhotoFile = null; }
-    const data = { name, role: document.getElementById('player-role').value, nationality: document.getElementById('player-nation').value || null, played_for: document.getElementById('player-played-for').value || null, base_price: parseInt(document.getElementById('player-price').value), photo_url: photoUrl };
-    if (!data.base_price) return toast('Base price required', 'error');
+    if (pendingPhotoFile) {
+      photoUrl = await uploadPhoto(pendingPhotoFile, name);
+      pendingPhotoFile = null;
+    }
+    const data = {
+      name,
+      role: document.getElementById('player-role').value,
+      nationality: document.getElementById('player-nation').value || null,
+      played_for: document.getElementById('player-played-for').value || null,
+      base_price: parseInt(document.getElementById('player-price').value),
+      photo_url: photoUrl
+    };
+    if (!data.base_price) { toast('Base price required', 'error'); btn.disabled = false; btn.textContent = 'Save Player'; return; }
     if (id) { await sb('players?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(data) }); toast('Player updated ✓'); }
     else { await sb('players', { method: 'POST', body: JSON.stringify(data) }); toast('Player added ✓'); }
     closeModal('modal-player'); loadPlayers();
@@ -1299,7 +1385,6 @@ async function deletePlayer(id, status, soldToId, finalPrice) {
   } catch(e) { toast('Delete failed: ' + e.message, 'error'); }
 }
 
-// ─── EXPORT/IMPORT PLAYERS ─────────────────────────────────────
 function exportPlayers() {
   sb('players?select=name,role,nationality,base_price,status').then(players => {
     const csv = [['Name','Role','Nationality','Base Price','Status'], ...players.map(p => [p.name, p.role, p.nationality || '', p.base_price, p.status])];
@@ -1322,20 +1407,26 @@ async function loadTeams() {
   try {
     const teams = await sb('teams?select=*&order=created_at.asc');
     const tbody = document.getElementById('teams-body');
-    tbody.innerHTML = teams.map(t => `<tr>
-      <td><div class="player-cell">
-        <div class="avatar" style="background:${t.color};color:white;font-size:15px">${t.logo_url ? `<img src="${t.logo_url}" style="width:100%;height:100%;object-fit:cover">` : t.short_code}</div>
-        <div><strong>${t.name}</strong><div style="font-size:11px;color:var(--muted)">${t.short_code}</div></div>
-      </div></td>
-      <td><div>${t.leader_name || '—'}</div><div style="font-size:11px;color:var(--muted)">User: ${t.leader_username || '(not set)'}</div></td>
-      <td>${t.owner_name || '—'}</td>
-      <td>${fmt(t.purse_total)}</td>
-      <td style="color:${t.purse_remaining > 0 ? 'var(--green)' : 'var(--red)'};font-weight:700">${fmt(t.purse_remaining)}</td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="editTeam(${JSON.stringify(t).replace(/"/g,'&quot;')})">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteTeam('${t.id}')">Del</button>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No teams. Add some!</td></tr>';
+    tbody.innerHTML = teams.map(t => {
+      const logoUrl = t.logo_url || '';
+      const avatarContent = logoUrl
+        ? `<img src="${logoUrl}" alt="${t.short_code}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.textContent='${t.short_code}'">`
+        : t.short_code;
+      return `<tr>
+        <td><div class="player-cell">
+          <div class="avatar" style="background:${t.color};color:white;font-size:15px">${avatarContent}</div>
+          <div><strong>${t.name}</strong><div style="font-size:11px;color:var(--muted)">${t.short_code}</div></div>
+        </div></td>
+        <td><div>${t.leader_name || '—'}</div><div style="font-size:11px;color:var(--muted)">User: ${t.leader_username || '(not set)'}</div></td>
+        <td>${t.owner_name || '—'}</td>
+        <td>${fmt(t.purse_total)}</td>
+        <td style="color:${t.purse_remaining > 0 ? 'var(--green)' : 'var(--red)'};font-weight:700">${fmt(t.purse_remaining)}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="editTeam(${JSON.stringify(t).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTeam('${t.id}')">Del</button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No teams. Add some!</td></tr>';
   } catch(e) { console.warn(e); }
 }
 
@@ -1344,8 +1435,14 @@ function openAddTeam() {
   ['team-name','team-code','team-leader','team-leader-username','team-leader-pass','team-owner','team-logo'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('team-color').value = '#3b82f6';
   document.getElementById('team-purse').value = '100000000';
+  document.getElementById('team-logo-thumb').style.display = 'none';
+  document.getElementById('team-logo-placeholder').style.display = 'flex';
+  document.getElementById('team-logo-name').textContent = 'Or enter URL below';
+  document.getElementById('team-logo-data').value = '';
+  pendingTeamLogoFile = null;
   openModal('modal-team');
 }
+
 function editTeam(t) {
   document.getElementById('team-id').value = t.id;
   document.getElementById('team-name').value = t.name;
@@ -1357,19 +1454,52 @@ function editTeam(t) {
   document.getElementById('team-owner').value = t.owner_name || '';
   document.getElementById('team-purse').value = t.purse_total;
   document.getElementById('team-logo').value = t.logo_url || '';
+  document.getElementById('team-logo-data').value = '';
+  pendingTeamLogoFile = null;
+  // Show existing logo
+  const thumb = document.getElementById('team-logo-thumb');
+  const placeholder = document.getElementById('team-logo-placeholder');
+  if (t.logo_url) { thumb.src = t.logo_url; thumb.style.display = 'block'; placeholder.style.display = 'none'; document.getElementById('team-logo-name').textContent = 'Current logo loaded'; }
+  else { thumb.style.display = 'none'; placeholder.style.display = 'flex'; document.getElementById('team-logo-name').textContent = 'Or enter URL below'; }
   openModal('modal-team');
 }
+
 async function saveTeam() {
   const id = document.getElementById('team-id').value;
   const purse = parseInt(document.getElementById('team-purse').value) || 100000000;
-  const data = { name: document.getElementById('team-name').value, short_code: document.getElementById('team-code').value.toUpperCase(), color: document.getElementById('team-color').value, leader_name: document.getElementById('team-leader').value || null, leader_username: document.getElementById('team-leader-username').value || null, owner_name: document.getElementById('team-owner').value || null, purse_total: purse, logo_url: document.getElementById('team-logo').value || null };
-  const pass = document.getElementById('team-leader-pass').value;
-  if (pass) data.leader_password = pass;
-  if (!data.name || !data.short_code) return toast('Name and short code required', 'error');
-  if (id) { await sb('teams?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(data) }); toast('Team updated'); }
-  else { data.purse_remaining = purse; await sb('teams', { method: 'POST', body: JSON.stringify(data) }); toast('Team added ✓'); }
-  closeModal('modal-team'); loadTeams();
+  const btn = document.getElementById('save-team-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try {
+    let logoUrl = document.getElementById('team-logo').value || document.getElementById('team-logo-data').value || null;
+
+    // If a file was selected, try to upload it
+    if (pendingTeamLogoFile) {
+      const teamName = document.getElementById('team-name').value || 'team';
+      logoUrl = await uploadTeamLogo(pendingTeamLogoFile, teamName);
+      pendingTeamLogoFile = null;
+    }
+
+    const data = {
+      name: document.getElementById('team-name').value,
+      short_code: document.getElementById('team-code').value.toUpperCase(),
+      color: document.getElementById('team-color').value,
+      leader_name: document.getElementById('team-leader').value || null,
+      leader_username: document.getElementById('team-leader-username').value || null,
+      owner_name: document.getElementById('team-owner').value || null,
+      purse_total: purse,
+      logo_url: logoUrl
+    };
+    const pass = document.getElementById('team-leader-pass').value;
+    if (pass) data.leader_password = pass;
+    if (!data.name || !data.short_code) { toast('Name and short code required', 'error'); btn.disabled = false; btn.textContent = 'Save Team'; return; }
+    if (id) { await sb('teams?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(data) }); toast('Team updated ✓'); }
+    else { data.purse_remaining = purse; await sb('teams', { method: 'POST', body: JSON.stringify(data) }); toast('Team added ✓'); }
+    closeModal('modal-team'); loadTeams();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Save Team'; }
 }
+
 async function deleteTeam(id) {
   if (!confirm('Delete this team? This will NOT automatically refund sold players.')) return;
   await fetch(SUPABASE_URL + '/rest/v1/teams?id=eq.' + id, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' } });
@@ -1394,6 +1524,7 @@ async function loadResults() {
     }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No sold players yet</td></tr>';
   } catch(e) { console.warn(e); }
 }
+
 function exportResults() {
   sb('players?select=name,role,base_price,final_price,sold_to(name)&status=eq.sold').then(players => {
     const csv = [['Player','Role','Base Price','Final Price','Sold To'], ...players.map(p => [p.name, p.role, p.base_price, p.final_price, p.sold_to?.name || ''])];
@@ -1421,14 +1552,11 @@ function subscribeRealtime() {
 (function init() {
   applyBranding();
   const session = getSession();
-  if (session && session.status === 'approved') {
-    enterApp(session);
-  } else if (session && session.status === 'pending') {
-    showPendingScreen(session.username);
-  } else {
-    showScreen('auth');
-  }
+  if (session && session.status === 'approved') { enterApp(session); }
+  else if (session && session.status === 'pending') { showPendingScreen(session.username); }
+  else { showScreen('auth'); }
 })();
 </script>
 </body>
 </html>
+
