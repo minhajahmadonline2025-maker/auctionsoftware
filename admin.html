@@ -169,14 +169,6 @@ select.form-input option { background: var(--surface2); }
 </head>
 <body>
 
-<!-- ============================================================ -->
-<!-- SCREEN 1: LOGIN / REGISTER                                    -->
-<!-- ============================================================ -->
-
-
-<!-- ============================================================ -->
-<!-- SCREEN: MASTER ADMIN LOGIN                                    -->
-<!-- ============================================================ -->
 <div id="screen-auth" class="auth-screen active">
   <div class="auth-logo">🛡️</div>
   <div class="auth-league-name">MASTER ADMIN</div>
@@ -185,7 +177,7 @@ select.form-input option { background: var(--surface2); }
     <div class="sub">Full control panel — Pro Auction</div>
     <div class="form-group">
       <label class="form-label">Master Username</label>
-      <input class="form-input" id="login-username" placeholder="masteradmin" onkeydown="if(event.key==='Enter')doLogin()">
+      <input class="form-input" id="login-username" placeholder="minhajahmad0103@gmail.com" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div class="form-group">
       <label class="form-label">Master Password</label>
@@ -196,9 +188,6 @@ select.form-input option { background: var(--surface2); }
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- SCREEN 3: ADMIN APP (approved users only)                    -->
-<!-- ============================================================ -->
 <div id="screen-app" style="display:none">
 <div class="layout">
   <aside class="sidebar">
@@ -215,7 +204,6 @@ select.form-input option { background: var(--surface2); }
     <div class="nav-item" onclick="showPage('teams',this)"><span class="nav-icon">🏟️</span> Teams</div>
     <div class="nav-item" onclick="showPage('results',this)"><span class="nav-icon">📋</span> Results</div>
 
-    <!-- Super admin only -->
     <div id="nav-users" class="nav-item" onclick="showPage('users',this)">
       <span class="nav-icon">👥</span> Users <span id="pending-notif-dot" class="notif-dot" style="display:none"></span>
     </div>
@@ -230,7 +218,6 @@ select.form-input option { background: var(--surface2); }
 
   <main class="main">
 
-    <!-- DASHBOARD -->
     <div id="page-dashboard" class="page active">
       <div class="page-header">
         <div><div class="page-title">Dashboard</div><div class="page-sub">Auction overview at a glance</div></div>
@@ -250,7 +237,6 @@ select.form-input option { background: var(--surface2); }
       </div>
     </div>
 
-    <!-- LIVE AUCTION -->
     <div id="page-auction" class="page">
       <div class="page-header">
         <div><div class="page-title">Live Auction Control</div><div class="page-sub">Start, stop, and manage the live auction</div></div>
@@ -280,7 +266,6 @@ select.form-input option { background: var(--surface2); }
       </div>
     </div>
 
-    <!-- PLAYERS -->
     <div id="page-players" class="page">
       <div class="page-header">
         <div><div class="page-title">Players</div><div class="page-sub">Manage all players in the auction pool</div></div>
@@ -298,7 +283,6 @@ select.form-input option { background: var(--surface2); }
       </div>
     </div>
 
-    <!-- TEAMS -->
     <div id="page-teams" class="page">
       <div class="page-header">
         <div><div class="page-title">Teams & Franchises</div><div class="page-sub">Add teams, assign leaders and owners</div></div>
@@ -311,7 +295,6 @@ select.form-input option { background: var(--surface2); }
       </div>
     </div>
 
-    <!-- RESULTS -->
     <div id="page-results" class="page">
       <div class="page-header">
         <div><div class="page-title">Auction Results</div><div class="page-sub">All sold players with final prices</div></div>
@@ -324,7 +307,6 @@ select.form-input option { background: var(--surface2); }
       </div>
     </div>
 
-    <!-- USERS (Super Admin only) -->
     <div id="page-users" class="page">
       <div class="page-header">
         <div><div class="page-title">User Management</div><div class="page-sub">Approve, suspend, and manage subscriber accounts</div></div>
@@ -342,7 +324,6 @@ select.form-input option { background: var(--surface2); }
       </div>
     </div>
 
-    <!-- STORAGE -->
     <div id="page-storage" class="page">
       <div class="page-header">
         <div><div class="page-title">Storage Usage</div><div class="page-sub">Estimated usage from Supabase Storage buckets &amp; database row counts</div></div>
@@ -365,7 +346,6 @@ select.form-input option { background: var(--surface2); }
       </div>
     </div>
 
-    <!-- SETTINGS -->
     <div id="page-settings" class="page">
       <div class="page-header">
         <div><div class="page-title">Settings</div><div class="page-sub">Configure league branding and credentials</div></div>
@@ -402,7 +382,6 @@ select.form-input option { background: var(--surface2); }
         <button class="btn btn-primary" onclick="saveAdminCreds()">Update Credentials</button>
       </div>
 
-      <!-- Super admin WhatsApp config -->
       <div class="settings-section" id="settings-superadmin-section" style="display:none">
         <h3>💬 WhatsApp Contact (Shown to pending users)</h3>
         <div class="info-box">This number appears on the "pending approval" page so users can reach you to pay and get activated.</div>
@@ -422,10 +401,7 @@ select.form-input option { background: var(--surface2); }
 
   </main>
 </div>
-</div><!-- end screen-app -->
-
-<!-- ADD TEAM MODAL -->
-<div class="modal-overlay" id="modal-team">
+</div><div class="modal-overlay" id="modal-team">
   <div class="modal">
     <h3>🏟️ Add / Edit Team</h3>
     <input type="hidden" id="team-id">
@@ -449,7 +425,6 @@ select.form-input option { background: var(--surface2); }
   </div>
 </div>
 
-<!-- ADD PLAYER MODAL -->
 <div class="modal-overlay" id="modal-player">
   <div class="modal">
     <h3>⚽ Add / Edit Player</h3>
@@ -494,7 +469,6 @@ select.form-input option { background: var(--surface2); }
   </div>
 </div>
 
-<!-- ADD USER MODAL (Super Admin) -->
 <div class="modal-overlay" id="modal-add-user">
   <div class="modal">
     <h3>👤 Add New User Account</h3>
@@ -525,7 +499,6 @@ select.form-input option { background: var(--surface2); }
   </div>
 </div>
 
-<!-- APPROVE USER MODAL -->
 <div class="modal-overlay" id="modal-approve-user">
   <div class="modal">
     <h3>✅ Approve Account</h3>
@@ -546,7 +519,6 @@ select.form-input option { background: var(--surface2); }
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
@@ -584,69 +556,12 @@ function saveSettings(obj) {
   localStorage.setItem('auctionSettings', JSON.stringify({ ...cur, ...obj }));
 }
 
-// ─── AUTH TAB SWITCH ───────────────────────────────────────────
-function switchAuthTab(tab) {
-  document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
-  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
-}
-
 // ─── SCREEN CONTROL ────────────────────────────────────────────
 function showScreen(name) {
   document.getElementById('screen-auth').classList.remove('active');
-  document.getElementById('screen-pending').classList.remove('active');
   document.getElementById('screen-app').style.display = 'none';
   if (name === 'auth') document.getElementById('screen-auth').classList.add('active');
-  else if (name === 'pending') document.getElementById('screen-pending').classList.add('active');
   else if (name === 'app') document.getElementById('screen-app').style.display = 'block';
-}
-
-// ─── REGISTRATION ──────────────────────────────────────────────
-async function doRegister() {
-  const name = document.getElementById('reg-name').value.trim();
-  const username = document.getElementById('reg-username').value.trim().toLowerCase();
-  const phone = document.getElementById('reg-phone').value.trim();
-  const pass = document.getElementById('reg-password').value;
-  const confirm = document.getElementById('reg-confirm').value;
-  const event = document.getElementById('reg-event').value.trim();
-
-  if (!username || !pass) return toast('Username and password are required', 'error');
-  if (pass.length < 6) return toast('Password must be at least 6 characters', 'error');
-  if (pass !== confirm) return toast('Passwords do not match', 'error');
-
-  try {
-    // Check username uniqueness
-    const existing = await sb('auction_users?username=eq.' + username + '&select=id');
-    if (existing && existing.length > 0) return toast('Username already taken. Choose another.', 'error');
-
-    const userData = {
-      username,
-      full_name: name || username,
-      phone: phone || null,
-      event_name: event || null,
-      password_hash: btoa(pass), // simple encoding — replace with real hash in production
-      status: 'pending',
-      created_at: new Date().toISOString()
-    };
-
-    const result = await sb('auction_users', { method: 'POST', body: JSON.stringify(userData) });
-    toast('Account created! Please contact admin for approval.', 'success');
-
-    // Store session as pending
-    setSession({ username, status: 'pending', full_name: name || username });
-    setTimeout(() => showPendingScreen(username), 800);
-  } catch(e) {
-    // If table doesn't exist yet, fall back to localStorage-only
-    console.warn('Supabase users table not found, using local storage fallback:', e.message);
-    const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
-    if (users.find(u => u.username === username)) return toast('Username already taken.', 'error');
-    users.push({ username, full_name: name || username, phone, event_name: event, password: pass, status: 'pending', created_at: new Date().toISOString() });
-    localStorage.setItem('localUsers', JSON.stringify(users));
-    setSession({ username, status: 'pending', full_name: name || username });
-    toast('Account created! Contact admin for approval.', 'success');
-    setTimeout(() => showPendingScreen(username), 800);
-  }
 }
 
 // ─── LOGIN ─────────────────────────────────────────────────────
@@ -656,9 +571,10 @@ async function doLogin() {
   const p = document.getElementById('login-password').value;
   if (!u || !p) return toast('Enter username and password', 'error');
 
-  // Check super admin first (stored in settings)
-  const superAdminUser = s.adminUser || 'admin';
-  const superAdminPass = s.adminPass || 'admin123';
+  // ഇവിടെയാണ് നിങ്ങൾക്ക് ആവശ്യമുള്ള മാറ്റങ്ങൾ വരുത്തിയിട്ടുള്ളത്
+  const superAdminUser = s.adminUser || 'minhajahmad0103@gmail.com';
+  const superAdminPass = s.adminPass || 'Minnu@786';
+  
   if (u === superAdminUser && p === superAdminPass) {
     setSession({ username: u, status: 'approved', role: 'superadmin', full_name: 'Super Admin' });
     enterApp({ username: u, status: 'approved', role: 'superadmin', full_name: 'Super Admin' });
@@ -670,21 +586,15 @@ async function doLogin() {
     const users = await sb('auction_users?username=eq.' + u + '&select=*');
     if (users && users.length > 0) {
       const user = users[0];
-      // Simple password check (btoa encoded)
       if (user.password_hash !== btoa(p)) return toast('Wrong password', 'error');
       if (user.status === 'pending') {
         setSession({ username: u, status: 'pending', full_name: user.full_name });
-        showPendingScreen(u);
-        return;
+        return toast('Account pending approval', 'error');
       }
       if (user.status === 'suspended') return toast('Account suspended. Contact admin.', 'error');
       if (user.status === 'rejected') return toast('Account rejected. Contact admin.', 'error');
-      // Check expiry
       if (user.expiry_date && new Date(user.expiry_date) < new Date()) {
-        toast('Subscription expired. Contact admin to renew.', 'error');
-        setSession({ username: u, status: 'pending', full_name: user.full_name });
-        showPendingScreen(u);
-        return;
+        return toast('Subscription expired. Contact admin to renew.', 'error');
       }
       setSession({ username: u, status: 'approved', role: 'user', full_name: user.full_name, id: user.id });
       enterApp({ username: u, status: 'approved', role: 'user', full_name: user.full_name });
@@ -692,31 +602,7 @@ async function doLogin() {
     }
   } catch(e) { console.warn('Supabase check failed:', e.message); }
 
-  // Fallback: local storage users
-  const localUsers = JSON.parse(localStorage.getItem('localUsers') || '[]');
-  const localUser = localUsers.find(lu => lu.username === u && lu.password === p);
-  if (localUser) {
-    if (localUser.status === 'pending') {
-      setSession({ username: u, status: 'pending', full_name: localUser.full_name });
-      showPendingScreen(u);
-      return;
-    }
-    if (localUser.status === 'suspended') return toast('Account suspended. Contact admin.', 'error');
-    setSession({ username: u, status: 'approved', role: 'user', full_name: localUser.full_name });
-    enterApp({ username: u, status: 'approved', role: 'user', full_name: localUser.full_name });
-    return;
-  }
-
   toast('Invalid username or password', 'error');
-}
-
-function showPendingScreen(username) {
-  document.getElementById('pending-username-display').textContent = username;
-  const s = getSettings();
-  const waNum = s.whatsappNumber || '919876543210';
-  const waMsg = encodeURIComponent((s.whatsappMessage || 'Hi, I registered on Pro Auction as ' + username + '. Please activate my account.'));
-  document.getElementById('whatsapp-link').href = 'https://wa.me/' + waNum + '?text=' + waMsg;
-  showScreen('pending');
 }
 
 function enterApp(session) {
@@ -725,7 +611,6 @@ function enterApp(session) {
   const isSuperAdmin = session.role === 'superadmin';
   document.getElementById('sidebar-username-display').textContent = session.full_name || session.username;
   document.getElementById('sidebar-role-label').textContent = isSuperAdmin ? '👑 Super Admin' : '✓ Subscription Active';
-  // Show Users menu only for super admin
   document.getElementById('nav-users').style.display = isSuperAdmin ? 'flex' : 'none';
   document.getElementById('settings-superadmin-section').style.display = isSuperAdmin ? 'block' : 'none';
   loadDashboard();
@@ -748,12 +633,10 @@ function applyBranding() {
   document.getElementById('sidebar-league-name').textContent = '⚡ ' + name;
   const slogoImg = document.getElementById('sidebar-logo-img');
   if (logo) { slogoImg.src = logo; slogoImg.style.display = 'block'; } else { slogoImg.style.display = 'none'; }
-  document.getElementById('login-league-display').textContent = name;
-  if (logo) { document.getElementById('login-logo-display').innerHTML = `<img src="${logo}" style="width:64px;height:64px;object-fit:contain;border-radius:10px">`; }
   if (document.getElementById('set-league-name')) {
     document.getElementById('set-league-name').value = s.leagueName || '';
     document.getElementById('set-league-logo').value = s.leagueLogo || '';
-    document.getElementById('set-admin-user').value = s.adminUser || 'admin';
+    document.getElementById('set-admin-user').value = s.adminUser || 'minhajahmad0103@gmail.com';
     document.getElementById('set-whatsapp').value = s.whatsappNumber || '';
     document.getElementById('set-whatsapp-msg').value = s.whatsappMessage || '';
   }
@@ -824,32 +707,17 @@ async function checkPendingUsers() {
   try {
     const users = await sb('auction_users?status=eq.pending&select=id');
     const count = users ? users.length : 0;
-    // Also check local
-    const local = JSON.parse(localStorage.getItem('localUsers') || '[]').filter(u => u.status === 'pending');
-    const total = count + local.length;
     const dot = document.getElementById('pending-notif-dot');
-    dot.style.display = total > 0 ? 'inline-block' : 'none';
-  } catch(e) {
-    const local = JSON.parse(localStorage.getItem('localUsers') || '[]').filter(u => u.status === 'pending');
-    document.getElementById('pending-notif-dot').style.display = local.length > 0 ? 'inline-block' : 'none';
-  }
+    dot.style.display = count > 0 ? 'inline-block' : 'none';
+  } catch(e) {}
 }
 
 async function loadUsers() {
   const tbody = document.getElementById('users-body');
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading...</td></tr>';
-
   let supabaseUsers = [];
-  try {
-    supabaseUsers = await sb('auction_users?select=*&order=created_at.desc') || [];
-  } catch(e) { console.warn('Users table not found in Supabase, using localStorage'); }
-
-  const localUsers = JSON.parse(localStorage.getItem('localUsers') || '[]');
-  // Merge: avoid duplicates by username
-  const sbUsernames = supabaseUsers.map(u => u.username);
-  const mergedLocalOnly = localUsers.filter(u => !sbUsernames.includes(u.username));
-  allUsers = [...supabaseUsers, ...mergedLocalOnly.map(u => ({ ...u, _local: true }))];
-
+  try { supabaseUsers = await sb('auction_users?select=*&order=created_at.desc') || []; } catch(e) { }
+  allUsers = [...supabaseUsers];
   const pending = allUsers.filter(u => u.status === 'pending');
   const countBox = document.getElementById('pending-count-box');
   if (pending.length > 0) {
@@ -858,7 +726,6 @@ async function loadUsers() {
   } else {
     countBox.style.display = 'none';
   }
-
   renderUsers(allUsers);
   document.getElementById('pending-notif-dot').style.display = pending.length > 0 ? 'inline-block' : 'none';
 }
@@ -883,10 +750,10 @@ function renderUsers(users) {
       <td style="font-size:12px;color:${u.expiry_date && new Date(u.expiry_date) < new Date() ? 'var(--red)' : 'var(--muted)'}">${fmtDateShort(u.expiry_date)}</td>
       <td>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
-          ${isPending ? `<button class="btn btn-success btn-sm" onclick="openApproveModal('${u._local ? 'local:' : ''}${u.id || u.username}', ${JSON.stringify(u).replace(/"/g,'&quot;')})">✓ Approve</button>` : ''}
-          ${u.status === 'approved' ? `<button class="btn btn-amber btn-sm" onclick="suspendUser('${u._local ? 'local:' : ''}${u.id || u.username}')">Suspend</button>` : ''}
-          ${u.status === 'suspended' ? `<button class="btn btn-success btn-sm" onclick="unsuspendUser('${u._local ? 'local:' : ''}${u.id || u.username}')">Reactivate</button>` : ''}
-          <button class="btn btn-danger btn-sm" onclick="deleteUser('${u._local ? 'local:' : ''}${u.id || u.username}')">Del</button>
+          ${isPending ? `<button class="btn btn-success btn-sm" onclick="openApproveModal('${u.id}', ${JSON.stringify(u).replace(/"/g,'&quot;')})">✓ Approve</button>` : ''}
+          ${u.status === 'approved' ? `<button class="btn btn-amber btn-sm" onclick="suspendUser('${u.id}')">Suspend</button>` : ''}
+          ${u.status === 'suspended' ? `<button class="btn btn-success btn-sm" onclick="unsuspendUser('${u.id}')">Reactivate</button>` : ''}
+          <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">Del</button>
         </div>
       </td>
     </tr>`;
@@ -909,7 +776,6 @@ function openApproveModal(id, user) {
     📱 ${user.phone || 'No phone'} &nbsp;|&nbsp; Event: ${user.event_name || 'Not set'}<br>
     Registered: ${fmtDateShort(user.created_at)}
   `;
-  // Default expiry: 30 days from now
   const d = new Date(); d.setDate(d.getDate() + 30);
   document.getElementById('approve-expiry').value = d.toISOString().split('T')[0];
   document.getElementById('approve-plan').value = '';
@@ -931,63 +797,35 @@ async function confirmApprove() {
     approved_at: new Date().toISOString()
   };
 
-  if (id.startsWith('local:')) {
-    const localKey = id.replace('local:', '');
-    const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
-    const idx = users.findIndex(u => u.username === localKey);
-    if (idx >= 0) { users[idx] = { ...users[idx], ...updateData }; localStorage.setItem('localUsers', JSON.stringify(users)); }
-    toast('Account approved ✓ (local)');
-  } else {
-    try {
-      await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(updateData) });
-      toast('Account approved ✓');
-    } catch(e) { toast('Error: ' + e.message, 'error'); return; }
-  }
+  try {
+    await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(updateData) });
+    toast('Account approved ✓');
+  } catch(e) { toast('Error: ' + e.message, 'error'); return; }
+  
   closeModal('modal-approve-user');
   loadUsers();
 }
 
 async function suspendUser(id) {
   if (!confirm('Suspend this user? They will lose access immediately.')) return;
-  if (id.startsWith('local:')) {
-    const key = id.replace('local:', '');
-    const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
-    const idx = users.findIndex(u => u.username === key);
-    if (idx >= 0) { users[idx].status = 'suspended'; localStorage.setItem('localUsers', JSON.stringify(users)); }
-  } else {
-    try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'suspended' }) }); } catch(e) {}
-  }
+  try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'suspended' }) }); } catch(e) {}
   toast('User suspended');
   loadUsers();
 }
 
 async function unsuspendUser(id) {
-  if (id.startsWith('local:')) {
-    const key = id.replace('local:', '');
-    const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
-    const idx = users.findIndex(u => u.username === key);
-    if (idx >= 0) { users[idx].status = 'approved'; localStorage.setItem('localUsers', JSON.stringify(users)); }
-  } else {
-    try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) }); } catch(e) {}
-  }
+  try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'approved' }) }); } catch(e) {}
   toast('User reactivated ✓');
   loadUsers();
 }
 
 async function deleteUser(id) {
   if (!confirm('Permanently delete this user account?')) return;
-  if (id.startsWith('local:')) {
-    const key = id.replace('local:', '');
-    let users = JSON.parse(localStorage.getItem('localUsers') || '[]');
-    users = users.filter(u => u.username !== key);
-    localStorage.setItem('localUsers', JSON.stringify(users));
-  } else {
-    try {
-      await fetch(SUPABASE_URL + '/rest/v1/auction_users?id=eq.' + id, {
-        method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' }
-      });
-    } catch(e) {}
-  }
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/auction_users?id=eq.' + id, {
+      method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' }
+    });
+  } catch(e) {}
   toast('User deleted');
   loadUsers();
 }
@@ -1022,10 +860,7 @@ async function saveNewUser() {
     await sb('auction_users', { method: 'POST', body: JSON.stringify(data) });
     toast('User created ✓');
   } catch(e) {
-    const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
-    users.push({ ...data, password: pass });
-    localStorage.setItem('localUsers', JSON.stringify(users));
-    toast('User created ✓ (local)');
+    toast('User creation failed', 'error');
   }
   closeModal('modal-add-user');
   loadUsers();
@@ -1365,8 +1200,6 @@ function subscribeRealtime() {
   const session = getSession();
   if (session && session.status === 'approved') {
     enterApp(session);
-  } else if (session && session.status === 'pending') {
-    showPendingScreen(session.username);
   } else {
     showScreen('auth');
   }
