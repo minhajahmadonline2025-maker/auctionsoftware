@@ -32,12 +32,10 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
 
-/* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
-/* ── AUTH ── */
 .auth-screen{display:none;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;background:radial-gradient(ellipse at 50% 0%,rgba(79,142,247,0.08) 0%,transparent 70%)}
 .auth-screen.active{display:flex}
 .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:40px;width:400px;box-shadow:0 24px 60px rgba(0,0,0,0.5)}
@@ -49,7 +47,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .auth-tab{flex:1;padding:9px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--muted);border:none;border-radius:7px;transition:.15s;font-family:var(--font)}
 .auth-tab.active{background:var(--accent);color:white;box-shadow:0 2px 8px rgba(79,142,247,.4)}
 
-/* ── PENDING SCREEN ── */
 .pending-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:40px;width:460px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)}
 .pending-icon{font-size:56px;margin-bottom:16px}
 .pending-title{font-size:22px;font-weight:800;color:var(--amber);margin-bottom:10px}
@@ -61,7 +58,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .info-steps ol{padding-left:18px}
 .info-steps li{font-size:13px;color:var(--text2);margin-bottom:7px;line-height:1.5}
 
-/* ── APP LAYOUT ── */
 .layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
 .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sidebar-header{padding:22px 20px;border-bottom:1px solid var(--border)}
@@ -83,7 +79,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .sidebar-user-name{font-size:13px;font-weight:600;color:var(--text)}
 .sidebar-user-role{font-size:11px;color:var(--muted)}
 
-/* ── MAIN CONTENT ── */
 .main{padding:28px;overflow-y:auto}
 .page{display:none;animation:fadeIn .2s}
 .page.active{display:block}
@@ -94,7 +89,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .page-sub{font-size:13px;color:var(--muted);margin-top:3px}
 .header-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
 
-/* ── STATS ── */
 .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:26px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
@@ -110,7 +104,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .stat-val.amber{color:var(--amber)}
 .stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
 
-/* ── TABLES ── */
 .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px}
 .table-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);gap:12px}
 .table-head-title{font-size:13px;font-weight:700}
@@ -121,7 +114,6 @@ tr:hover td{background:rgba(255,255,255,.015)}
 .empty-state{text-align:center;color:var(--muted);padding:40px 24px;font-size:13px}
 .empty-state-icon{font-size:36px;display:block;margin-bottom:10px;opacity:.4}
 
-/* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase}
 .badge-live{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.25)}
 .badge-sold{background:rgba(79,142,247,.15);color:var(--accent);border:1px solid rgba(79,142,247,.25)}
@@ -132,7 +124,6 @@ tr:hover td{background:rgba(255,255,255,.015)}
 .badge-rejected{background:rgba(244,63,94,.15);color:var(--red)}
 .badge-suspended{background:rgba(244,63,94,.1);color:var(--red)}
 
-/* ── BUTTONS ── */
 .btn{padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;font-family:var(--font);white-space:nowrap}
 .btn:active{transform:scale(.98)}
 .btn-primary{background:var(--accent);color:white}
@@ -152,7 +143,6 @@ tr:hover td{background:rgba(255,255,255,.015)}
 .btn-xs{padding:3px 8px;font-size:11px;border-radius:6px}
 .btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
 
-/* ── AUCTION CONTROL STRIP ── */
 .auction-strip{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 .live-indicator{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)}
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
@@ -167,7 +157,6 @@ tr:hover td{background:rgba(255,255,255,.015)}
 .current-bid-val{font-size:26px;font-weight:900;color:var(--green);font-family:var(--mono)}
 .auction-btns{display:flex;gap:8px;flex-wrap:wrap}
 
-/* ── COUNTDOWN DISPLAY ── */
 .countdown-display{background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:16px 24px;text-align:center;min-width:120px}
 .countdown-display.ticking{border-color:var(--green)}
 .countdown-display.warning{border-color:var(--amber)}
@@ -176,7 +165,6 @@ tr:hover td{background:rgba(255,255,255,.015)}
 .countdown-num{font-size:36px;font-weight:900;font-family:var(--mono);color:var(--text);line-height:1}
 .countdown-label{font-size:10px;color:var(--muted);margin-top:4px;font-weight:700;text-transform:uppercase}
 
-/* ── QUEUE ROWS ── */
 .lot-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);font-size:11px;font-weight:800;color:var(--muted);flex-shrink:0}
 .lot-num.live-num{background:rgba(34,197,94,.15);border-color:var(--green);color:var(--green)}
 .lot-num.pending-num{background:rgba(245,158,11,.1);border-color:var(--amber);color:var(--amber)}
@@ -186,14 +174,12 @@ tr.row-unsold td{background:rgba(244,63,94,.03);opacity:.75}
 tr.row-sold td{opacity:.6}
 tr.drag-over td{background:rgba(79,142,247,.08)!important;outline:1px dashed var(--accent)}
 
-/* ── PLAYER CELL ── */
 .player-cell{display:flex;align-items:center;gap:10px}
 .avatar{width:36px;height:36px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--muted);flex-shrink:0;overflow:hidden}
 .avatar.circle{border-radius:50%}
 .avatar img{width:100%;height:100%;object-fit:cover}
 .team-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
 
-/* ── FORMS ── */
 .form-group{margin-bottom:16px}
 .form-label{font-size:11px;color:var(--text2);font-weight:700;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.3px}
 .form-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 12px;font-size:13px;outline:none;font-family:var(--font);transition:.15s}
@@ -202,7 +188,6 @@ tr.drag-over td{background:rgba(79,142,247,.08)!important;outline:1px dashed var
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 select.form-input option{background:var(--surface2)}
 
-/* ── MODALS ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:500px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.6)}
@@ -211,7 +196,6 @@ select.form-input option{background:var(--surface2)}
 .modal-close{position:absolute;top:16px;right:16px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .modal-close:hover{color:var(--text)}
 
-/* ── IMAGE CROPPER ── */
 .cropper-modal{z-index:300}
 .cropper-modal .modal{width:600px}
 .cropper-wrap{position:relative;width:100%;height:380px;background:#000;border-radius:10px;overflow:hidden;cursor:move}
@@ -230,7 +214,6 @@ select.form-input option{background:var(--surface2)}
 .crop-zoom-label{font-size:12px;color:var(--muted);white-space:nowrap}
 .crop-zoom-slider{flex:1;accent-color:var(--accent)}
 
-/* ── SETTINGS ── */
 .settings-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:18px}
 .settings-section h3{font-size:14px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
 .info-box{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--accent);margin-bottom:16px;line-height:1.6}
@@ -241,7 +224,6 @@ select.form-input option{background:var(--surface2)}
 .timer-opt:hover{border-color:var(--accent);color:var(--accent)}
 .timer-opt.selected{border-color:var(--accent);background:rgba(79,142,247,.15);color:var(--accent)}
 
-/* ── ACTIVITY LOG ── */
 .log-item{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;align-items:flex-start}
 .log-item:last-child{border-bottom:none}
 .log-time{color:var(--muted);white-space:nowrap;font-family:var(--mono);font-size:11px;min-width:60px}
@@ -250,7 +232,6 @@ select.form-input option{background:var(--surface2)}
 .log-text strong{color:var(--text)}
 .log-amount{color:var(--green);font-weight:700;font-family:var(--mono)}
 
-/* ── PHOTO UPLOAD ── */
 .photo-upload-wrap{border:2px dashed var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:14px}
 .photo-upload-wrap:hover{border-color:var(--accent);background:rgba(79,142,247,.04)}
 .photo-preview{display:flex;flex-direction:column;align-items:center;justify-content:center;width:80px;height:107px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);flex-shrink:0;overflow:hidden}
@@ -263,7 +244,6 @@ select.form-input option{background:var(--surface2)}
 .upload-bar-track{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
 .upload-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
 
-/* ── TOAST ── */
 .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:toastIn .2s;max-width:340px;pointer-events:auto}
 .toast.success{border-left:3px solid var(--green)}
@@ -271,17 +251,13 @@ select.form-input option{background:var(--surface2)}
 .toast.info{border-left:3px solid var(--accent)}
 @keyframes toastIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
 
-/* ── SKELETON LOADERS ── */
 .skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px;height:14px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* ── USER ROW STATES ── */
 .user-row-pending td{background:rgba(245,158,11,.03)}
 
-/* ── LINK URL DISPLAY ── */
 .url-display{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--accent);display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
 
-/* ── RESPONSIVE ── */
 @media(max-width:768px){
   .layout{grid-template-columns:1fr}
   .sidebar{height:auto;position:relative}
@@ -304,7 +280,6 @@ select.form-input option{background:var(--surface2)}
       <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
       <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
     </div>
-    <!-- LOGIN -->
     <div id="form-login">
       <div class="form-group">
         <label class="form-label">Username</label>
@@ -316,7 +291,6 @@ select.form-input option{background:var(--surface2)}
       </div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:14px" onclick="doLogin()">Sign In →</button>
     </div>
-    <!-- REGISTER -->
     <div id="form-register" style="display:none">
       <div class="form-group">
         <label class="form-label">Full Name</label>
@@ -376,7 +350,6 @@ select.form-input option{background:var(--surface2)}
 <div id="screen-app" style="display:none">
 <div class="layout">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -419,7 +392,6 @@ select.form-input option{background:var(--surface2)}
 
   <main class="main">
 
-    <!-- DASHBOARD -->
     <div id="page-dashboard" class="page active">
       <div class="page-header">
         <div><div class="page-title">Dashboard</div><div class="page-sub">Auction overview at a glance</div></div>
@@ -439,7 +411,6 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- LIVE AUCTION -->
     <div id="page-auction" class="page">
       <div class="page-header">
         <div><div class="page-title">Live Auction Control</div><div class="page-sub">Manage bidding flow, countdown, and player queue</div></div>
@@ -449,7 +420,6 @@ select.form-input option{background:var(--surface2)}
         </div>
       </div>
 
-      <!-- CONTROL STRIP -->
       <div class="auction-strip">
         <div class="live-indicator">
           <div class="live-dot" id="live-dot"></div>
@@ -478,7 +448,6 @@ select.form-input option{background:var(--surface2)}
         </div>
       </div>
 
-      <!-- QUEUE -->
       <div class="table-wrap">
         <div class="table-head">
           <div class="table-head-title">Player Queue <span style="font-size:11px;color:var(--muted);font-weight:400">— drag to reorder</span></div>
@@ -490,7 +459,6 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- ACTIVITY LOG -->
     <div id="page-log" class="page">
       <div class="page-header">
         <div><div class="page-title">Activity Log</div><div class="page-sub">Full audit trail of auction events</div></div>
@@ -501,7 +469,6 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- PLAYERS -->
     <div id="page-players" class="page">
       <div class="page-header">
         <div><div class="page-title">Players</div><div class="page-sub">Manage all players in the auction pool</div></div>
@@ -523,7 +490,6 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- TEAMS -->
     <div id="page-teams" class="page">
       <div class="page-header">
         <div><div class="page-title">Teams &amp; Franchises</div><div class="page-sub">Add teams, assign leaders and owners</div></div>
@@ -536,7 +502,6 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- RESULTS -->
     <div id="page-results" class="page">
       <div class="page-header">
         <div><div class="page-title">Auction Results</div><div class="page-sub">All sold players with final prices</div></div>
@@ -549,7 +514,6 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- USERS -->
     <div id="page-users" class="page">
       <div class="page-header">
         <div><div class="page-title">User Management</div><div class="page-sub">Approve, suspend, and manage subscriber accounts</div></div>
@@ -567,13 +531,11 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- SETTINGS -->
     <div id="page-settings" class="page">
       <div class="page-header">
         <div><div class="page-title">Settings</div><div class="page-sub">Configure your auction platform</div></div>
       </div>
 
-      <!-- Branding -->
       <div class="settings-section">
         <h3>🏆 League Branding</h3>
         <div class="info-box">Updates the league name and logo across all pages and the live display screen.</div>
@@ -584,7 +546,6 @@ select.form-input option{background:var(--surface2)}
         <button class="btn btn-primary" onclick="saveLeagueSettings()">Save Branding</button>
       </div>
 
-      <!-- Auction Timer -->
       <div class="settings-section">
         <h3>⏱ Auction Timer Settings</h3>
         <div class="info-box">This countdown duration is used for each player. Timer resets automatically when a new bid arrives.</div>
@@ -605,7 +566,6 @@ select.form-input option{background:var(--surface2)}
         <button class="btn btn-primary" onclick="saveTimerSettings()">Save Timer</button>
       </div>
 
-      <!-- Credentials -->
       <div class="settings-section">
         <h3>🔐 My Credentials</h3>
         <div class="form-row">
@@ -615,7 +575,6 @@ select.form-input option{background:var(--surface2)}
         <button class="btn btn-primary" onclick="saveAdminCreds()">Update Credentials</button>
       </div>
 
-      <!-- WhatsApp (SuperAdmin only) -->
       <div class="settings-section" id="settings-superadmin-section" style="display:none">
         <h3>💬 WhatsApp Contact</h3>
         <div class="info-box">This number is shown to pending users so they can reach you to pay and get activated.</div>
@@ -626,10 +585,9 @@ select.form-input option{background:var(--surface2)}
         <button class="btn btn-primary" onclick="saveWhatsappSettings()">Save WhatsApp Settings</button>
       </div>
 
-      <!-- Live Display Link -->
       <div class="settings-section">
         <h3>📺 Live Display Screen</h3>
-        <div class="info-box">Share this URL on projectors, TVs, or screens. It auto-updates in real time via Supabase Realtime.</div>
+        <div class="info-box">Share this URL on projectors, TVs, or screens. It auto-updates in real time via Firestore listeners.</div>
         <div class="url-display">
           <span id="display-url-text">live.html</span>
           <button class="btn btn-primary btn-sm" onclick="copyDisplayUrl()">Copy URL</button>
@@ -644,7 +602,6 @@ select.form-input option{background:var(--surface2)}
 
 <!-- ═══════════════ MODALS ═══════════════ -->
 
-<!-- ADD TEAM -->
 <div class="modal-overlay" id="modal-team">
   <div class="modal">
     <h3>🏟️ <span id="modal-team-title">Add Team</span></h3>
@@ -661,7 +618,7 @@ select.form-input option{background:var(--surface2)}
         <img id="team-logo-thumb" class="team-photo-thumb" alt="">
         <div>
           <div style="font-size:13px;font-weight:600">Upload Team Logo</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px">JPG, PNG, WEBP · max 5MB</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">JPG, PNG, WEBP · max 5MB · uploads to Cloudinary</div>
           <div style="font-size:11px;color:var(--accent);margin-top:5px" id="team-logo-name">Or enter URL below</div>
         </div>
       </div>
@@ -683,7 +640,6 @@ select.form-input option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- ADD / EDIT PLAYER -->
 <div class="modal-overlay" id="modal-player">
   <div class="modal">
     <h3>⚽ <span id="modal-player-title">Add Player</span></h3>
@@ -713,7 +669,7 @@ select.form-input option{background:var(--surface2)}
         <img id="photo-preview-img" style="display:none;width:75px;height:100px;object-fit:cover;border-radius:8px;border:2px solid var(--accent);flex-shrink:0" alt="">
         <div id="photo-upload-info" style="flex:1">
           <div style="font-size:13px;font-weight:600">Upload Player Photo</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:4px">Click to choose · Photo will be cropped to 3:4</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Click to choose · Photo will be cropped to 3:4 · uploads to Cloudinary</div>
           <div style="font-size:11px;color:var(--accent);margin-top:6px" id="photo-filename">No file selected</div>
         </div>
       </div>
@@ -731,7 +687,6 @@ select.form-input option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- IMAGE CROPPER -->
 <div class="modal-overlay cropper-modal" id="modal-cropper">
   <div class="modal">
     <h3>✂️ Crop Photo — 3:4 Portrait</h3>
@@ -758,7 +713,6 @@ select.form-input option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- ADD USER -->
 <div class="modal-overlay" id="modal-add-user">
   <div class="modal">
     <h3>👤 Add New User Account</h3>
@@ -787,7 +741,6 @@ select.form-input option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- APPROVE USER -->
 <div class="modal-overlay" id="modal-approve-user">
   <div class="modal">
     <h3>✅ Approve Account</h3>
@@ -802,35 +755,99 @@ select.form-input option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- TOAST WRAP -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<script>
+<script type="module">
 // ════════════════════════════════════════════════════
-// SUPABASE CONFIG
+// FIREBASE / FIRESTORE CONFIG
 // ════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://kuxjyofivjlvtugyqgjc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1eGp5b2ZpdmpsdnR1Z3lxZ2pjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODM3NDIsImV4cCI6MjA5Njg1OTc0Mn0.JtgK7TRUwGUGJyuQDQBt8mDhJD5lYw8CrO3J_ILqQ0g';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc,
+  deleteDoc, query, where, orderBy, limit as fsLimit, onSnapshot, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const sbHeaders = {
-  'apikey': SUPABASE_KEY,
-  'Authorization': 'Bearer ' + SUPABASE_KEY,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=representation'
+const firebaseConfig = {
+  apiKey: "AIzaSyCigWqkoQC8Y7D86sMRNv59GB0SgZtGzsY",
+  authDomain: "auctionsoftware-a78fa.firebaseapp.com",
+  databaseURL: "https://auctionsoftware-a78fa-default-rtdb.firebaseio.com",
+  projectId: "auctionsoftware-a78fa",
+  storageBucket: "auctionsoftware-a78fa.firebasestorage.app",
+  messagingSenderId: "603868985508",
+  appId: "1:603868985508:web:c641642ccf1ada1afa0e31",
+  measurementId: "G-Q1NMW20GX7"
 };
 
-async function sb(path, opts = {}) {
-  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
-    headers: { ...sbHeaders, ...(opts.headers || {}) }, ...opts
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+// ════════════════════════════════════════════════════
+// CLOUDINARY CONFIG (images only — Firestore never stores binary files)
+// IMPORTANT: the API Secret must NEVER be used in browser code.
+// Create an UNSIGNED upload preset in your Cloudinary dashboard
+// (Settings → Upload → Add upload preset → Signing Mode: Unsigned)
+// and put its name below.
+// ════════════════════════════════════════════════════
+const CLOUDINARY_CLOUD_NAME = 'djxzgnvvn';
+const CLOUDINARY_UPLOAD_PRESET = 'auction'; // <-- replace with your unsigned preset name
+
+async function uploadToCloudinary(fileOrBlob, folder = 'auction') {
+  const formData = new FormData();
+  formData.append('file', fileOrBlob);
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  formData.append('folder', folder);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    method: 'POST', body: formData
   });
-  if (res.status === 204 || (opts.method === 'DELETE' && res.ok)) return null;
-  if (!res.ok) { const e = await res.text(); throw new Error(e); }
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error('Cloudinary upload failed: ' + errText);
+  }
+  const data = await res.json();
+  return data.secure_url; // this URL is what gets stored as a link in Firestore
 }
 
 // ════════════════════════════════════════════════════
-// SETTINGS & SESSION (localStorage)
+// FIRESTORE HELPERS
+// ════════════════════════════════════════════════════
+const col = name => collection(db, name);
+const docRef = (name, id) => doc(db, name, id);
+
+async function fsGetAll(name, ...constraints) {
+  const q = constraints.length ? query(col(name), ...constraints) : col(name);
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+async function fsGetOne(name, id) {
+  const snap = await getDoc(docRef(name, id));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+async function fsAdd(name, data) {
+  const ref = await addDoc(col(name), data);
+  return ref.id;
+}
+async function fsUpdate(name, id, data) {
+  await updateDoc(docRef(name, id), data);
+}
+async function fsSet(name, id, data) {
+  await setDoc(docRef(name, id), data, { merge: true });
+}
+async function fsDelete(name, id) {
+  await deleteDoc(docRef(name, id));
+}
+
+// Cache of team docs (id -> {name,color,...}) to avoid refetching repeatedly when rendering tables
+let teamCache = {};
+async function getTeamCached(id) {
+  if (!id) return null;
+  if (teamCache[id]) return teamCache[id];
+  const t = await fsGetOne('teams', id);
+  if (t) teamCache[id] = t;
+  return t;
+}
+
+// ════════════════════════════════════════════════════
+// SETTINGS & SESSION (localStorage — unrelated to the database, kept local)
 // ════════════════════════════════════════════════════
 const getSession = () => { try { return JSON.parse(localStorage.getItem('auctionSession') || 'null'); } catch { return null; } };
 const setSession = obj => localStorage.setItem('auctionSession', JSON.stringify(obj));
@@ -863,18 +880,13 @@ async function doRegister() {
   if (pass.length < 6) return toast('Password must be at least 6 characters', 'error');
   if (pass !== confirm) return toast('Passwords do not match', 'error');
   try {
-    const existing = await sb('auction_users?username=eq.' + username + '&select=id');
-    if (existing && existing.length) return toast('Username already taken', 'error');
-    await sb('auction_users', { method: 'POST', body: JSON.stringify({
+    const existing = await fsGetAll('auction_users', where('username','==',username));
+    if (existing.length) return toast('Username already taken', 'error');
+    await fsAdd('auction_users', {
       username, full_name: name || username, phone: phone || null, event_name: event || null,
       password_hash: btoa(unescape(encodeURIComponent(pass))), status: 'pending', created_at: new Date().toISOString()
-    })});
-  } catch(e) {
-    const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
-    if (users.find(u => u.username === username)) return toast('Username already taken', 'error');
-    users.push({ username, full_name: name||username, phone, event_name: event, password: pass, status: 'pending', created_at: new Date().toISOString() });
-    localStorage.setItem('localUsers', JSON.stringify(users));
-  }
+    });
+  } catch(e) { return toast('Registration failed: ' + e.message, 'error'); }
   toast('Account created! Contact admin for approval.', 'success');
   setSession({ username, status: 'pending', full_name: name || username });
   setTimeout(() => showPendingScreen(username), 800);
@@ -890,8 +902,8 @@ async function doLogin() {
     setSession(sess); enterApp(sess); return;
   }
   try {
-    const users = await sb('auction_users?username=eq.' + u + '&select=*');
-    if (users && users.length) {
+    const users = await fsGetAll('auction_users', where('username','==',u));
+    if (users.length) {
       const user = users[0];
       const expectedHash = btoa(unescape(encodeURIComponent(p)));
       if (user.password_hash !== expectedHash) return toast('Wrong password', 'error');
@@ -901,15 +913,8 @@ async function doLogin() {
       const sess = { username: u, status: 'approved', role: 'user', full_name: user.full_name, id: user.id };
       setSession(sess); enterApp(sess); return;
     }
-  } catch(e) { console.warn('Supabase login failed:', e.message); }
-  const localUsers = JSON.parse(localStorage.getItem('localUsers') || '[]');
-  const localUser = localUsers.find(lu => lu.username === u && lu.password === p);
-  if (localUser) {
-    if (localUser.status === 'pending') { setSession({ username: u, status: 'pending', full_name: localUser.full_name }); showPendingScreen(u); return; }
-    const sess = { username: u, status: 'approved', role: 'user', full_name: localUser.full_name };
-    setSession(sess); enterApp(sess); return;
-  }
-  toast('Invalid username or password', 'error');
+    toast('Invalid username or password', 'error');
+  } catch(e) { toast('Login error: ' + e.message, 'error'); }
 }
 
 function showPendingScreen(username) {
@@ -939,6 +944,7 @@ function enterApp(session) {
 
 function doLogout() {
   stopCountdownTimer();
+  unsubscribeRealtime();
   clearSession();
   showScreen('auth');
   document.getElementById('login-username').value = '';
@@ -1081,7 +1087,7 @@ function addLog(action, player, team, amount, icon = '📌') {
   activityLog.unshift(entry);
   if (activityLog.length > 200) activityLog = activityLog.slice(0, 200);
   localStorage.setItem('auctionLog', JSON.stringify(activityLog));
-  try { sb('auction_log', { method: 'POST', body: JSON.stringify({ action, player_name: player, team_name: team, amount: amount || null, created_at: entry.time }) }); } catch(e) {}
+  fsAdd('auction_log', { action, player_name: player || null, team_name: team || null, amount: amount || null, created_at: entry.time }).catch(()=>{});
 }
 
 function loadLog() {
@@ -1116,21 +1122,21 @@ async function undoLastAction() {
   const action = undoStack.pop();
   try {
     if (action.type === 'sold') {
-      await sb('players?id=eq.' + action.playerId, { method: 'PATCH', body: JSON.stringify({ status: 'live', sold_to: null, final_price: null }) });
+      await fsUpdate('players', action.playerId, { status: 'live', sold_to: null, final_price: null });
       if (action.teamId && action.amount) {
-        const teams = await sb('teams?id=eq.' + action.teamId + '&select=purse_remaining');
-        if (teams && teams[0]) { const r = (teams[0].purse_remaining || 0) + Number(action.amount); await sb('teams?id=eq.' + action.teamId, { method: 'PATCH', body: JSON.stringify({ purse_remaining: r }) }); }
+        const team = await fsGetOne('teams', action.teamId);
+        if (team) await fsUpdate('teams', action.teamId, { purse_remaining: (team.purse_remaining || 0) + Number(action.amount) });
       }
-      await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ current_player_id: action.playerId, current_bid: action.amount, is_live: true }) });
+      await fsSet('auction_state', 'main', { current_player_id: action.playerId, current_bid: action.amount, is_live: true });
       toast('Undo: Player restored to Live ✓');
       addLog('↩ Undo: Restored to live', action.playerName, action.teamName, action.amount, '↩');
     } else if (action.type === 'unsold') {
-      await sb('players?id=eq.' + action.playerId, { method: 'PATCH', body: JSON.stringify({ status: 'live', lot_number: action.prevLot }) });
-      await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ current_player_id: action.playerId, is_live: true }) });
+      await fsUpdate('players', action.playerId, { status: 'live', lot_number: action.prevLot });
+      await fsSet('auction_state', 'main', { current_player_id: action.playerId, is_live: true });
       toast('Undo: Player restored from Unsold ✓');
       addLog('↩ Undo: Restored from unsold', action.playerName, '', 0, '↩');
     } else if (action.type === 'queue') {
-      for (const [id, lot] of action.prevOrder) { await sb('players?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ lot_number: lot }) }); }
+      for (const [id, lot] of action.prevOrder) { await fsUpdate('players', id, { lot_number: lot }); }
       toast('Undo: Queue order restored ✓');
       addLog('↩ Undo: Queue order restored', '', '', 0, '↩');
     }
@@ -1154,7 +1160,7 @@ function startCountdown() {
   document.getElementById('btn-start-countdown').disabled = true;
   document.getElementById('btn-pause').disabled = false;
   updateAuctionStateUI('live');
-  sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ is_live: true, countdown_start: new Date().toISOString(), countdown_seconds: duration }) }).catch(() => {});
+  fsSet('auction_state', 'main', { is_live: true, countdown_start: new Date().toISOString(), countdown_seconds: duration }).catch(()=>{});
   addLog('▶ Countdown started', document.getElementById('ctrl-player-name').textContent, '', 0, '▶');
   clearInterval(countdownInterval);
   countdownInterval = setInterval(() => {
@@ -1192,9 +1198,8 @@ function updateCountdownUI(secs, state) {
 
 async function autoFinalize() {
   try {
-    const st = await sb('auction_state?id=eq.1&select=*');
-    const s = st[0];
-    if (!s.current_player_id) return;
+    const s = await fsGetOne('auction_state', 'main');
+    if (!s || !s.current_player_id) return;
     if (s.current_leader_team_id) {
       await completeSold(s.current_player_id, s.current_leader_team_id, s.current_bid);
     } else {
@@ -1204,15 +1209,16 @@ async function autoFinalize() {
 }
 
 async function completeSold(playerId, teamId, bid) {
-  const playerData = await sb('players?id=eq.' + playerId + '&select=name,lot_number');
-  const teamData = await sb('teams?id=eq.' + teamId + '&select=name,purse_remaining');
-  const playerName = playerData?.[0]?.name || '—';
-  const teamName = teamData?.[0]?.name || '—';
+  const player = await fsGetOne('players', playerId);
+  const team = await fsGetOne('teams', teamId);
+  const playerName = player?.name || '—';
+  const teamName = team?.name || '—';
   pushUndo({ type: 'sold', playerId, teamId, amount: bid, playerName, teamName });
-  await sb('players?id=eq.' + playerId, { method: 'PATCH', body: JSON.stringify({ status: 'sold', sold_to: teamId, final_price: bid }) });
-  const remaining = (teamData?.[0]?.purse_remaining || 0) - bid;
-  await sb('teams?id=eq.' + teamId, { method: 'PATCH', body: JSON.stringify({ purse_remaining: Math.max(0, remaining) }) });
-  await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null }) });
+  await fsUpdate('players', playerId, { status: 'sold', sold_to: teamId, final_price: bid });
+  const remaining = (team?.purse_remaining || 0) - bid;
+  await fsUpdate('teams', teamId, { purse_remaining: Math.max(0, remaining) });
+  delete teamCache[teamId];
+  await fsSet('auction_state', 'main', { is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null });
   toast(`🎉 SOLD: ${playerName} → ${teamName} for ${fmt(bid)}`);
   addLog('✓ Player SOLD', playerName, teamName, bid, '💰');
   updateAuctionStateUI('idle');
@@ -1220,14 +1226,14 @@ async function completeSold(playerId, teamId, bid) {
 }
 
 async function completeUnsold(playerId) {
-  const playerData = await sb('players?id=eq.' + playerId + '&select=name,lot_number');
-  const playerName = playerData?.[0]?.name || '—';
-  const prevLot = playerData?.[0]?.lot_number;
-  const all = await sb('players?select=lot_number&order=lot_number.desc&limit=1');
+  const player = await fsGetOne('players', playerId);
+  const playerName = player?.name || '—';
+  const prevLot = player?.lot_number;
+  const all = await fsGetAll('players', orderBy('lot_number','desc'), fsLimit(1));
   const maxLot = all?.[0]?.lot_number || 0;
   pushUndo({ type: 'unsold', playerId, playerName, prevLot });
-  await sb('players?id=eq.' + playerId, { method: 'PATCH', body: JSON.stringify({ status: 'unsold', lot_number: maxLot + 1 }) });
-  await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null }) });
+  await fsUpdate('players', playerId, { status: 'unsold', lot_number: maxLot + 1 });
+  await fsSet('auction_state', 'main', { is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null });
   toast(`${playerName} marked as Unsold`);
   addLog('✕ Player Unsold', playerName, '', 0, '❌');
   updateAuctionStateUI('idle');
@@ -1250,20 +1256,18 @@ function updateAuctionStateUI(state) {
 // ════════════════════════════════════════════════════
 // AUCTION CONTROLS
 // ════════════════════════════════════════════════════
-let auctionState = {};
-
 async function loadQueue() {
   try {
-    const [players, state] = await Promise.all([
-      sb('players?select=id,name,role,base_price,status,lot_number&order=lot_number.asc'),
-      sb('auction_state?id=eq.1&select=*,current_player_id(id,name,role,base_price),current_leader_team_id(id,name,color)')
-    ]);
-    auctionState = state?.[0] || {};
-    const current = auctionState.current_player_id;
-    const leader = auctionState.current_leader_team_id;
+    const players = await fsGetAll('players', orderBy('lot_number','asc'));
+    const state = await fsGetOne('auction_state', 'main') || {};
+
+    let current = null, leader = null;
+    if (state.current_player_id) current = await fsGetOne('players', state.current_player_id);
+    if (state.current_leader_team_id) leader = await getTeamCached(state.current_leader_team_id);
+
     document.getElementById('ctrl-player-name').textContent = current?.name || '— Select a player —';
     document.getElementById('ctrl-player-role').textContent = current?.role || '';
-    document.getElementById('ctrl-bid').textContent = auctionState.current_bid ? fmt(auctionState.current_bid) : '—';
+    document.getElementById('ctrl-bid').textContent = state.current_bid ? fmt(state.current_bid) : '—';
     document.getElementById('ctrl-leader').textContent = leader ? `🏟️ ${leader.name}` : 'No bids yet';
     document.getElementById('btn-start-countdown').disabled = !current;
 
@@ -1283,20 +1287,20 @@ async function loadQueue() {
         <td style="color:var(--text2)">${p.role}</td>
         <td style="font-family:var(--mono)">${fmt(p.base_price)}</td>
         <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
-        <td>${isPending?`<button class="btn btn-primary btn-xs" onclick="setLivePreview('${p.id}','${p.name}',${p.base_price},'${p.role}')">Set Live</button>`:isUnsold?`<button class="btn btn-outline btn-xs" onclick="requeuePlayer('${p.id}')">Re-queue</button>`:'—'}</td>
+        <td>${isPending?`<button class="btn btn-primary btn-xs" onclick="setLivePreview('${p.id}','${(p.name||'').replace(/'/g,"\\'")}',${p.base_price},'${p.role}')">Set Live</button>`:isUnsold?`<button class="btn btn-outline btn-xs" onclick="requeuePlayer('${p.id}')">Re-queue</button>`:'—'}</td>
       </tr>`;
     }).join('') || '<tr><td colspan="6" class="empty-state"><span class="empty-state-icon">⚽</span>No players added</td></tr>';
-  } catch(e) { console.warn(e); }
+  } catch(e) { console.warn(e); toast('Error loading queue: ' + e.message, 'error'); }
 }
 
 async function setLivePreview(playerId, name, base, role) {
   try {
-    const livePlayers = await sb('players?status=eq.live&select=id');
-    for (const lp of (livePlayers || [])) {
-      if (lp.id !== playerId) await sb('players?id=eq.' + lp.id, { method: 'PATCH', body: JSON.stringify({ status: 'pending' }) });
+    const livePlayers = await fsGetAll('players', where('status','==','live'));
+    for (const lp of livePlayers) {
+      if (lp.id !== playerId) await fsUpdate('players', lp.id, { status: 'pending' });
     }
-    await sb('players?id=eq.' + playerId, { method: 'PATCH', body: JSON.stringify({ status: 'live' }) });
-    await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ current_player_id: playerId, current_bid: base, current_leader_team_id: null, is_live: false }) });
+    await fsUpdate('players', playerId, { status: 'live' });
+    await fsSet('auction_state', 'main', { current_player_id: playerId, current_bid: base, current_leader_team_id: null, is_live: false });
     document.getElementById('ctrl-player-name').textContent = name;
     document.getElementById('ctrl-player-role').textContent = role;
     document.getElementById('ctrl-bid').textContent = fmt(base);
@@ -1313,11 +1317,11 @@ async function setLivePreview(playerId, name, base, role) {
 async function nextPlayer() {
   try {
     stopCountdownTimer();
-    const livePlayers = await sb('players?status=eq.live&select=id');
-    if (livePlayers?.length) await sb('players?id=eq.' + livePlayers[0].id, { method: 'PATCH', body: JSON.stringify({ status: 'pending' }) });
-    await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null }) });
-    const next = await sb('players?status=eq.pending&order=lot_number.asc&limit=1&select=id,name,base_price,role');
-    if (!next?.length) { toast('No more players in queue', 'error'); loadQueue(); return; }
+    const livePlayers = await fsGetAll('players', where('status','==','live'));
+    if (livePlayers.length) await fsUpdate('players', livePlayers[0].id, { status: 'pending' });
+    await fsSet('auction_state', 'main', { is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null });
+    const next = await fsGetAll('players', where('status','==','pending'), orderBy('lot_number','asc'), fsLimit(1));
+    if (!next.length) { toast('No more players in queue', 'error'); loadQueue(); return; }
     const p = next[0];
     await setLivePreview(p.id, p.name, p.base_price, p.role);
   } catch(e) { toast('Error: ' + e.message, 'error'); }
@@ -1326,9 +1330,8 @@ async function nextPlayer() {
 async function soldPlayer() {
   stopCountdownTimer();
   try {
-    const st = await sb('auction_state?id=eq.1&select=*');
-    const s = st[0];
-    if (!s.current_player_id) return toast('No player on block', 'error');
+    const s = await fsGetOne('auction_state', 'main');
+    if (!s || !s.current_player_id) return toast('No player on block', 'error');
     if (!s.current_leader_team_id) return toast('No bids placed yet', 'error');
     await completeSold(s.current_player_id, s.current_leader_team_id, s.current_bid);
   } catch(e) { toast('Error: ' + e.message, 'error'); }
@@ -1337,8 +1340,8 @@ async function soldPlayer() {
 async function unsoldPlayer() {
   stopCountdownTimer();
   try {
-    const st = await sb('auction_state?id=eq.1&select=current_player_id');
-    const pid = st[0]?.current_player_id;
+    const s = await fsGetOne('auction_state', 'main');
+    const pid = s?.current_player_id;
     if (!pid) return toast('No player on block', 'error');
     await completeUnsold(pid);
   } catch(e) { toast('Error: ' + e.message, 'error'); }
@@ -1346,9 +1349,9 @@ async function unsoldPlayer() {
 
 async function requeuePlayer(playerId) {
   try {
-    const all = await sb('players?select=lot_number&order=lot_number.desc&limit=1');
+    const all = await fsGetAll('players', orderBy('lot_number','desc'), fsLimit(1));
     const maxLot = all?.[0]?.lot_number || 0;
-    await sb('players?id=eq.' + playerId, { method: 'PATCH', body: JSON.stringify({ status: 'pending', lot_number: maxLot + 1 }) });
+    await fsUpdate('players', playerId, { status: 'pending', lot_number: maxLot + 1 });
     toast('Player re-queued ✓'); loadQueue();
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
@@ -1377,12 +1380,11 @@ async function saveQueueOrder() {
   const rows = [...document.getElementById('queue-body').children];
   const ids = rows.map(r => r.dataset.id).filter(Boolean);
   if (!ids.length) return toast('No players in queue', 'error');
-  // Store previous order for undo
   const prevOrder = new Map();
   for (const row of rows) if (row.dataset.id) { const cells = row.querySelectorAll('td'); prevOrder.set(row.dataset.id, parseInt(cells[0].querySelector('.lot-num')?.textContent) || 0); }
   pushUndo({ type: 'queue', prevOrder });
   try {
-    await Promise.all(ids.map((id, i) => sb('players?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ lot_number: i + 1 }) })));
+    await Promise.all(ids.map((id, i) => fsUpdate('players', id, { lot_number: i + 1 })));
     toast('Queue order saved ✓'); addLog('🔀 Queue reordered', '', '', 0, '🔀'); loadQueue();
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
@@ -1393,9 +1395,9 @@ async function saveQueueOrder() {
 async function loadDashboard() {
   try {
     const [players, teams, bids] = await Promise.all([
-      sb('players?select=id,status,final_price'),
-      sb('teams?select=id'),
-      sb('bids?select=id,amount,created_at,player_id(name),team_id(name,color)&order=created_at.desc&limit=10')
+      fsGetAll('players'),
+      fsGetAll('teams'),
+      fsGetAll('bids', orderBy('created_at','desc'), fsLimit(10)).catch(()=>[])
     ]);
     const sold = players.filter(p => p.status === 'sold');
     const pending = players.filter(p => p.status !== 'sold' && p.status !== 'unsold');
@@ -1407,14 +1409,21 @@ async function loadDashboard() {
     document.getElementById('stat-spent').textContent = fmt(spent);
     const tbody = document.getElementById('recent-bids-body');
     if (!bids?.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No bids yet</td></tr>'; return; }
-    tbody.innerHTML = bids.map(b => `<tr>
-      <td>${b.player_id?.name || '—'}</td>
-      <td><span class="team-dot" style="background:${b.team_id?.color||'#64748b'}"></span>${b.team_id?.name || '—'}</td>
-      <td style="font-weight:700;color:var(--green);font-family:var(--mono)">${fmt(b.amount)}</td>
-      <td style="color:var(--muted);font-size:12px">${fmtDate(b.created_at)}</td>
-    </tr>`).join('');
+    // bids may store player_name/team_name/team_color directly, or just IDs — handle both
+    const rows = await Promise.all(bids.map(async b => {
+      let playerName = b.player_name, teamName = b.team_name, teamColor = b.team_color;
+      if (!playerName && b.player_id) { const pl = await fsGetOne('players', b.player_id); playerName = pl?.name; }
+      if (!teamName && b.team_id) { const tm = await getTeamCached(b.team_id); teamName = tm?.name; teamColor = tm?.color; }
+      return `<tr>
+        <td>${playerName || '—'}</td>
+        <td><span class="team-dot" style="background:${teamColor||'#64748b'}"></span>${teamName || '—'}</td>
+        <td style="font-weight:700;color:var(--green);font-family:var(--mono)">${fmt(b.amount)}</td>
+        <td style="color:var(--muted);font-size:12px">${fmtDate(b.created_at)}</td>
+      </tr>`;
+    }));
+    tbody.innerHTML = rows.join('');
   } catch(e) {
-    document.getElementById('recent-bids-body').innerHTML = '<tr><td colspan="4" class="empty-state">Connect to Supabase to load data</td></tr>';
+    document.getElementById('recent-bids-body').innerHTML = '<tr><td colspan="4" class="empty-state">Connect to Firestore to load data</td></tr>';
   }
 }
 
@@ -1425,28 +1434,32 @@ let allPlayers = [];
 
 async function loadPlayers() {
   try {
-    allPlayers = await sb('players?select=*,sold_to(id,name,color)&order=lot_number.asc') || [];
-    renderPlayers(allPlayers);
-  } catch(e) { console.warn(e); }
+    allPlayers = await fsGetAll('players', orderBy('lot_number','asc'));
+    await renderPlayers(allPlayers);
+  } catch(e) { console.warn(e); toast('Error loading players: ' + e.message, 'error'); }
 }
 
-function renderPlayers(players) {
-  document.getElementById('players-body').innerHTML = players.map(p => `<tr>
-    <td><div class="player-cell">
-      <div class="avatar">${p.photo_url?`<img src="${p.photo_url}" alt="${p.name[0]}" loading="lazy" onerror="this.style.display='none'">`:(p.name?.[0]||'?')}</div>
-      <div><strong>${p.name}</strong><div style="font-size:11px;color:var(--muted)">Lot #${p.lot_number||'—'}</div></div>
-    </div></td>
-    <td style="color:var(--text2)">${p.role}</td>
-    <td style="color:var(--text2)">${p.nationality||'—'}</td>
-    <td style="color:var(--text2)">${p.played_for||'—'}</td>
-    <td style="font-family:var(--mono)">${fmt(p.base_price)}</td>
-    <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
-    <td>${p.sold_to?`<span class="team-dot" style="background:${p.sold_to.color||'#64748b'}"></span>${p.sold_to.name}`:'—'}</td>
-    <td><div style="display:flex;gap:4px">
-      <button class="btn btn-outline btn-xs" onclick="editPlayer(${JSON.stringify(p).replace(/"/g,'&quot;')})">Edit</button>
-      <button class="btn btn-danger btn-xs" onclick="deletePlayer('${p.id}','${p.status}','${p.sold_to?.id||''}',${p.final_price||0})">Del</button>
-    </div></td>
-  </tr>`).join('') || '<tr><td colspan="8" class="empty-state"><span class="empty-state-icon">⚽</span>No players. Add some!</td></tr>';
+async function renderPlayers(players) {
+  const rows = await Promise.all(players.map(async p => {
+    const soldTeam = p.sold_to ? await getTeamCached(p.sold_to) : null;
+    return `<tr>
+      <td><div class="player-cell">
+        <div class="avatar">${p.photo_url?`<img src="${p.photo_url}" alt="${p.name[0]}" loading="lazy" onerror="this.style.display='none'">`:(p.name?.[0]||'?')}</div>
+        <div><strong>${p.name}</strong><div style="font-size:11px;color:var(--muted)">Lot #${p.lot_number||'—'}</div></div>
+      </div></td>
+      <td style="color:var(--text2)">${p.role}</td>
+      <td style="color:var(--text2)">${p.nationality||'—'}</td>
+      <td style="color:var(--text2)">${p.played_for||'—'}</td>
+      <td style="font-family:var(--mono)">${fmt(p.base_price)}</td>
+      <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
+      <td>${soldTeam?`<span class="team-dot" style="background:${soldTeam.color||'#64748b'}"></span>${soldTeam.name}`:'—'}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-outline btn-xs" onclick='editPlayer(${JSON.stringify(p)})'>Edit</button>
+        <button class="btn btn-danger btn-xs" onclick="deletePlayer('${p.id}','${p.status}','${p.sold_to||''}',${p.final_price||0})">Del</button>
+      </div></td>
+    </tr>`;
+  }));
+  document.getElementById('players-body').innerHTML = rows.join('') || '<tr><td colspan="8" class="empty-state"><span class="empty-state-icon">⚽</span>No players. Add some!</td></tr>';
 }
 
 function filterPlayers(q) {
@@ -1484,7 +1497,7 @@ function editPlayer(p) {
 }
 
 // ════════════════════════════════════════════════════
-// IMAGE CROPPER (3:4 ratio)
+// IMAGE CROPPER (3:4 ratio) — output is uploaded to Cloudinary, link stored in Firestore
 // ════════════════════════════════════════════════════
 let pendingPhotoFile = null;
 let croppedPhotoBlob = null;
@@ -1505,7 +1518,6 @@ function openCropper(url, filename) {
   img.onload = () => {
     const wrap = document.getElementById('cropper-wrap');
     const wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
-    // 3:4 crop box — centered, takes 80% of available height
     const cropH = Math.min(wrapH * 0.85, 320);
     const cropW = cropH * 3 / 4;
     const box = document.getElementById('crop-box');
@@ -1513,7 +1525,6 @@ function openCropper(url, filename) {
     box.style.height = cropH + 'px';
     box.style.left = ((wrapW - cropW) / 2) + 'px';
     box.style.top = ((wrapH - cropH) / 2) + 'px';
-    // Fit image to wrap
     const scaleW = wrapW / img.naturalWidth, scaleH = wrapH / img.naturalHeight;
     const initScale = Math.max(scaleW, scaleH, cropW / img.naturalWidth, cropH / img.naturalHeight);
     cropState = { scale: initScale, offsetX: (wrapW - img.naturalWidth * initScale) / 2, offsetY: (wrapH - img.naturalHeight * initScale) / 2, isDragging: false, startX: 0, startY: 0 };
@@ -1525,7 +1536,6 @@ function openCropper(url, filename) {
   wrap.onmousedown = (e) => { cropState.isDragging = true; cropState.startX = e.clientX - cropState.offsetX; cropState.startY = e.clientY - cropState.offsetY; e.preventDefault(); };
   window.onmousemove = (e) => { if (!cropState.isDragging) return; cropState.offsetX = e.clientX - cropState.startX; cropState.offsetY = e.clientY - cropState.startY; updateCropImgTransform(); };
   window.onmouseup = () => { cropState.isDragging = false; };
-  // Touch support
   wrap.ontouchstart = (e) => { const t = e.touches[0]; cropState.isDragging = true; cropState.startX = t.clientX - cropState.offsetX; cropState.startY = t.clientY - cropState.offsetY; e.preventDefault(); };
   wrap.ontouchmove = (e) => { if (!cropState.isDragging) return; const t = e.touches[0]; cropState.offsetX = t.clientX - cropState.startX; cropState.offsetY = t.clientY - cropState.startY; updateCropImgTransform(); e.preventDefault(); };
   wrap.ontouchend = () => { cropState.isDragging = false; };
@@ -1548,18 +1558,14 @@ function cancelCrop() { pendingPhotoFile = null; closeModal('modal-cropper'); }
 function applyCrop() {
   const img = document.getElementById('cropper-img');
   const box = document.getElementById('crop-box');
-  const wrap = document.getElementById('cropper-wrap');
-  const wrapRect = wrap.getBoundingClientRect();
   const boxRect = box.getBoundingClientRect();
-  // Convert box position relative to wrap → image coordinate
-  const imgNatW = img.naturalWidth, imgNatH = img.naturalHeight;
   const imgRect = img.getBoundingClientRect();
   const sx = (boxRect.left - imgRect.left) / cropState.scale;
   const sy = (boxRect.top - imgRect.top) / cropState.scale;
   const sw = boxRect.width / cropState.scale;
   const sh = boxRect.height / cropState.scale;
   const canvas = document.createElement('canvas');
-  const outW = 450, outH = 600; // 3:4 output
+  const outW = 450, outH = 600;
   canvas.width = outW; canvas.height = outH;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(img, Math.max(0, sx), Math.max(0, sy), sw, sh, 0, 0, outW, outH);
@@ -1576,36 +1582,24 @@ function applyCrop() {
   }, 'image/jpeg', 0.92);
 }
 
-async function uploadPhoto(fileOrBlob, name, bucket = 'player-images') {
-  const ext = fileOrBlob.type === 'image/jpeg' ? 'jpg' : 'png';
-  const filename = `${Date.now()}-${name.replace(/\s+/g,'-').toLowerCase()}.${ext}`;
+async function uploadPhoto(fileOrBlob) {
   document.getElementById('upload-progress').style.display = 'block';
   document.getElementById('upload-bar').style.width = '30%';
-  document.getElementById('upload-label').textContent = 'Uploading photo...';
+  document.getElementById('upload-label').textContent = 'Uploading photo to Cloudinary...';
   try {
-    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${filename}`, {
-      method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': fileOrBlob.type, 'x-upsert': 'true' }, body: fileOrBlob
-    });
+    const url = await uploadToCloudinary(fileOrBlob, 'auction/players');
     document.getElementById('upload-bar').style.width = '100%';
     document.getElementById('upload-label').textContent = 'Upload complete ✓';
-    if (res.ok) { setTimeout(() => document.getElementById('upload-progress').style.display = 'none', 1200); return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filename}`; }
-  } catch(e) {}
-  // Fallback: base64
-  return new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = e => { setTimeout(() => document.getElementById('upload-progress').style.display = 'none', 1200); resolve(e.target.result); };
-    reader.readAsDataURL(fileOrBlob);
-  });
+    setTimeout(() => document.getElementById('upload-progress').style.display = 'none', 1200);
+    return url;
+  } catch(e) {
+    document.getElementById('upload-progress').style.display = 'none';
+    throw e;
+  }
 }
 
-async function uploadTeamLogo(file, teamName) {
-  const ext = file.name.split('.').pop();
-  const filename = `${Date.now()}-${teamName.replace(/\s+/g,'-').toLowerCase()}.${ext}`;
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/team-logos/${filename}`, {
-    method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': file.type, 'x-upsert': 'true' }, body: file
-  });
-  if (res.ok) return `${SUPABASE_URL}/storage/v1/object/public/team-logos/${filename}`;
-  return new Promise(resolve => { const r = new FileReader(); r.onload = e => resolve(e.target.result); r.readAsDataURL(file); });
+async function uploadTeamLogo(file) {
+  return await uploadToCloudinary(file, 'auction/teams');
 }
 
 async function savePlayer() {
@@ -1615,12 +1609,13 @@ async function savePlayer() {
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     let photoUrl = document.getElementById('player-photo').value || null;
-    if (croppedPhotoBlob) { photoUrl = await uploadPhoto(croppedPhotoBlob, name); croppedPhotoBlob = null; }
-    else if (pendingPhotoFile) { photoUrl = await uploadPhoto(pendingPhotoFile, name); pendingPhotoFile = null; }
-    const data = { name, role: v('player-role') || document.getElementById('player-role').value, nationality: v('player-nation') || null, played_for: v('player-played-for') || null, base_price: parseInt(document.getElementById('player-price').value), photo_url: photoUrl };
-    if (!data.base_price) { toast('Base price required', 'error'); btn.disabled = false; btn.textContent = 'Save Player'; return; }
-    if (id) { await sb('players?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(data) }); toast('Player updated ✓'); addLog('✏️ Player updated', name, '', 0, '✏️'); }
-    else { await sb('players', { method: 'POST', body: JSON.stringify(data) }); toast('Player added ✓'); addLog('➕ Player added', name, '', 0, '➕'); }
+    if (croppedPhotoBlob) { photoUrl = await uploadPhoto(croppedPhotoBlob); croppedPhotoBlob = null; }
+    else if (pendingPhotoFile) { photoUrl = await uploadPhoto(pendingPhotoFile); pendingPhotoFile = null; }
+    const basePrice = parseInt(document.getElementById('player-price').value);
+    if (!basePrice) { toast('Base price required', 'error'); btn.disabled = false; btn.textContent = 'Save Player'; return; }
+    const data = { name, role: document.getElementById('player-role').value, nationality: v('player-nation') || null, played_for: v('player-played-for') || null, base_price: basePrice, photo_url: photoUrl };
+    if (id) { await fsUpdate('players', id, data); toast('Player updated ✓'); addLog('✏️ Player updated', name, '', 0, '✏️'); }
+    else { data.status = 'pending'; data.lot_number = null; await fsAdd('players', data); toast('Player added ✓'); addLog('➕ Player added', name, '', 0, '➕'); }
     closeModal('modal-player'); loadPlayers();
   } catch(e) { toast('Error: ' + e.message, 'error'); }
   finally { btn.disabled = false; btn.textContent = 'Save Player'; }
@@ -1629,20 +1624,22 @@ async function savePlayer() {
 async function deletePlayer(id, status, soldToId, finalPrice) {
   if (!confirm(status === 'sold' ? 'Delete this SOLD player? The sale amount will be refunded to the buying team.' : 'Delete this player?')) return;
   try {
-    await fetch(SUPABASE_URL + '/rest/v1/bids?player_id=eq.' + id, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    const bidDocs = await fsGetAll('bids', where('player_id','==',id));
+    await Promise.all(bidDocs.map(b => fsDelete('bids', b.id)));
     if (status === 'sold' && soldToId && finalPrice > 0) {
-      const teams = await sb('teams?id=eq.' + soldToId + '&select=purse_remaining');
-      if (teams?.[0]) { await sb('teams?id=eq.' + soldToId, { method: 'PATCH', body: JSON.stringify({ purse_remaining: (teams[0].purse_remaining || 0) + Number(finalPrice) }) }); }
+      const team = await fsGetOne('teams', soldToId);
+      if (team) await fsUpdate('teams', soldToId, { purse_remaining: (team.purse_remaining || 0) + Number(finalPrice) });
+      delete teamCache[soldToId];
     }
-    const acheck = await sb('auction_state?id=eq.1&select=current_player_id');
-    if (acheck?.[0]?.current_player_id === id) { await sb('auction_state?id=eq.1', { method: 'PATCH', body: JSON.stringify({ current_player_id: null, current_bid: 0, current_leader_team_id: null, is_live: false }) }); }
-    await fetch(SUPABASE_URL + '/rest/v1/players?id=eq.' + id, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    const st = await fsGetOne('auction_state', 'main');
+    if (st?.current_player_id === id) { await fsSet('auction_state', 'main', { current_player_id: null, current_bid: 0, current_leader_team_id: null, is_live: false }); }
+    await fsDelete('players', id);
     toast(status === 'sold' ? 'Player deleted · Purse refunded ✓' : 'Player deleted'); loadPlayers();
   } catch(e) { toast('Delete failed: ' + e.message, 'error'); }
 }
 
 function exportPlayers() {
-  sb('players?select=name,role,nationality,base_price,status').then(players => {
+  fsGetAll('players').then(players => {
     if (!players?.length) return toast('No players to export', 'error');
     const csv = [['Name','Role','Nationality','Base Price','Status'], ...players.map(p => [p.name,p.role,p.nationality||'',p.base_price,p.status])];
     const blob = new Blob([csv.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
@@ -1654,8 +1651,8 @@ function exportPlayers() {
 function importPlayers(event) {
   const file = event.target.files[0]; if (!file) return;
   Papa.parse(file, { header: true, skipEmptyLines: true, complete: async result => {
-    const rows = result.data.map(r => ({ name: r.Name||r.name, role: r.Role||r.role||'Other', nationality: r.Nationality||r.nationality||null, base_price: parseInt(r['Base Price']||r.base_price)||500000, status: 'pending' })).filter(r => r.name);
-    for (const row of rows) { try { await sb('players', { method: 'POST', body: JSON.stringify(row) }); } catch(e) {} }
+    const rows = result.data.map(r => ({ name: r.Name||r.name, role: r.Role||r.role||'Other', nationality: r.Nationality||r.nationality||null, base_price: parseInt(r['Base Price']||r.base_price)||500000, status: 'pending', lot_number: null })).filter(r => r.name);
+    for (const row of rows) { try { await fsAdd('players', row); } catch(e) {} }
     toast(`Imported ${rows.length} players ✓`); addLog(`⬆ Imported ${rows.length} players`, '', '', 0, '⬆'); loadPlayers(); event.target.value = '';
   }});
 }
@@ -1672,7 +1669,6 @@ function handleTeamLogoSelect(event) {
   reader.onload = e => {
     const thumb = document.getElementById('team-logo-thumb'), ph = document.getElementById('team-logo-placeholder');
     thumb.src = e.target.result; thumb.style.display = 'block'; ph.style.display = 'none';
-    document.getElementById('team-logo-data').value = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -1685,7 +1681,8 @@ function previewTeamLogoUrl(url) {
 
 async function loadTeams() {
   try {
-    const teams = await sb('teams?select=*&order=created_at.asc') || [];
+    const teams = await fsGetAll('teams', orderBy('created_at','asc')).catch(() => fsGetAll('teams'));
+    teams.forEach(t => teamCache[t.id] = t);
     document.getElementById('teams-body').innerHTML = teams.map(t => {
       const logoContent = t.logo_url ? `<img src="${t.logo_url}" alt="${t.short_code}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">` : t.short_code;
       return `<tr>
@@ -1698,12 +1695,12 @@ async function loadTeams() {
         <td style="font-family:var(--mono)">${fmt(t.purse_total)}</td>
         <td style="font-family:var(--mono);color:${(t.purse_remaining||0)>0?'var(--green)':'var(--red)'};font-weight:700">${fmt(t.purse_remaining)}</td>
         <td><div style="display:flex;gap:4px">
-          <button class="btn btn-outline btn-xs" onclick="editTeam(${JSON.stringify(t).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="btn btn-outline btn-xs" onclick='editTeam(${JSON.stringify(t)})'>Edit</button>
           <button class="btn btn-danger btn-xs" onclick="deleteTeam('${t.id}')">Del</button>
         </div></td>
       </tr>`;
     }).join('') || '<tr><td colspan="6" class="empty-state"><span class="empty-state-icon">🏟️</span>No teams. Add some!</td></tr>';
-  } catch(e) { console.warn(e); }
+  } catch(e) { console.warn(e); toast('Error loading teams: ' + e.message, 'error'); }
 }
 
 function openAddTeam() {
@@ -1743,13 +1740,13 @@ async function saveTeam() {
   const btn = document.getElementById('save-team-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    let logoUrl = v('team-logo') || document.getElementById('team-logo-data').value || null;
-    if (pendingTeamLogoFile) { logoUrl = await uploadTeamLogo(pendingTeamLogoFile, v('team-name') || 'team'); pendingTeamLogoFile = null; }
+    let logoUrl = v('team-logo') || null;
+    if (pendingTeamLogoFile) { logoUrl = await uploadTeamLogo(pendingTeamLogoFile); pendingTeamLogoFile = null; }
     const data = { name: v('team-name'), short_code: v('team-code').toUpperCase(), color: document.getElementById('team-color').value, leader_name: v('team-leader') || null, leader_username: v('team-leader-username') || null, owner_name: v('team-owner') || null, purse_total: purse, logo_url: logoUrl };
     const pass = v('team-leader-pass'); if (pass) data.leader_password = pass;
     if (!data.name || !data.short_code) { toast('Name and short code required', 'error'); btn.disabled = false; btn.textContent = 'Save Team'; return; }
-    if (id) { await sb('teams?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(data) }); toast('Team updated ✓'); }
-    else { data.purse_remaining = purse; await sb('teams', { method: 'POST', body: JSON.stringify(data) }); toast('Team added ✓'); }
+    if (id) { await fsUpdate('teams', id, data); delete teamCache[id]; toast('Team updated ✓'); }
+    else { data.purse_remaining = purse; data.created_at = new Date().toISOString(); await fsAdd('teams', data); toast('Team added ✓'); }
     closeModal('modal-team'); loadTeams();
   } catch(e) { toast('Error: ' + e.message, 'error'); }
   finally { btn.disabled = false; btn.textContent = 'Save Team'; }
@@ -1757,7 +1754,8 @@ async function saveTeam() {
 
 async function deleteTeam(id) {
   if (!confirm('Delete this team? Sold players will NOT automatically be refunded.')) return;
-  await fetch(SUPABASE_URL + '/rest/v1/teams?id=eq.' + id, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+  await fsDelete('teams', id);
+  delete teamCache[id];
   toast('Team deleted'); loadTeams();
 }
 
@@ -1766,25 +1764,31 @@ async function deleteTeam(id) {
 // ════════════════════════════════════════════════════
 async function loadResults() {
   try {
-    const players = await sb('players?select=name,role,base_price,final_price,sold_to(name,color)&status=eq.sold&order=final_price.desc') || [];
-    document.getElementById('results-body').innerHTML = players.map(p => {
+    const players = (await fsGetAll('players', where('status','==','sold'))).sort((a,b) => (b.final_price||0)-(a.final_price||0));
+    const rows = await Promise.all(players.map(async p => {
+      const soldTeam = p.sold_to ? await getTeamCached(p.sold_to) : null;
       const pct = p.base_price ? ((p.final_price - p.base_price) / p.base_price * 100).toFixed(0) : 0;
       return `<tr>
         <td><strong>${p.name}</strong></td>
         <td style="color:var(--text2)">${p.role}</td>
-        <td><span class="team-dot" style="background:${p.sold_to?.color||'#64748b'}"></span>${p.sold_to?.name||'—'}</td>
+        <td><span class="team-dot" style="background:${soldTeam?.color||'#64748b'}"></span>${soldTeam?.name||'—'}</td>
         <td style="font-family:var(--mono);color:var(--muted)">${fmt(p.base_price)}</td>
         <td style="font-weight:700;color:var(--green);font-family:var(--mono)">${fmt(p.final_price)}</td>
         <td style="color:${pct>0?'var(--green)':'var(--muted)'};font-weight:700">+${pct}%</td>
       </tr>`;
-    }).join('') || '<tr><td colspan="6" class="empty-state"><span class="empty-state-icon">📋</span>No sold players yet</td></tr>';
+    }));
+    document.getElementById('results-body').innerHTML = rows.join('') || '<tr><td colspan="6" class="empty-state"><span class="empty-state-icon">📋</span>No sold players yet</td></tr>';
   } catch(e) { console.warn(e); }
 }
 
 function exportResults() {
-  sb('players?select=name,role,base_price,final_price,sold_to(name)&status=eq.sold').then(players => {
+  fsGetAll('players', where('status','==','sold')).then(async players => {
     if (!players?.length) return toast('No results to export', 'error');
-    const csv = [['Player','Role','Base Price','Final Price','Sold To'], ...players.map(p => [p.name,p.role,p.base_price,p.final_price,p.sold_to?.name||''])];
+    const rows = await Promise.all(players.map(async p => {
+      const t = p.sold_to ? await getTeamCached(p.sold_to) : null;
+      return [p.name, p.role, p.base_price, p.final_price, t?.name || ''];
+    }));
+    const csv = [['Player','Role','Base Price','Final Price','Sold To'], ...rows];
     const blob = new Blob([csv.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'results.csv'; a.click();
   });
@@ -1797,28 +1801,19 @@ let allUsers = [];
 
 async function checkPendingUsers() {
   try {
-    const users = await sb('auction_users?status=eq.pending&select=id') || [];
-    const local = JSON.parse(localStorage.getItem('localUsers') || '[]').filter(u => u.status === 'pending');
-    const total = users.length + local.length;
+    const users = await fsGetAll('auction_users', where('status','==','pending'));
     const badge = document.getElementById('pending-badge');
-    badge.style.display = total > 0 ? 'block' : 'none';
-    badge.textContent = total;
-  } catch(e) {
-    const local = JSON.parse(localStorage.getItem('localUsers') || '[]').filter(u => u.status === 'pending');
-    const badge = document.getElementById('pending-badge');
-    badge.style.display = local.length > 0 ? 'block' : 'none';
-    badge.textContent = local.length;
-  }
+    badge.style.display = users.length > 0 ? 'block' : 'none';
+    badge.textContent = users.length;
+  } catch(e) {}
 }
 
 async function loadUsers() {
   const tbody = document.getElementById('users-body');
   tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Loading...</td></tr>';
-  let sbUsers = [];
-  try { sbUsers = await sb('auction_users?select=*&order=created_at.desc') || []; } catch(e) {}
-  const localUsers = JSON.parse(localStorage.getItem('localUsers') || '[]');
-  const sbUsernames = sbUsers.map(u => u.username);
-  allUsers = [...sbUsers, ...localUsers.filter(u => !sbUsernames.includes(u.username)).map(u => ({ ...u, _local: true }))];
+  try {
+    allUsers = await fsGetAll('auction_users', orderBy('created_at','desc')).catch(() => fsGetAll('auction_users'));
+  } catch(e) { allUsers = []; }
   const pending = allUsers.filter(u => u.status === 'pending');
   const countBox = document.getElementById('pending-count-box');
   if (pending.length) { countBox.style.display = 'block'; countBox.innerHTML = `⏳ <strong>${pending.length} account${pending.length > 1 ? 's' : ''} awaiting approval.</strong> Review below.`; }
@@ -1839,10 +1834,10 @@ function renderUsers(users) {
     <td style="font-size:12px;color:var(--muted)">${u.approved_by||'—'}</td>
     <td style="font-size:12px;color:${u.expiry_date&&new Date(u.expiry_date)<new Date()?'var(--red)':'var(--muted)'}">${fmtDateShort(u.expiry_date)}</td>
     <td><div style="display:flex;gap:4px;flex-wrap:wrap">
-      ${u.status==='pending'?`<button class="btn btn-success btn-xs" onclick="openApproveModal('${u._local?'local:':''}${u.id||u.username}', ${JSON.stringify(u).replace(/"/g,'&quot;')})">✓ Approve</button>`:''}
-      ${u.status==='approved'?`<button class="btn btn-amber btn-xs" onclick="suspendUser('${u._local?'local:':''}${u.id||u.username}')">Suspend</button>`:''}
-      ${u.status==='suspended'?`<button class="btn btn-success btn-xs" onclick="unsuspendUser('${u._local?'local:':''}${u.id||u.username}')">Reactivate</button>`:''}
-      <button class="btn btn-danger btn-xs" onclick="deleteUser('${u._local?'local:':''}${u.id||u.username}')">Del</button>
+      ${u.status==='pending'?`<button class="btn btn-success btn-xs" onclick='openApproveModal("${u.id}", ${JSON.stringify(u)})'>✓ Approve</button>`:''}
+      ${u.status==='approved'?`<button class="btn btn-amber btn-xs" onclick="suspendUser('${u.id}')">Suspend</button>`:''}
+      ${u.status==='suspended'?`<button class="btn btn-success btn-xs" onclick="unsuspendUser('${u.id}')">Reactivate</button>`:''}
+      <button class="btn btn-danger btn-xs" onclick="deleteUser('${u.id}')">Del</button>
     </div></td>
   </tr>`).join('');
 }
@@ -1865,42 +1860,27 @@ async function confirmApprove() {
   const id = v('approve-user-id'), expiry = v('approve-expiry'), plan = v('approve-plan');
   if (!expiry) return toast('Set an expiry date', 'error');
   const sess = getSession();
-  const upd = { status: 'approved', expiry_date: expiry, approved_by: sess?.username||'admin', plan_note: plan||null, approved_at: new Date().toISOString() };
-  if (id.startsWith('local:')) {
-    const key = id.replace('local:', '');
-    const users = JSON.parse(localStorage.getItem('localUsers') || '[]');
-    const idx = users.findIndex(u => u.username === key);
-    if (idx >= 0) { users[idx] = { ...users[idx], ...upd }; localStorage.setItem('localUsers', JSON.stringify(users)); }
-    toast('Account approved ✓ (local)');
-  } else {
-    try { await sb('auction_users?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(upd) }); toast('Account approved ✓'); } catch(e) { toast('Error: ' + e.message, 'error'); return; }
-  }
+  try {
+    await fsUpdate('auction_users', id, { status: 'approved', expiry_date: expiry, approved_by: sess?.username||'admin', plan_note: plan||null, approved_at: new Date().toISOString() });
+    toast('Account approved ✓');
+  } catch(e) { toast('Error: ' + e.message, 'error'); return; }
   closeModal('modal-approve-user'); loadUsers();
 }
 
 async function suspendUser(id) {
   if (!confirm('Suspend this user?')) return;
-  if (id.startsWith('local:')) {
-    const k = id.replace('local:',''); const users = JSON.parse(localStorage.getItem('localUsers')||'[]');
-    const i = users.findIndex(u=>u.username===k); if(i>=0){users[i].status='suspended';localStorage.setItem('localUsers',JSON.stringify(users));}
-  } else { try{await sb('auction_users?id=eq.'+id,{method:'PATCH',body:JSON.stringify({status:'suspended'})})}catch(e){} }
+  try { await fsUpdate('auction_users', id, { status: 'suspended' }); } catch(e) {}
   toast('User suspended'); loadUsers();
 }
 
 async function unsuspendUser(id) {
-  if (id.startsWith('local:')) {
-    const k = id.replace('local:',''); const users = JSON.parse(localStorage.getItem('localUsers')||'[]');
-    const i = users.findIndex(u=>u.username===k); if(i>=0){users[i].status='approved';localStorage.setItem('localUsers',JSON.stringify(users));}
-  } else { try{await sb('auction_users?id=eq.'+id,{method:'PATCH',body:JSON.stringify({status:'approved'})})}catch(e){} }
+  try { await fsUpdate('auction_users', id, { status: 'approved' }); } catch(e) {}
   toast('User reactivated ✓'); loadUsers();
 }
 
 async function deleteUser(id) {
   if (!confirm('Permanently delete this user?')) return;
-  if (id.startsWith('local:')) {
-    const k = id.replace('local:',''); let users = JSON.parse(localStorage.getItem('localUsers')||'[]');
-    localStorage.setItem('localUsers', JSON.stringify(users.filter(u=>u.username!==k)));
-  } else { try{await fetch(SUPABASE_URL+'/rest/v1/auction_users?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}})}catch(e){} }
+  try { await fsDelete('auction_users', id); } catch(e) {}
   toast('User deleted'); loadUsers();
 }
 
@@ -1915,40 +1895,27 @@ async function saveNewUser() {
   const status = document.getElementById('new-user-status').value, expiry = v('new-user-expiry'), phone = v('new-user-phone'), event = v('new-user-event');
   if (!username || !pass) return toast('Username and password required', 'error');
   const data = { username, full_name: name||username, phone: phone||null, event_name: event||null, password_hash: btoa(unescape(encodeURIComponent(pass))), status, expiry_date: status==='approved'?expiry:null, approved_by: status==='approved'?(getSession()?.username||'admin'):null, created_at: new Date().toISOString() };
-  try { await sb('auction_users',{method:'POST',body:JSON.stringify(data)}); toast('User created ✓'); }
-  catch(e) { const users=JSON.parse(localStorage.getItem('localUsers')||'[]'); users.push({...data,password:pass}); localStorage.setItem('localUsers',JSON.stringify(users)); toast('User created ✓ (local)'); }
+  try { await fsAdd('auction_users', data); toast('User created ✓'); }
+  catch(e) { toast('Error: ' + e.message, 'error'); return; }
   closeModal('modal-add-user'); loadUsers();
 }
 
 // ════════════════════════════════════════════════════
-// REALTIME
+// REALTIME (Firestore onSnapshot listeners replace Supabase Realtime)
 // ════════════════════════════════════════════════════
+let unsubFns = [];
+
 function subscribeRealtime() {
+  unsubscribeRealtime();
   try {
-    const ws = new WebSocket(`wss://kuxjyofivjlvtugyqgjc.supabase.co/realtime/v1/websocket?apikey=${SUPABASE_KEY}&vsn=1.0.0`);
-    ws.onopen = () => {
-      ['realtime:public:auction_state','realtime:public:bids','realtime:public:players'].forEach((topic, i) => {
-        ws.send(JSON.stringify({ topic, event: 'phx_join', payload: {}, ref: i + 1 }));
-      });
-      setInterval(() => ws.send(JSON.stringify({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: 'hb' })), 25000);
-    };
-    ws.onmessage = e => {
-      try {
-        const msg = JSON.parse(e.data);
-        if (msg.event === 'INSERT' && msg.topic === 'realtime:public:bids') {
-          const bid = msg.payload?.record;
-          if (bid) {
-            // Reset countdown on new bid
-            resetCountdown();
-            loadQueue(); loadDashboard();
-          }
-        }
-        if (msg.event === 'UPDATE' && msg.topic === 'realtime:public:auction_state') { loadQueue(); }
-      } catch(e) {}
-    };
-    ws.onclose = () => setTimeout(subscribeRealtime, 5000);
-  } catch(e) {}
+    const unsubState = onSnapshot(docRef('auction_state','main'), () => { loadQueue(); });
+    const unsubBids = onSnapshot(query(col('bids'), orderBy('created_at','desc'), fsLimit(1)), (snap) => {
+      if (!snap.empty) { resetCountdown(); loadQueue(); loadDashboard(); }
+    });
+    unsubFns = [unsubState, unsubBids];
+  } catch(e) { console.warn('Realtime subscription failed', e); }
 }
+function unsubscribeRealtime() { unsubFns.forEach(fn => { try { fn(); } catch(e){} }); unsubFns = []; }
 
 // ════════════════════════════════════════════════════
 // INIT
@@ -1961,6 +1928,23 @@ function subscribeRealtime() {
   else if (session?.status === 'pending') showPendingScreen(session.username);
   else showScreen('auth');
 })();
+
+// ════════════════════════════════════════════════════
+// EXPOSE TO GLOBAL SCOPE (required because this is a module, and HTML
+// onclick="..." attributes need these functions on window)
+// ════════════════════════════════════════════════════
+Object.assign(window, {
+  switchAuthTab, doLogin, doRegister, doLogout,
+  loadDashboard, undoLastAction, loadQueue, nextPlayer, startCountdown, pauseCountdown,
+  soldPlayer, unsoldPlayer, clearLog, exportPlayers, importPlayers, openAddPlayer,
+  filterPlayers, openAddTeam, exportResults, openAddUserModal, saveLeagueSettings,
+  selectTimer, saveTimerSettings, saveAdminCreds, saveWhatsappSettings, copyDisplayUrl,
+  openDisplayPage, saveTeam, closeModal, handleTeamLogoSelect, previewTeamLogoUrl,
+  savePlayer, handlePhotoSelect, updateCropZoom, cancelCrop, applyCrop, saveNewUser,
+  confirmApprove, filterUsers, setLivePreview, requeuePlayer, saveQueueOrder,
+  dragStart, dragOver, dropRow, dragEnd, editPlayer, deletePlayer, editTeam, deleteTeam,
+  openApproveModal, suspendUser, unsuspendUser, deleteUser, showPage
+});
 </script>
 </body>
 </html>
