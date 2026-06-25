@@ -437,24 +437,20 @@ function subscribeAll(teamId) {
   });
 
   // ── REAL-TIME SQUAD LISTENER ──
-  // Listen to players collection filtered by sold_to == teamId
   const squadQuery = query(col('players'), where('sold_to','==',teamId));
   const u3 = onSnapshot(squadQuery, snap => {
     const players = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderSquad(players);
-    // Show notification if squad tab is not active
     const squadTab = document.getElementById('tab-squad');
     if (squadTab.style.display === 'none' && snap.docChanges().some(c => c.type === 'added')) {
       toast('🎉 New player added to your squad!', 'success');
     }
   }, err => {
-    // If listener fails, mark badge as offline
     const badge = document.getElementById('squad-rt-badge');
     if (badge) {
       badge.className = 'rt-badge offline';
       badge.innerHTML = '<div class="rt-dot"></div><span>Offline</span>';
     }
-    console.warn('Squad listener error:', err);
   });
 
   unsubFns = [u1, u2, u3];
@@ -557,26 +553,39 @@ async function renderAuctionState(state, teamId) {
   myLeadBox.style.display = iAmLeading ? 'block' : 'none';
 
   if (state.is_live) {
-    statusDot.className = 'live-dot live'; statusText.textContent = 'LIVE'; statusText.style.color = 'var(--green)';
-    bidPanel.style.display = 'block'; bidUnavailable.style.display = 'none';
-    buildBidPresets(currentBid);
-
-    clearInterval(countdownInterval);
-    if (state.countdown_start && state.countdown_seconds) {
-      const elapsed = (Date.now() - new Date(state.countdown_start).getTime()) / 1000;
-      countdownLocal = Math.max(0, state.countdown_seconds - Math.floor(elapsed));
-    } else {
-      countdownLocal = countdownMax;
-    }
-    updateCountdownBar(countdownLocal, countdownMax);
-    countdownInterval = setInterval(() => {
-      countdownLocal = Math.max(0, countdownLocal - 1);
+    if (state.is_paused) {
+      // ⏸ PAUSED STATE
+      statusDot.className = 'live-dot pending'; statusText.textContent = 'PAUSED'; statusText.style.color = 'var(--amber)';
+      bidPanel.style.display = 'none'; // Hide bidding panel
+      bidUnavailable.style.display = 'block';
+      bidUnavailable.innerHTML = '⏳ <strong>Auction Paused!</strong> Bidding will resume shortly.';
+      clearInterval(countdownInterval);
+      countdownLocal = state.countdown_seconds || 0;
       updateCountdownBar(countdownLocal, countdownMax);
-      if (countdownLocal <= 0) clearInterval(countdownInterval);
-    }, 1000);
+    } else {
+      // ▶ LIVE STATE
+      statusDot.className = 'live-dot live'; statusText.textContent = 'LIVE'; statusText.style.color = 'var(--green)';
+      bidPanel.style.display = 'block'; bidUnavailable.style.display = 'none';
+      buildBidPresets(currentBid);
+
+      clearInterval(countdownInterval);
+      if (state.countdown_start && state.countdown_seconds) {
+        const elapsed = (Date.now() - new Date(state.countdown_start).getTime()) / 1000;
+        countdownLocal = Math.max(0, state.countdown_seconds - Math.floor(elapsed));
+      } else {
+        countdownLocal = countdownMax;
+      }
+      updateCountdownBar(countdownLocal, countdownMax);
+      countdownInterval = setInterval(() => {
+        countdownLocal = Math.max(0, countdownLocal - 1);
+        updateCountdownBar(countdownLocal, countdownMax);
+        if (countdownLocal <= 0) clearInterval(countdownInterval);
+      }, 1000);
+    }
   } else {
     statusDot.className = 'live-dot pending'; statusText.textContent = 'UPCOMING'; statusText.style.color = 'var(--amber)';
     bidPanel.style.display = 'none'; bidUnavailable.style.display = 'block';
+    bidUnavailable.innerHTML = '⏳ Bidding will be available once admin starts the countdown.';
     clearInterval(countdownInterval);
     document.getElementById('countdown-bar').style.width = '100%';
     document.getElementById('countdown-bar').className = 'countdown-bar-fill';
@@ -619,6 +628,8 @@ window.selectBidPreset = function(val) {
 };
 
 window.placeBid = async function() {
+  if (currentState?.is_paused) return toast('Auction is currently PAUSED. Bidding blocked!', 'error');
+
   const sess = getLeaderSession();
   if (!sess) return;
   const amtStr = document.getElementById('bid-amount').value;
@@ -650,11 +661,11 @@ window.placeBid = async function() {
       created_at: new Date().toISOString()
     });
     
-    // 👇 Ee update aanu lag illathe timer sync aakkan help cheyyunnathu
+    // Server timer sync
     await fsSet('auction_state', 'main', {
       current_bid: amount,
       current_leader_team_id: myTeamId,
-      countdown_start: new Date().toISOString() 
+      countdown_start: new Date().toISOString()
     });
     
     toast(`Bid of ${fmt(amount)} placed! 🎉`, 'success');
@@ -669,7 +680,6 @@ window.switchTab = function(name, el) {
   el.classList.add('active');
   document.getElementById('tab-auction').style.display = name === 'auction' ? 'block' : 'none';
   document.getElementById('tab-squad').style.display = name === 'squad' ? 'block' : 'none';
-  // Squad is already live via onSnapshot — no manual load needed
 };
 
 // ─── INIT ───
