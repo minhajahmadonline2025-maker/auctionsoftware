@@ -156,7 +156,6 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
 </head>
 <body>
 
-<!-- AUTH -->
 <div id="auth-wrap" class="auth-wrap">
   <div class="auth-card">
     <div class="auth-logo">
@@ -177,7 +176,6 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
   </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="leader-app" class="app">
   <div class="topbar">
     <div class="topbar-left">
@@ -205,9 +203,7 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
       <button class="tab" onclick="switchTab('squad', this)">👥 My Squad</button>
     </div>
 
-    <!-- AUCTION TAB -->
     <div id="tab-auction">
-      <!-- Live player card -->
       <div class="auction-card">
         <div class="auction-card-header">
           <div class="live-pill">
@@ -257,7 +253,6 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
         </div>
       </div>
 
-      <!-- Bid panel -->
       <div class="bid-panel" id="bid-panel" style="display:none">
         <div class="bid-panel-title">🎯 Place Your Bid</div>
         <div class="bid-presets" id="bid-presets"></div>
@@ -278,7 +273,6 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
       </div>
     </div>
 
-    <!-- SQUAD TAB -->
     <div id="tab-squad" style="display:none">
       <div class="squad-card">
         <div class="squad-header">
@@ -655,10 +649,14 @@ window.placeBid = async function() {
       amount,
       created_at: new Date().toISOString()
     });
+    
+    // 👇 Ee update aanu lag illathe timer sync aakkan help cheyyunnathu
     await fsSet('auction_state', 'main', {
       current_bid: amount,
-      current_leader_team_id: myTeamId
+      current_leader_team_id: myTeamId,
+      countdown_start: new Date().toISOString() 
     });
+    
     toast(`Bid of ${fmt(amount)} placed! 🎉`, 'success');
     document.getElementById('bid-amount').value = '';
   } catch(e) { toast('Error: ' + e.message, 'error'); }
