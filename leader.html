@@ -115,13 +115,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* ── SQUAD TABLE ── */
 .squad-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
-.squad-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.squad-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .squad-title{font-size:13px;font-weight:700}
 .squad-count{font-size:11px;color:var(--muted)}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{text-align:left;padding:8px 14px;color:var(--muted);font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.5px;background:var(--surface2)}
 td{padding:10px 14px;border-top:1px solid var(--border)}
 .empty-state{text-align:center;color:var(--muted);padding:30px;font-size:13px}
+
+/* ── REAL-TIME INDICATOR ── */
+.rt-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--green)}
+.rt-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+.rt-badge.offline{background:rgba(90,103,125,.1);border-color:var(--border);color:var(--muted)}
+.rt-badge.offline .rt-dot{background:var(--muted);animation:none}
+
+/* refresh spin animation */
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.spinning{animation:spin .6s linear}
 
 /* ── TABS ── */
 .tabs{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:3px}
@@ -272,8 +282,19 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
     <div id="tab-squad" style="display:none">
       <div class="squad-card">
         <div class="squad-header">
-          <div class="squad-title">My Players</div>
-          <div class="squad-count" id="squad-count">0 players · ₹0 spent</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="squad-title">My Players</div>
+            <div class="rt-badge" id="squad-rt-badge">
+              <div class="rt-dot"></div>
+              <span>Live</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div class="squad-count" id="squad-count">0 players · ₹0 spent</div>
+            <button class="btn btn-outline btn-sm" id="refresh-btn" onclick="manualRefreshSquad()" title="Refresh squad">
+              🔄 Refresh
+            </button>
+          </div>
         </div>
         <table>
           <thead><tr><th>Player</th><th>Role</th><th>Price Paid</th></tr></thead>
@@ -421,14 +442,68 @@ function subscribeAll(teamId) {
     }
   });
 
-  // listen latest bids (reset countdown on new bid)
-  const u3 = onSnapshot(
-    query(col('bids'), where('player_id','!=','__'), orderBy('player_id'), orderBy('created_at','desc'), fsLimit(1)),
-    () => { /* refresh handled by state listener */ }
-  );
+  // ── REAL-TIME SQUAD LISTENER ──
+  // Listen to players collection filtered by sold_to == teamId
+  const squadQuery = query(col('players'), where('sold_to','==',teamId));
+  const u3 = onSnapshot(squadQuery, snap => {
+    const players = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderSquad(players);
+    // Show notification if squad tab is not active
+    const squadTab = document.getElementById('tab-squad');
+    if (squadTab.style.display === 'none' && snap.docChanges().some(c => c.type === 'added')) {
+      toast('🎉 New player added to your squad!', 'success');
+    }
+  }, err => {
+    // If listener fails, mark badge as offline
+    const badge = document.getElementById('squad-rt-badge');
+    if (badge) {
+      badge.className = 'rt-badge offline';
+      badge.innerHTML = '<div class="rt-dot"></div><span>Offline</span>';
+    }
+    console.warn('Squad listener error:', err);
+  });
 
   unsubFns = [u1, u2, u3];
 }
+
+// ─── SQUAD RENDER ───
+function renderSquad(players) {
+  const tbody = document.getElementById('squad-body');
+  const totalSpent = players.reduce((a,p) => a+(p.final_price||0), 0);
+  document.getElementById('squad-count').textContent =
+    `${players.length} player${players.length!==1?'s':''} · ${fmt(totalSpent)} spent`;
+
+  tbody.innerHTML = players.length
+    ? players.sort((a,b)=>(b.final_price||0)-(a.final_price||0)).map(p => `
+        <tr>
+          <td><strong>${p.name}</strong></td>
+          <td style="color:var(--text2)">${p.role || '—'}</td>
+          <td style="font-weight:700;color:var(--green);font-family:var(--mono)">${fmt(p.final_price)}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="3" class="empty-state">No players yet. Win some bids!</td></tr>';
+}
+
+// ─── MANUAL REFRESH ───
+window.manualRefreshSquad = async function() {
+  const btn = document.getElementById('refresh-btn');
+  const icon = btn.querySelector ? btn : btn;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinning">🔄</span> Refreshing...';
+  try {
+    const sess = getLeaderSession();
+    if (!sess) return;
+    const players = await fsGetAll('players', where('sold_to','==',sess.teamId));
+    renderSquad(players);
+    toast('Squad refreshed ✓', 'info');
+  } catch(e) {
+    toast('Refresh failed: ' + e.message, 'error');
+  } finally {
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = '🔄 Refresh';
+    }, 800);
+  }
+};
 
 async function renderAuctionState(state, teamId) {
   const s = getSettings();
@@ -442,7 +517,6 @@ async function renderAuctionState(state, teamId) {
   const statusText = document.getElementById('status-text');
 
   if (!state || !state.current_player_id) {
-    // idle
     idleView.style.display = 'block'; liveView.style.display = 'none';
     bidPanel.style.display = 'none'; bidUnavailable.style.display = 'none';
     statusDot.className = 'live-dot'; statusText.textContent = 'IDLE'; statusText.style.color = 'var(--muted)';
@@ -453,7 +527,6 @@ async function renderAuctionState(state, teamId) {
     return;
   }
 
-  // fetch player
   const player = await fsGetOne('players', state.current_player_id);
   if (!player) return;
 
@@ -494,7 +567,6 @@ async function renderAuctionState(state, teamId) {
     bidPanel.style.display = 'block'; bidUnavailable.style.display = 'none';
     buildBidPresets(currentBid);
 
-    // countdown
     clearInterval(countdownInterval);
     if (state.countdown_start && state.countdown_seconds) {
       const elapsed = (Date.now() - new Date(state.countdown_start).getTime()) / 1000;
@@ -570,14 +642,12 @@ window.placeBid = async function() {
       toast(`Bid must be more than ${fmt(currentBid)}`, 'error');
       btn.disabled = false; btn.textContent = '🔨 Place Bid'; return;
     }
-    // check purse
     const team = await fsGetOne('teams', myTeamId);
     if (team && amount > (team.purse_remaining || 0)) {
       toast(`Insufficient purse! You have ${fmt(team.purse_remaining)} remaining.`, 'error');
       btn.disabled = false; btn.textContent = '🔨 Place Bid'; return;
     }
 
-    // save bid
     await fsAdd('bids', {
       player_id: currentState.current_player_id,
       team_id: myTeamId,
@@ -585,7 +655,6 @@ window.placeBid = async function() {
       amount,
       created_at: new Date().toISOString()
     });
-    // update auction state
     await fsSet('auction_state', 'main', {
       current_bid: amount,
       current_leader_team_id: myTeamId
@@ -596,33 +665,13 @@ window.placeBid = async function() {
   finally { btn.disabled = false; btn.textContent = '🔨 Place Bid'; }
 };
 
-// ─── SQUAD ───
-async function loadSquad() {
-  const sess = getLeaderSession();
-  if (!sess) return;
-  try {
-    const players = await fsGetAll('players', where('sold_to','==',sess.teamId));
-    const tbody = document.getElementById('squad-body');
-    const totalSpent = players.reduce((a,p) => a+(p.final_price||0), 0);
-    document.getElementById('squad-count').textContent = `${players.length} player${players.length!==1?'s':''} · ${fmt(totalSpent)} spent`;
-    tbody.innerHTML = players.length
-      ? players.sort((a,b)=>(b.final_price||0)-(a.final_price||0)).map(p => `
-          <tr>
-            <td><strong>${p.name}</strong></td>
-            <td style="color:var(--text2)">${p.role}</td>
-            <td style="font-weight:700;color:var(--green);font-family:var(--mono)">${fmt(p.final_price)}</td>
-          </tr>`).join('')
-      : '<tr><td colspan="3" class="empty-state">No players yet. Win some bids!</td></tr>';
-  } catch(e) { console.warn(e); }
-}
-
 // ─── TABS ───
 window.switchTab = function(name, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-auction').style.display = name === 'auction' ? 'block' : 'none';
   document.getElementById('tab-squad').style.display = name === 'squad' ? 'block' : 'none';
-  if (name === 'squad') loadSquad();
+  // Squad is already live via onSnapshot — no manual load needed
 };
 
 // ─── INIT ───
