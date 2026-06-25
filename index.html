@@ -268,7 +268,6 @@ select.form-input option{background:var(--surface2)}
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
 <div id="screen-auth" class="auth-screen active">
   <div class="auth-logo-area">
     <span class="auth-logo-icon" id="login-logo-display">⚡</span>
@@ -326,7 +325,6 @@ select.form-input option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- PENDING SCREEN -->
 <div id="screen-pending" class="auth-screen">
   <div class="pending-card">
     <div class="pending-icon">⏳</div>
@@ -346,7 +344,6 @@ select.form-input option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="screen-app" style="display:none">
 <div class="layout">
 
@@ -600,8 +597,6 @@ select.form-input option{background:var(--surface2)}
 </div>
 </div>
 
-<!-- ═══════════════ MODALS ═══════════════ -->
-
 <div class="modal-overlay" id="modal-team">
   <div class="modal">
     <h3>🏟️ <span id="modal-team-title">Add Team</span></h3>
@@ -783,13 +778,9 @@ const db = getFirestore(fbApp);
 
 // ════════════════════════════════════════════════════
 // CLOUDINARY CONFIG (images only — Firestore never stores binary files)
-// IMPORTANT: the API Secret must NEVER be used in browser code.
-// Create an UNSIGNED upload preset in your Cloudinary dashboard
-// (Settings → Upload → Add upload preset → Signing Mode: Unsigned)
-// and put its name below.
 // ════════════════════════════════════════════════════
 const CLOUDINARY_CLOUD_NAME = 'djxzgnvvn';
-const CLOUDINARY_UPLOAD_PRESET = 'auction'; // <-- replace with your unsigned preset name
+const CLOUDINARY_UPLOAD_PRESET = 'auction'; 
 
 async function uploadToCloudinary(fileOrBlob, folder = 'auction') {
   const formData = new FormData();
@@ -804,7 +795,7 @@ async function uploadToCloudinary(fileOrBlob, folder = 'auction') {
     throw new Error('Cloudinary upload failed: ' + errText);
   }
   const data = await res.json();
-  return data.secure_url; // this URL is what gets stored as a link in Firestore
+  return data.secure_url; 
 }
 
 // ════════════════════════════════════════════════════
@@ -836,7 +827,6 @@ async function fsDelete(name, id) {
   await deleteDoc(docRef(name, id));
 }
 
-// Cache of team docs (id -> {name,color,...}) to avoid refetching repeatedly when rendering tables
 let teamCache = {};
 async function getTeamCached(id) {
   if (!id) return null;
@@ -847,7 +837,7 @@ async function getTeamCached(id) {
 }
 
 // ════════════════════════════════════════════════════
-// SETTINGS & SESSION (localStorage — unrelated to the database, kept local)
+// SETTINGS & SESSION
 // ════════════════════════════════════════════════════
 const getSession = () => { try { return JSON.parse(localStorage.getItem('auctionSession') || 'null'); } catch { return null; } };
 const setSession = obj => localStorage.setItem('auctionSession', JSON.stringify(obj));
@@ -1160,7 +1150,10 @@ function startCountdown() {
   document.getElementById('btn-start-countdown').disabled = true;
   document.getElementById('btn-pause').disabled = false;
   updateAuctionStateUI('live');
-  fsSet('auction_state', 'main', { is_live: true, countdown_start: new Date().toISOString(), countdown_seconds: duration }).catch(()=>{});
+  
+  // Update state with is_paused: false
+  fsSet('auction_state', 'main', { is_live: true, is_paused: false, countdown_start: new Date().toISOString(), countdown_seconds: duration }).catch(()=>{});
+  
   addLog('▶ Countdown started', document.getElementById('ctrl-player-name').textContent, '', 0, '▶');
   clearInterval(countdownInterval);
   countdownInterval = setInterval(() => {
@@ -1171,11 +1164,28 @@ function startCountdown() {
   }, 1000);
 }
 
-function pauseCountdown() {
+async function pauseCountdown() {
   if (countdownPaused) {
-    countdownPaused = false; document.getElementById('btn-pause').textContent = '⏸ Pause'; toast('Countdown resumed');
+    // RESUME
+    countdownPaused = false; 
+    document.getElementById('btn-pause').textContent = '⏸ Pause'; 
+    toast('Countdown resumed');
+    // Send resume to database with fresh start time
+    await fsSet('auction_state', 'main', {
+      is_paused: false,
+      countdown_start: new Date().toISOString(),
+      countdown_seconds: countdownRemaining
+    });
   } else {
-    countdownPaused = true; document.getElementById('btn-pause').textContent = '▶ Resume'; toast('Countdown paused');
+    // PAUSE
+    countdownPaused = true; 
+    document.getElementById('btn-pause').textContent = '▶ Resume'; 
+    toast('Countdown paused');
+    // Send pause state to database
+    await fsSet('auction_state', 'main', {
+      is_paused: true,
+      countdown_seconds: countdownRemaining
+    });
   }
 }
 
@@ -1218,7 +1228,7 @@ async function completeSold(playerId, teamId, bid) {
   const remaining = (team?.purse_remaining || 0) - bid;
   await fsUpdate('teams', teamId, { purse_remaining: Math.max(0, remaining) });
   delete teamCache[teamId];
-  await fsSet('auction_state', 'main', { is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null });
+  await fsSet('auction_state', 'main', { is_live: false, is_paused: false, current_player_id: null, current_bid: 0, current_leader_team_id: null });
   toast(`🎉 SOLD: ${playerName} → ${teamName} for ${fmt(bid)}`);
   addLog('✓ Player SOLD', playerName, teamName, bid, '💰');
   updateAuctionStateUI('idle');
@@ -1233,7 +1243,7 @@ async function completeUnsold(playerId) {
   const maxLot = all?.[0]?.lot_number || 0;
   pushUndo({ type: 'unsold', playerId, playerName, prevLot });
   await fsUpdate('players', playerId, { status: 'unsold', lot_number: maxLot + 1 });
-  await fsSet('auction_state', 'main', { is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null });
+  await fsSet('auction_state', 'main', { is_live: false, is_paused: false, current_player_id: null, current_bid: 0, current_leader_team_id: null });
   toast(`${playerName} marked as Unsold`);
   addLog('✕ Player Unsold', playerName, '', 0, '❌');
   updateAuctionStateUI('idle');
@@ -1300,7 +1310,7 @@ async function setLivePreview(playerId, name, base, role) {
       if (lp.id !== playerId) await fsUpdate('players', lp.id, { status: 'pending' });
     }
     await fsUpdate('players', playerId, { status: 'live' });
-    await fsSet('auction_state', 'main', { current_player_id: playerId, current_bid: base, current_leader_team_id: null, is_live: false });
+    await fsSet('auction_state', 'main', { current_player_id: playerId, current_bid: base, current_leader_team_id: null, is_live: false, is_paused: false });
     document.getElementById('ctrl-player-name').textContent = name;
     document.getElementById('ctrl-player-role').textContent = role;
     document.getElementById('ctrl-bid').textContent = fmt(base);
@@ -1319,7 +1329,7 @@ async function nextPlayer() {
     stopCountdownTimer();
     const livePlayers = await fsGetAll('players', where('status','==','live'));
     if (livePlayers.length) await fsUpdate('players', livePlayers[0].id, { status: 'pending' });
-    await fsSet('auction_state', 'main', { is_live: false, current_player_id: null, current_bid: 0, current_leader_team_id: null });
+    await fsSet('auction_state', 'main', { is_live: false, is_paused: false, current_player_id: null, current_bid: 0, current_leader_team_id: null });
     const next = await fsGetAll('players', where('status','==','pending'), orderBy('lot_number','asc'), fsLimit(1));
     if (!next.length) { toast('No more players in queue', 'error'); loadQueue(); return; }
     const p = next[0];
@@ -1497,7 +1507,7 @@ function editPlayer(p) {
 }
 
 // ════════════════════════════════════════════════════
-// IMAGE CROPPER (3:4 ratio) — output is uploaded to Cloudinary, link stored in Firestore
+// IMAGE CROPPER (3:4 ratio)
 // ════════════════════════════════════════════════════
 let pendingPhotoFile = null;
 let croppedPhotoBlob = null;
@@ -1632,7 +1642,7 @@ async function deletePlayer(id, status, soldToId, finalPrice) {
       delete teamCache[soldToId];
     }
     const st = await fsGetOne('auction_state', 'main');
-    if (st?.current_player_id === id) { await fsSet('auction_state', 'main', { current_player_id: null, current_bid: 0, current_leader_team_id: null, is_live: false }); }
+    if (st?.current_player_id === id) { await fsSet('auction_state', 'main', { current_player_id: null, current_bid: 0, current_leader_team_id: null, is_live: false, is_paused: false }); }
     await fsDelete('players', id);
     toast(status === 'sold' ? 'Player deleted · Purse refunded ✓' : 'Player deleted'); loadPlayers();
   } catch(e) { toast('Delete failed: ' + e.message, 'error'); }
@@ -1901,7 +1911,7 @@ async function saveNewUser() {
 }
 
 // ════════════════════════════════════════════════════
-// REALTIME (Firestore onSnapshot listeners replace Supabase Realtime)
+// REALTIME
 // ════════════════════════════════════════════════════
 let unsubFns = [];
 
@@ -1930,8 +1940,7 @@ function unsubscribeRealtime() { unsubFns.forEach(fn => { try { fn(); } catch(e)
 })();
 
 // ════════════════════════════════════════════════════
-// EXPOSE TO GLOBAL SCOPE (required because this is a module, and HTML
-// onclick="..." attributes need these functions on window)
+// EXPOSE TO GLOBAL SCOPE
 // ════════════════════════════════════════════════════
 Object.assign(window, {
   switchAuthTab, doLogin, doRegister, doLogout,
