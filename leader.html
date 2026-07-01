@@ -396,7 +396,36 @@ async function fsAdd(name, data) {
   return ref.id;
 }
 
-const getSettings = () => { try { return JSON.parse(localStorage.getItem('auctionSettings') || '{}'); } catch { return {}; } };
+// FIX #9: salted SHA-256 hashing, matching admin.html's scheme, so team-leader
+// logins keep working after admin.html starts storing leader_password_hash /
+// leader_password_salt instead of the legacy plaintext leader_password field.
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function genSalt() {
+  return (crypto.randomUUID ? crypto.randomUUID() : (Math.random().toString(36).slice(2) + Date.now().toString(36)));
+}
+async function hashPassword(pass, salt) {
+  return await sha256Hex(salt + ':' + pass);
+}
+
+// FIX #2: settings now live-sync from Firestore `settings/main` (same document
+// admin.html writes to) instead of being trapped in this device's localStorage.
+// The localStorage key/shape and the getSettings() function name are both kept
+// unchanged so every existing caller keeps working; localStorage is now only an
+// instant-paint cache for before the first snapshot arrives.
+let settingsCache = {};
+try { settingsCache = JSON.parse(localStorage.getItem('auctionSettings') || '{}'); } catch { settingsCache = {}; }
+const getSettings = () => settingsCache;
+function subscribeSettings() {
+  onSnapshot(docRef('settings', 'main'), snap => {
+    settingsCache = snap.exists() ? snap.data() : settingsCache;
+    try { localStorage.setItem('auctionSettings', JSON.stringify(settingsCache)); } catch(e) {}
+    applyBranding();
+    countdownMax = settingsCache.timerDuration || 15;
+  }, err => console.warn('settings listener error', err));
+}
 const getLeaderSession = () => { try { return JSON.parse(sessionStorage.getItem('leaderSession') || 'null'); } catch { return null; } };
 const setLeaderSession = obj => sessionStorage.setItem('leaderSession', JSON.stringify(obj));
 const clearLeaderSession = () => sessionStorage.removeItem('leaderSession');
@@ -409,6 +438,13 @@ function toast(msg, type = 'success') {
   const wrap = document.getElementById('toast-wrap');
   wrap.appendChild(el);
   setTimeout(() => { el.style.opacity='0';el.style.transform='translateX(20px)';el.style.transition='.3s';setTimeout(()=>el.remove(),300); }, 3000);
+}
+
+// FIX #6: consistent HTML-escaping for any player/team text interpolated into
+// innerHTML (squad table, player photo alt/src) to avoid stored-content injection.
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 }
 
 // ─── NEW: Loading overlay helpers ───
@@ -470,8 +506,25 @@ window.doLeaderLogin = async function() {
     const teams = await fsGetAll('teams', where('leader_username','==',username));
     if (!teams.length) { hideLoading(); setBtnLoading(btn, false); showFieldError('l-username'); return toast('No team found for this username', 'error'); }
     const team = teams[0];
-    if (!team.leader_password) { hideLoading(); setBtnLoading(btn, false); return toast('No password set for this team. Contact admin.', 'error'); }
-    if (team.leader_password !== pass) { hideLoading(); setBtnLoading(btn, false); showFieldError('l-password'); return toast('Wrong password', 'error'); }
+    let ok = false;
+    if (team.leader_password_hash && team.leader_password_salt) {
+      // Salted hash set by admin.html's current save-team flow.
+      ok = (await hashPassword(pass, team.leader_password_salt)) === team.leader_password_hash;
+    } else if (team.leader_password) {
+      // Legacy plaintext credential — verify, then transparently upgrade to a salted hash.
+      ok = team.leader_password === pass;
+      if (ok) {
+        try {
+          const salt = genSalt();
+          const newHash = await hashPassword(pass, salt);
+          fsUpdate('teams', team.id, { leader_password_hash: newHash, leader_password_salt: salt, leader_password: null }).catch(()=>{});
+        } catch(e) { /* non-fatal — login still succeeds even if upgrade write fails */ }
+      }
+    } else {
+      hideLoading(); setBtnLoading(btn, false);
+      return toast('No password set for this team. Contact admin.', 'error');
+    }
+    if (!ok) { hideLoading(); setBtnLoading(btn, false); showFieldError('l-password'); return toast('Wrong password', 'error'); }
     setLeaderSession({ teamId: team.id, teamName: team.name, shortCode: team.short_code });
     hideLoading(); setBtnLoading(btn, false);
     enterApp(team);
@@ -588,11 +641,13 @@ let countdownLocal = 0;
 let countdownInterval = null;
 let myTeamId = null;
 let lastKnownLeaderId = null; // NEW: used for outbid notifications
+let lastRenderedPlayerId = null; // FIX #8: tracks player-on-block changes so outbid tracking doesn't leak across players
 
 function subscribeAll(teamId) {
   myTeamId = teamId;
   unsubAll();
   lastKnownLeaderId = null;
+  lastRenderedPlayerId = null;
 
   // listen auction_state
   const u1 = onSnapshot(docRef('auction_state','main'), async snap => {
@@ -660,8 +715,8 @@ function renderSquad(players) {
   tbody.innerHTML = players.length
     ? players.sort((a,b)=>(b.final_price||0)-(a.final_price||0)).map(p => `
         <tr>
-          <td><strong>${p.name}</strong></td>
-          <td style="color:var(--text2)">${p.role || '—'}</td>
+          <td><strong>${escapeHtml(p.name)}</strong></td>
+          <td style="color:var(--text2)">${escapeHtml(p.role) || '—'}</td>
           <td style="font-weight:700;color:var(--green);font-family:var(--mono)">${fmt(p.final_price)}</td>
         </tr>`).join('')
     : '<tr><td colspan="3" class="empty-state">No players yet. Win some bids!</td></tr>';
@@ -729,6 +784,14 @@ async function renderAuctionState(state, teamId) {
   const player = await fsGetOne('players', state.current_player_id);
   if (!player) return;
 
+  // FIX #8: whenever the player-on-block changes, reset the outbid-tracking
+  // baseline so a leader carried over from the previous player can't trigger
+  // a false "you've been outbid" toast for the new player.
+  if (state.current_player_id !== lastRenderedPlayerId) {
+    lastRenderedPlayerId = state.current_player_id;
+    lastKnownLeaderId = null;
+  }
+
   idleView.style.display = 'none'; liveView.style.display = 'block';
 
   document.getElementById('lv-name').textContent = player.name;
@@ -740,7 +803,7 @@ async function renderAuctionState(state, teamId) {
 
   const photoWrap = document.getElementById('player-photo-wrap');
   if (player.photo_url) {
-    photoWrap.innerHTML = `<img src="${player.photo_url}" alt="${player.name}" style="width:100%;height:100%;object-fit:cover">`;
+    photoWrap.innerHTML = `<img src="${escapeHtml(player.photo_url)}" alt="${escapeHtml(player.name)}" style="width:100%;height:100%;object-fit:cover">`;
   } else {
     photoWrap.textContent = (player.name || '?')[0].toUpperCase();
     photoWrap.style.fontSize = '36px'; photoWrap.style.display = 'flex'; photoWrap.style.alignItems = 'center'; photoWrap.style.justifyContent = 'center'; photoWrap.style.color = 'var(--muted)';
@@ -918,6 +981,7 @@ window.switchTab = function(name, el) {
 // ─── INIT ───
 (function init() {
   applyBranding();
+  subscribeSettings();
   const sess = getLeaderSession();
   if (sess?.teamId) {
     showLoading();
