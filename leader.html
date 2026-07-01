@@ -128,6 +128,8 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
 .rt-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
 .rt-badge.offline{background:rgba(90,103,125,.1);border-color:var(--border);color:var(--muted)}
 .rt-badge.offline .rt-dot{background:var(--muted);animation:none}
+.rt-badge.reconnecting{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.2);color:var(--amber)}
+.rt-badge.reconnecting .rt-dot{background:var(--amber)}
 
 /* refresh spin animation */
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -144,17 +146,53 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
 .toast.success{border-left:3px solid var(--green)}
 .toast.error{border-left:3px solid var(--red)}
 .toast.info{border-left:3px solid var(--accent)}
+.toast.warn{border-left:3px solid var(--amber)}
 @keyframes toastIn{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
+
+/* ── Loading overlay (new) ── */
+.loading-overlay{position:fixed;inset:0;background:rgba(8,9,13,.55);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:1000}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:38px;height:38px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.btn-loading{position:relative;color:transparent!important;pointer-events:none}
+.btn-loading::after{content:'';position:absolute;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;left:50%;top:50%;margin:-7px 0 0 -7px}
+
+/* ── Field validation (new) ── */
+.field-error{color:var(--red);font-size:11px;margin-top:5px;display:none;font-weight:600}
+.field-error.show{display:block}
+.form-input.invalid{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(244,63,94,.1)}
+
+/* ── Subscription / team status banner (new) ── */
+.subscription-banner{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--amber);display:none;align-items:center;gap:8px}
+.subscription-banner.show{display:flex}
+.subscription-banner.critical{background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.3);color:var(--red)}
+
+/* ── Better team info (new) ── */
+.team-info-extra{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.5}
+
+/* ── Better budget display (new) ── */
+.purse-progress-wrap{margin-top:6px;width:110px}
+.purse-progress-track{width:100%;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.purse-progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s,background .3s}
+.purse-progress-fill.warn{background:var(--amber)}
+.purse-progress-fill.danger{background:var(--red)}
+.purse-progress-label{font-size:9px;color:var(--muted);margin-top:2px;text-align:right}
+
+/* ── skeleton (new) ── */
+.skeleton-bar{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px;height:12px;display:inline-block;width:70%}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 @media(max-width:480px){
   .player-showcase{flex-direction:column;align-items:flex-start}
   .player-photo{width:70px;height:93px}
   .player-name{font-size:18px}
   .bid-presets{grid-template-columns:repeat(2,1fr)}
+  .purse-progress-wrap{width:90px}
 }
 </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="global-loading"><div class="loading-spinner"></div></div>
 
 <div id="auth-wrap" class="auth-wrap">
   <div class="auth-card">
@@ -166,12 +204,14 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
     <div class="form-group">
       <label class="form-label">Team Username</label>
       <input class="form-input" id="l-username" placeholder="Your team username" onkeydown="if(event.key==='Enter')doLeaderLogin()">
+      <div class="field-error" id="err-l-username">Username is required</div>
     </div>
     <div class="form-group">
       <label class="form-label">Password</label>
       <input class="form-input" type="password" id="l-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLeaderLogin()">
+      <div class="field-error" id="err-l-password">Password is required</div>
     </div>
-    <button class="btn btn-primary" onclick="doLeaderLogin()">Sign In as Team Leader →</button>
+    <button class="btn btn-primary" id="leader-login-btn" onclick="doLeaderLogin()">Sign In as Team Leader →</button>
     <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">Contact admin if you forgot your credentials</div>
   </div>
 </div>
@@ -185,19 +225,30 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
         <div>
           <div class="team-name" id="tl-team-name">Team Name</div>
           <div class="team-code" id="tl-team-code">TEAM</div>
+          <div class="team-info-extra" id="tl-extra-info"></div>
         </div>
       </div>
     </div>
     <div class="topbar-right">
+      <div class="rt-badge" id="main-rt-badge" title="Live sync status">
+        <div class="rt-dot"></div>
+        <span>Synced</span>
+      </div>
       <div class="purse-chip">
         <div class="purse-label">Purse Left</div>
         <div class="purse-val" id="tl-purse">₹—</div>
+        <div class="purse-progress-wrap">
+          <div class="purse-progress-track"><div class="purse-progress-fill" id="purse-progress-fill" style="width:100%"></div></div>
+          <div class="purse-progress-label" id="purse-progress-label">0% spent</div>
+        </div>
       </div>
       <button class="btn btn-outline btn-sm" onclick="doLeaderLogout()">Sign Out</button>
     </div>
   </div>
 
   <div class="main">
+    <div class="subscription-banner" id="team-subscription-banner"></div>
+
     <div class="tabs">
       <button class="tab active" onclick="switchTab('auction', this)">🔨 Live Auction</button>
       <button class="tab" onclick="switchTab('squad', this)">👥 My Squad</button>
@@ -257,8 +308,9 @@ td{padding:10px 14px;border-top:1px solid var(--border)}
         <div class="bid-panel-title">🎯 Place Your Bid</div>
         <div class="bid-presets" id="bid-presets"></div>
         <div class="bid-input-row">
-          <input class="bid-input" type="number" id="bid-amount" placeholder="Enter amount">
+          <input class="bid-input" type="number" id="bid-amount" placeholder="Enter amount" oninput="clearFieldError('bid-amount')">
         </div>
+        <div class="field-error" id="err-bid-amount">Enter a valid bid amount</div>
         <button class="bid-submit" id="bid-submit-btn" onclick="placeBid()">
           🔨 Place Bid
         </button>
@@ -359,6 +411,40 @@ function toast(msg, type = 'success') {
   setTimeout(() => { el.style.opacity='0';el.style.transform='translateX(20px)';el.style.transition='.3s';setTimeout(()=>el.remove(),300); }, 3000);
 }
 
+// ─── NEW: Loading overlay helpers ───
+function showLoading() { document.getElementById('global-loading')?.classList.add('show'); }
+function hideLoading() { document.getElementById('global-loading')?.classList.remove('show'); }
+function setBtnLoading(btn, loading) {
+  if (!btn) return;
+  if (loading) { btn.dataset.origText = btn.textContent; btn.classList.add('btn-loading'); btn.disabled = true; }
+  else { btn.classList.remove('btn-loading'); btn.disabled = false; }
+}
+
+// ─── NEW: Friendly error messages ───
+function friendlyError(e) {
+  const msg = e?.message || String(e);
+  if (msg.includes('permission')) return 'You do not have permission to perform this action.';
+  if (msg.includes('network') || msg.includes('Failed to fetch')) return 'Network error — check your internet connection and try again.';
+  if (msg.includes('not-found')) return 'The requested record could not be found.';
+  if (msg.includes('unavailable')) return 'Connection temporarily unavailable — retrying...';
+  return msg;
+}
+
+// ─── NEW: Field validation helpers ───
+function showFieldError(fieldId, customMsg) {
+  const input = document.getElementById(fieldId);
+  const err = document.getElementById('err-' + fieldId);
+  if (input) input.classList.add('invalid');
+  if (err) { if (customMsg) err.textContent = customMsg; err.classList.add('show'); }
+}
+function clearFieldError(fieldId) {
+  const input = document.getElementById(fieldId);
+  const err = document.getElementById('err-' + fieldId);
+  if (input) input.classList.remove('invalid');
+  if (err) err.classList.remove('show');
+}
+window.clearFieldError = clearFieldError;
+
 // ─── BRANDING ───
 function applyBranding() {
   const s = getSettings();
@@ -371,16 +457,28 @@ function applyBranding() {
 // ─── AUTH ───
 window.doLeaderLogin = async function() {
   const username = v('l-username'), pass = v('l-password');
-  if (!username || !pass) return toast('Enter username and password', 'error');
+  clearFieldError('l-username'); clearFieldError('l-password');
+  let valid = true;
+  if (!username) { showFieldError('l-username'); valid = false; }
+  if (!pass) { showFieldError('l-password'); valid = false; }
+  if (!valid) return toast('Please fill in your username and password', 'error');
+
+  const btn = document.getElementById('leader-login-btn');
+  setBtnLoading(btn, true);
+  showLoading();
   try {
     const teams = await fsGetAll('teams', where('leader_username','==',username));
-    if (!teams.length) return toast('No team found for this username', 'error');
+    if (!teams.length) { hideLoading(); setBtnLoading(btn, false); showFieldError('l-username'); return toast('No team found for this username', 'error'); }
     const team = teams[0];
-    if (!team.leader_password) return toast('No password set. Contact admin.', 'error');
-    if (team.leader_password !== pass) return toast('Wrong password', 'error');
+    if (!team.leader_password) { hideLoading(); setBtnLoading(btn, false); return toast('No password set for this team. Contact admin.', 'error'); }
+    if (team.leader_password !== pass) { hideLoading(); setBtnLoading(btn, false); showFieldError('l-password'); return toast('Wrong password', 'error'); }
     setLeaderSession({ teamId: team.id, teamName: team.name, shortCode: team.short_code });
+    hideLoading(); setBtnLoading(btn, false);
     enterApp(team);
-  } catch(e) { toast('Login error: ' + e.message, 'error'); }
+  } catch(e) {
+    hideLoading(); setBtnLoading(btn, false);
+    toast('Login error: ' + friendlyError(e), 'error');
+  }
 };
 
 window.doLeaderLogout = function() {
@@ -402,7 +500,82 @@ function enterApp(team) {
     img.src = team.logo_url; img.style.display = 'block'; dot.style.display = 'none';
   }
   document.getElementById('tl-purse').textContent = fmt(team.purse_remaining ?? team.purse_total);
+  renderTeamInfoExtra(team);
+  updatePurseProgress(team);
+  checkTeamSubscriptionStatus(team);
+  showSquadSkeleton();
   subscribeAll(team.id);
+}
+
+// ─── NEW: Better Team Information ───
+function renderTeamInfoExtra(team) {
+  const el = document.getElementById('tl-extra-info');
+  if (!el) return;
+  const bits = [];
+  if (team.leader_name) bits.push(`👤 ${team.leader_name}`);
+  if (team.owner_name) bits.push(`🏷️ ${team.owner_name}`);
+  el.textContent = bits.join('  ·  ');
+}
+
+// ─── NEW: Better Budget Display ───
+function updatePurseProgress(team) {
+  const total = Number(team.purse_total) || 0;
+  const remaining = Number(team.purse_remaining ?? team.purse_total) || 0;
+  const spent = Math.max(0, total - remaining);
+  const pct = total > 0 ? Math.min(100, Math.round((spent / total) * 100)) : 0;
+  const fill = document.getElementById('purse-progress-fill');
+  const label = document.getElementById('purse-progress-label');
+  if (!fill || !label) return;
+  fill.style.width = (100 - pct) + '%'; // shows remaining proportion
+  fill.className = 'purse-progress-fill' + (pct >= 90 ? ' danger' : pct >= 70 ? ' warn' : '');
+  label.textContent = `${pct}% spent · ${fmt(spent)} used`;
+}
+
+// ─── NEW: Subscription / Team Status Display ───
+// Reads optional, forward-compatible fields on the team document (account_status / suspended / plan_expiry)
+// without requiring any change to the existing Firestore schema. Hidden when these fields are absent.
+function checkTeamSubscriptionStatus(team) {
+  const banner = document.getElementById('team-subscription-banner');
+  if (!banner) return;
+  banner.classList.remove('show', 'critical');
+  banner.textContent = '';
+
+  if (team.account_status === 'suspended' || team.suspended === true) {
+    banner.textContent = '⚠️ Your team access has been suspended by the admin. Contact the organiser for help.';
+    banner.classList.add('show', 'critical');
+    return;
+  }
+  if (team.plan_expiry) {
+    const days = Math.ceil((new Date(team.plan_expiry) - new Date()) / (1000*60*60*24));
+    if (days < 0) {
+      banner.textContent = '⚠️ Your team\'s access has expired. Contact admin to renew.';
+      banner.classList.add('show', 'critical');
+    } else if (days <= 3) {
+      banner.textContent = `⏳ Your team's access expires in ${days} day${days===1?'':'s'}. Contact admin to renew.`;
+      banner.classList.add('show');
+    }
+  }
+}
+
+// ─── NEW: Squad loading skeleton ───
+function showSquadSkeleton() {
+  const tbody = document.getElementById('squad-body');
+  if (!tbody) return;
+  tbody.innerHTML = Array.from({length:3}).map(() => `
+    <tr>
+      <td><span class="skeleton-bar" style="width:60%"></span></td>
+      <td><span class="skeleton-bar" style="width:50%"></span></td>
+      <td><span class="skeleton-bar" style="width:40%"></span></td>
+    </tr>`).join('');
+}
+
+// ─── NEW: Connection status badge (top-level sync indicator) ───
+function setMainConnStatus(state) {
+  const badge = document.getElementById('main-rt-badge');
+  if (!badge) return;
+  if (state === 'online') { badge.className = 'rt-badge'; badge.innerHTML = '<div class="rt-dot"></div><span>Synced</span>'; }
+  else if (state === 'reconnecting') { badge.className = 'rt-badge reconnecting'; badge.innerHTML = '<div class="rt-dot"></div><span>Reconnecting…</span>'; }
+  else { badge.className = 'rt-badge offline'; badge.innerHTML = '<div class="rt-dot"></div><span>Offline</span>'; }
 }
 
 // ─── SUBSCRIPTIONS ───
@@ -414,26 +587,44 @@ let countdownMax = 15;
 let countdownLocal = 0;
 let countdownInterval = null;
 let myTeamId = null;
+let lastKnownLeaderId = null; // NEW: used for outbid notifications
 
 function subscribeAll(teamId) {
   myTeamId = teamId;
   unsubAll();
+  lastKnownLeaderId = null;
 
   // listen auction_state
   const u1 = onSnapshot(docRef('auction_state','main'), async snap => {
+    setMainConnStatus('online');
     currentState = snap.exists() ? snap.data() : null;
     await renderAuctionState(currentState, teamId);
     // also refresh purse
-    const team = await fsGetOne('teams', teamId);
-    if (team) document.getElementById('tl-purse').textContent = fmt(team.purse_remaining ?? team.purse_total);
+    try {
+      const team = await fsGetOne('teams', teamId);
+      if (team) {
+        document.getElementById('tl-purse').textContent = fmt(team.purse_remaining ?? team.purse_total);
+        updatePurseProgress(team);
+      }
+    } catch(e) { /* non-fatal */ }
+  }, err => {
+    setMainConnStatus('reconnecting');
+    toast('Connection issue: ' + friendlyError(err), 'error');
   });
 
   // listen team doc for purse updates
   const u2 = onSnapshot(docRef('teams', teamId), snap => {
+    setMainConnStatus('online');
     if (snap.exists()) {
       const t = snap.data();
       document.getElementById('tl-purse').textContent = fmt(t.purse_remaining ?? t.purse_total);
+      renderTeamInfoExtra(t);
+      updatePurseProgress(t);
+      checkTeamSubscriptionStatus(t);
     }
+  }, err => {
+    setMainConnStatus('reconnecting');
+    toast('Team sync issue: ' + friendlyError(err), 'error');
   });
 
   // ── REAL-TIME SQUAD LISTENER ──
@@ -441,6 +632,8 @@ function subscribeAll(teamId) {
   const u3 = onSnapshot(squadQuery, snap => {
     const players = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderSquad(players);
+    const badge = document.getElementById('squad-rt-badge');
+    if (badge) { badge.className = 'rt-badge'; badge.innerHTML = '<div class="rt-dot"></div><span>Live</span>'; }
     const squadTab = document.getElementById('tab-squad');
     if (squadTab.style.display === 'none' && snap.docChanges().some(c => c.type === 'added')) {
       toast('🎉 New player added to your squad!', 'success');
@@ -451,6 +644,7 @@ function subscribeAll(teamId) {
       badge.className = 'rt-badge offline';
       badge.innerHTML = '<div class="rt-dot"></div><span>Offline</span>';
     }
+    toast('Squad sync issue: ' + friendlyError(err), 'error');
   });
 
   unsubFns = [u1, u2, u3];
@@ -486,7 +680,7 @@ window.manualRefreshSquad = async function() {
     renderSquad(players);
     toast('Squad refreshed ✓', 'info');
   } catch(e) {
-    toast('Refresh failed: ' + e.message, 'error');
+    toast('Refresh failed: ' + friendlyError(e), 'error');
   } finally {
     setTimeout(() => {
       btn.disabled = false;
@@ -494,6 +688,20 @@ window.manualRefreshSquad = async function() {
     }, 800);
   }
 };
+
+// ─── NEW: notification sound (mirrors admin panel's bell chime) ───
+function playNotifSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = 700;
+    o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    o.start(); o.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
 
 async function renderAuctionState(state, teamId) {
   const s = getSettings();
@@ -514,6 +722,7 @@ async function renderAuctionState(state, teamId) {
     document.getElementById('countdown-bar').style.width = '100%';
     document.getElementById('countdown-bar').className = 'countdown-bar-fill';
     document.getElementById('countdown-num').textContent = '—';
+    lastKnownLeaderId = null;
     return;
   }
 
@@ -551,6 +760,13 @@ async function renderAuctionState(state, teamId) {
 
   const myLeadBox = document.getElementById('my-lead-box');
   myLeadBox.style.display = iAmLeading ? 'block' : 'none';
+
+  // ─── NEW: Better Notifications — outbid alert ───
+  if (lastKnownLeaderId === teamId && state.current_leader_team_id && state.current_leader_team_id !== teamId) {
+    toast(`⚠️ You've been outbid on ${player.name}! Current bid: ${fmt(currentBid)}`, 'warn');
+    playNotifSound();
+  }
+  lastKnownLeaderId = state.current_leader_team_id || null;
 
   if (state.is_live) {
     if (state.is_paused) {
@@ -623,34 +839,49 @@ function buildBidPresets(currentBid) {
 
 window.selectBidPreset = function(val) {
   document.getElementById('bid-amount').value = val;
+  clearFieldError('bid-amount');
   document.querySelectorAll('.bid-preset').forEach(p => p.classList.remove('selected'));
   event.currentTarget.classList.add('selected');
 };
 
+// ─── IMPROVED VALIDATION + ERROR HANDLING ───
 window.placeBid = async function() {
+  clearFieldError('bid-amount');
+
   if (currentState?.is_paused) return toast('Auction is currently PAUSED. Bidding blocked!', 'error');
 
   const sess = getLeaderSession();
-  if (!sess) return;
+  if (!sess) return toast('Session expired. Please sign in again.', 'error');
+
   const amtStr = document.getElementById('bid-amount').value;
   const amount = parseInt(amtStr);
-  if (!amount || amount <= 0) return toast('Enter a valid bid amount', 'error');
+
+  if (!amtStr || isNaN(amount) || amount <= 0) {
+    showFieldError('bid-amount', 'Enter a valid bid amount');
+    return toast('Enter a valid bid amount', 'error');
+  }
+  if (!Number.isInteger(amount)) {
+    showFieldError('bid-amount', 'Bid amount must be a whole number');
+    return toast('Bid amount must be a whole number', 'error');
+  }
   if (!currentState?.current_player_id) return toast('No player on block', 'error');
   if (!currentState?.is_live) return toast('Bidding not started yet', 'error');
 
   const btn = document.getElementById('bid-submit-btn');
-  btn.disabled = true; btn.textContent = 'Placing bid...';
+  setBtnLoading(btn, true);
 
   try {
     const currentBid = currentState.current_bid || 0;
     if (amount <= currentBid) {
+      showFieldError('bid-amount', `Must be more than ${fmt(currentBid)}`);
       toast(`Bid must be more than ${fmt(currentBid)}`, 'error');
-      btn.disabled = false; btn.textContent = '🔨 Place Bid'; return;
+      setBtnLoading(btn, false); return;
     }
     const team = await fsGetOne('teams', myTeamId);
     if (team && amount > (team.purse_remaining || 0)) {
+      showFieldError('bid-amount', `Exceeds your remaining purse (${fmt(team.purse_remaining)})`);
       toast(`Insufficient purse! You have ${fmt(team.purse_remaining)} remaining.`, 'error');
-      btn.disabled = false; btn.textContent = '🔨 Place Bid'; return;
+      setBtnLoading(btn, false); return;
     }
 
     await fsAdd('bids', {
@@ -660,18 +891,20 @@ window.placeBid = async function() {
       amount,
       created_at: new Date().toISOString()
     });
-    
+
     // Server timer sync
     await fsSet('auction_state', 'main', {
       current_bid: amount,
       current_leader_team_id: myTeamId,
       countdown_start: new Date().toISOString()
     });
-    
+
     toast(`Bid of ${fmt(amount)} placed! 🎉`, 'success');
     document.getElementById('bid-amount').value = '';
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-  finally { btn.disabled = false; btn.textContent = '🔨 Place Bid'; }
+  } catch(e) {
+    toast('Error: ' + friendlyError(e), 'error');
+  }
+  finally { setBtnLoading(btn, false); }
 };
 
 // ─── TABS ───
@@ -687,9 +920,15 @@ window.switchTab = function(name, el) {
   applyBranding();
   const sess = getLeaderSession();
   if (sess?.teamId) {
+    showLoading();
     fsGetOne('teams', sess.teamId).then(team => {
+      hideLoading();
       if (team) enterApp(team);
       else { clearLeaderSession(); }
+    }).catch(e => {
+      hideLoading();
+      toast('Could not restore session: ' + friendlyError(e), 'error');
+      clearLeaderSession();
     });
   }
 })();
