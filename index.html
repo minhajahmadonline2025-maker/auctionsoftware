@@ -79,7 +79,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .sidebar-user-name{font-size:13px;font-weight:600;color:var(--text)}
 .sidebar-user-role{font-size:11px;color:var(--muted)}
 
-.main{padding:28px;overflow-y:auto}
+.main{padding:28px;overflow-y:auto;position:relative}
 .page{display:none;animation:fadeIn .2s}
 .page.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -187,6 +187,9 @@ tr.drag-over td{background:rgba(79,142,247,.08)!important;outline:1px dashed var
 .form-input::placeholder{color:var(--muted)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 select.form-input option{background:var(--surface2)}
+.check-row{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--red)}
+.check-row label{font-size:12px;color:var(--text2);font-weight:600}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .modal-overlay.open{display:flex}
@@ -258,14 +261,15 @@ select.form-input option{background:var(--surface2)}
 
 .url-display{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--accent);display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
 
-/* ── Notification Centre (bell + dropdown) ── */
+/* ── Notification Centre (bell + dropdown) — now a single persistent, page-independent widget ── */
+.global-notif-bar{position:fixed;top:20px;right:32px;z-index:600}
 .notif-bell-wrap{position:relative}
-.notif-bell-btn{width:36px;height:36px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2);position:relative}
+.notif-bell-btn{width:38px;height:38px;border-radius:9px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2);position:relative;box-shadow:0 6px 16px rgba(0,0,0,.35)}
 .notif-bell-btn:hover{border-color:var(--border2);color:var(--text)}
 .notif-bell-btn.has-new{animation:bellShake 1.5s infinite}
 @keyframes bellShake{0%,100%{transform:rotate(0)}10%{transform:rotate(12deg)}20%{transform:rotate(-10deg)}30%{transform:rotate(8deg)}40%{transform:rotate(-6deg)}50%{transform:rotate(0)}}
 .notif-count{position:absolute;top:-4px;right:-4px;background:var(--red);color:white;font-size:10px;font-weight:800;min-width:16px;height:16px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 3px}
-.notif-panel{position:absolute;top:44px;right:0;width:340px;max-height:420px;overflow-y:auto;background:var(--surface);border:1px solid var(--border2);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.5);display:none;z-index:400}
+.notif-panel{position:absolute;top:46px;right:0;width:340px;max-height:420px;overflow-y:auto;background:var(--surface);border:1px solid var(--border2);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.5);display:none;z-index:600}
 .notif-panel.open{display:block}
 .notif-panel-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)}
 .notif-panel-head span{font-size:13px;font-weight:700}
@@ -287,6 +291,7 @@ select.form-input option{background:var(--surface2)}
   .form-row{grid-template-columns:1fr}
   .timer-options{grid-template-columns:repeat(3,1fr)}
   .notif-panel{width:280px;right:-40px}
+  .global-notif-bar{top:12px;right:12px}
 }
 
 /* ── New: Subscription / Roles / Reports / Backup / Validation / Loading ── */
@@ -320,6 +325,19 @@ select.form-input option{background:var(--surface2)}
 <body>
 
 <div class="loading-overlay" id="global-loading"><div class="loading-spinner"></div></div>
+
+<!-- FIX #4: single, persistent notification bell + panel that lives outside the per-page DOM
+     subtrees, so it is visible/functional from every page (Dashboard, Auction, etc.), not just
+     the (potentially hidden) Dashboard page. Rendered once, positioned fixed. -->
+<div class="global-notif-bar" id="global-notif-bar" style="display:none">
+  <div class="notif-bell-wrap">
+    <button class="notif-bell-btn" id="notif-bell-btn" onclick="toggleNotifPanel()">🔔<span class="notif-count" id="notif-count" style="display:none">0</span></button>
+    <div class="notif-panel" id="notif-panel">
+      <div class="notif-panel-head"><span>Notifications</span><button class="btn-ghost" onclick="clearAllNotifs()" style="font-size:11px">Clear all</button></div>
+      <div id="notif-list"><div class="empty-state" style="padding:20px;font-size:12px">No notifications yet</div></div>
+    </div>
+  </div>
+</div>
 
 <div id="screen-auth" class="auth-screen active">
   <div class="auth-logo-area">
@@ -451,13 +469,6 @@ select.form-input option{background:var(--surface2)}
       <div class="page-header">
         <div><div class="page-title">Dashboard</div><div class="page-sub">Auction overview at a glance</div></div>
         <div class="header-actions">
-          <div class="notif-bell-wrap">
-            <button class="notif-bell-btn" id="notif-bell-btn" onclick="toggleNotifPanel()">🔔<span class="notif-count" id="notif-count" style="display:none">0</span></button>
-            <div class="notif-panel" id="notif-panel">
-              <div class="notif-panel-head"><span>Notifications</span><button class="btn-ghost" onclick="clearAllNotifs()" style="font-size:11px">Clear all</button></div>
-              <div id="notif-list"><div class="empty-state" style="padding:20px;font-size:12px">No notifications yet</div></div>
-            </div>
-          </div>
           <button class="btn btn-outline btn-sm" onclick="loadDashboard()">↻ Refresh</button>
         </div>
       </div>
@@ -481,9 +492,6 @@ select.form-input option{background:var(--surface2)}
       <div class="page-header">
         <div><div class="page-title">Live Auction Control</div><div class="page-sub">Manage bidding flow, countdown, and player queue</div></div>
         <div class="header-actions">
-          <div class="notif-bell-wrap">
-            <button class="notif-bell-btn" id="notif-bell-btn-2" onclick="toggleNotifPanel()">🔔<span class="notif-count" id="notif-count-2" style="display:none">0</span></button>
-          </div>
           <button class="btn btn-outline btn-sm" onclick="undoLastAction()" title="Undo last action">↩ Undo</button>
           <button class="btn btn-outline btn-sm" onclick="loadQueue()">↻ Refresh</button>
         </div>
@@ -568,8 +576,8 @@ select.form-input option{background:var(--surface2)}
         <button class="btn btn-primary btn-sm" onclick="openAddTeam()">+ Add Team</button>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>Team</th><th>Leader / Login</th><th>Owner</th><th>Purse Total</th><th>Purse Left</th><th>Actions</th></tr></thead>
-        <tbody id="teams-body"><tr><td colspan="6" class="empty-state"><span class="empty-state-icon">🏟️</span>Loading teams...</td></tr></tbody>
+        <table><thead><tr><th>Team</th><th>Leader / Login</th><th>Owner</th><th>Purse Total</th><th>Purse Left</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="teams-body"><tr><td colspan="7" class="empty-state"><span class="empty-state-icon">🏟️</span>Loading teams...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -632,6 +640,8 @@ select.form-input option{background:var(--surface2)}
         <div><div class="page-title">Settings</div><div class="page-sub">Configure your auction platform</div></div>
       </div>
 
+      <div class="info-box">☁️ Branding, timer and WhatsApp settings below are stored in Firestore and sync automatically to the Live Display and Team Leader panels on any device — no manual copying required.</div>
+
       <div class="settings-section">
         <h3>🏆 League Branding</h3>
         <div class="info-box">Updates the league name and logo across all pages and the live display screen.</div>
@@ -693,7 +703,7 @@ select.form-input option{background:var(--surface2)}
 
       <div class="settings-section">
         <h3>💾 Backup &amp; Restore</h3>
-        <div class="info-box">Export a full JSON backup of players, teams, and settings (and users, if Super Admin). Restoring re-adds records from a backup file — use with care.</div>
+        <div class="info-box">Export a full JSON backup of players, teams, and settings (and users, if Super Admin). Restore is <strong>idempotent</strong> — it upserts records by their original ID, so running it more than once (or on non-empty data) will not create duplicates; it will simply overwrite matching records.</div>
         <div class="backup-row">
           <button class="btn btn-primary btn-sm" id="backup-export-btn" onclick="exportBackup()">⬇ Export Backup (JSON)</button>
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('backup-restore-input').click()">⬆ Restore from Backup</button>
@@ -735,9 +745,18 @@ select.form-input option{background:var(--surface2)}
       <div class="form-group"><label class="form-label">Leader Name</label><input class="form-input" id="team-leader" placeholder="Captain / Manager"></div>
       <div class="form-group"><label class="form-label">Leader Username</label><input class="form-input" id="team-leader-username" placeholder="leader123"></div>
     </div>
-    <div class="form-group"><label class="form-label">Leader Password</label><input class="form-input" type="password" id="team-leader-pass" placeholder="Set a password for team leader login"></div>
+    <div class="form-group"><label class="form-label">Leader Password</label><input class="form-input" type="password" id="team-leader-pass" placeholder="Set a password for team leader login (leave blank to keep current)"></div>
     <div class="form-group"><label class="form-label">Owner / Franchise Owner</label><input class="form-input" id="team-owner" placeholder="Franchise owner name"></div>
     <div class="form-group"><label class="form-label">Total Purse (₹)</label><input class="form-input" id="team-purse" type="number" placeholder="100000000" min="0"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Plan / Access Expiry (optional)</label><input class="form-input" type="date" id="team-plan-expiry"></div>
+      <div class="form-group" style="display:flex;align-items:flex-end">
+        <div class="check-row" style="margin-bottom:10px">
+          <input type="checkbox" id="team-suspended">
+          <label for="team-suspended">Suspend this team's leader-panel access</label>
+        </div>
+      </div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-team')">Cancel</button>
       <button class="btn btn-primary" id="save-team-btn" onclick="saveTeam()">Save Team</button>
@@ -1010,13 +1029,71 @@ async function getTeamCached(id) {
 }
 
 // ════════════════════════════════════════════════════
-// SETTINGS & SESSION
+// SECURITY HELPERS (FIX #9): salted SHA-256 password hashing via Web Crypto.
+// NOTE: because this app has no real backend / Firebase Auth, hashing here is
+// still ultimately client-managed — anyone with Firestore read access to the
+// `auction_users`/`teams` docs sees the hash+salt, not the password itself,
+// which is a major improvement over plaintext/Base64, but this is NOT a
+// substitute for migrating to Firebase Authentication + custom claims.
+// ════════════════════════════════════════════════════
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function genSalt() {
+  return (crypto.randomUUID ? crypto.randomUUID() : (Math.random().toString(36).slice(2) + Date.now().toString(36)));
+}
+async function hashPassword(pass, salt) {
+  return await sha256Hex(salt + ':' + pass);
+}
+// Legacy (pre-fix) Base64 scheme — used only as a one-time fallback so existing
+// accounts keep working; on successful legacy login we transparently upgrade
+// the stored credential to salted SHA-256.
+function legacyB64(pass) {
+  return btoa(unescape(encodeURIComponent(pass)));
+}
+
+// ════════════════════════════════════════════════════
+// ROLE / PERMISSION GUARD (FIX #1)
+// Every mutating action (open-modal *and* the actual save/delete/approve
+// call) is guarded so a Read-Only user cannot perform writes even by
+// invoking a dynamically-rendered button's onclick handler directly.
+// Table templates also check isReadOnly() so those buttons are not even
+// rendered for read-only users (defense in depth).
+// ════════════════════════════════════════════════════
+function currentRole() { return getSession()?.role || 'event_owner'; }
+function isReadOnly() { return currentRole() === 'readonly'; }
+function guardEdit() {
+  if (isReadOnly()) { toast('Your role is Read Only — this action is not permitted.', 'error'); return false; }
+  return true;
+}
+
+// ════════════════════════════════════════════════════
+// SETTINGS & SESSION (FIX #2: settings now live in Firestore `settings/main`
+// so branding/timer/whatsapp changes propagate live to display.html and
+// leader.html on other devices. localStorage is kept only as an instant-paint
+// cache so the UI isn't blank before the first snapshot arrives.)
 // ════════════════════════════════════════════════════
 const getSession = () => { try { return JSON.parse(localStorage.getItem('auctionSession') || 'null'); } catch { return null; } };
 const setSession = obj => localStorage.setItem('auctionSession', JSON.stringify(obj));
 const clearSession = () => localStorage.removeItem('auctionSession');
-const getSettings = () => { try { return JSON.parse(localStorage.getItem('auctionSettings') || '{}'); } catch { return {}; } };
-const saveSettings = obj => { const c = getSettings(); localStorage.setItem('auctionSettings', JSON.stringify({ ...c, ...obj })); };
+
+let settingsCache = {};
+try { settingsCache = JSON.parse(localStorage.getItem('auctionSettingsCache') || '{}'); } catch { settingsCache = {}; }
+const getSettings = () => settingsCache;
+async function saveSettings(obj) {
+  settingsCache = { ...settingsCache, ...obj };
+  localStorage.setItem('auctionSettingsCache', JSON.stringify(settingsCache));
+  await fsSet('settings', 'main', obj);
+}
+function subscribeSettings() {
+  onSnapshot(docRef('settings', 'main'), snap => {
+    settingsCache = snap.exists() ? snap.data() : settingsCache;
+    localStorage.setItem('auctionSettingsCache', JSON.stringify(settingsCache));
+    applyBranding();
+    loadTimerSettings();
+  }, err => console.warn('settings listener error', err));
+}
 
 // ════════════════════════════════════════════════════
 // AUTH
@@ -1031,6 +1108,7 @@ function showScreen(name) {
   document.getElementById('screen-auth').classList.remove('active');
   document.getElementById('screen-pending').classList.remove('active');
   document.getElementById('screen-app').style.display = 'none';
+  document.getElementById('global-notif-bar').style.display = name === 'app' ? 'block' : 'none';
   if (name === 'auth') document.getElementById('screen-auth').classList.add('active');
   else if (name === 'pending') document.getElementById('screen-pending').classList.add('active');
   else document.getElementById('screen-app').style.display = 'block';
@@ -1049,9 +1127,11 @@ async function doRegister() {
   try {
     const existing = await fsGetAll('auction_users', where('username','==',username));
     if (existing.length) { hideLoading(); showFieldError('reg-username'); return toast('Username already taken', 'error'); }
+    const salt = genSalt();
+    const hash = await hashPassword(pass, salt);
     await fsAdd('auction_users', {
       username, full_name: name || username, phone: phone || null, event_name: event || null,
-      password_hash: btoa(unescape(encodeURIComponent(pass))), status: 'pending', role: 'event_owner', created_at: new Date().toISOString()
+      password_hash: hash, password_salt: salt, status: 'pending', role: 'event_owner', created_at: new Date().toISOString()
     });
   } catch(e) { hideLoading(); return toast('Registration failed: ' + friendlyError(e), 'error'); }
   hideLoading();
@@ -1064,8 +1144,18 @@ async function doLogin() {
   const s = getSettings();
   const u = v('login-username'), p = v('login-password');
   if (!u || !p) return toast('Enter username and password', 'error');
-  const superUser = s.adminUser || 'admin', superPass = s.adminPass || 'admin123';
-  if (u === superUser && p === superPass) {
+  const superUser = s.adminUser || 'admin';
+  // superadmin password may be stored hashed (new) or plaintext fallback (never set) — default 'admin123'
+  const superPassPlain = s.adminPass;
+  const superPassHash = s.adminPassHash;
+  const superSalt = s.adminPassSalt;
+  let superOk = false;
+  if (u === superUser) {
+    if (superPassHash && superSalt) { superOk = (await hashPassword(p, superSalt)) === superPassHash; }
+    else if (superPassPlain) { superOk = p === superPassPlain; }
+    else { superOk = (p === 'admin123'); }
+  }
+  if (superOk) {
     const sess = { username: u, status: 'approved', role: 'superadmin', full_name: 'Super Admin' };
     setSession(sess); enterApp(sess); return;
   }
@@ -1074,8 +1164,19 @@ async function doLogin() {
     const users = await fsGetAll('auction_users', where('username','==',u));
     if (users.length) {
       const user = users[0];
-      const expectedHash = btoa(unescape(encodeURIComponent(p)));
-      if (user.password_hash !== expectedHash) { hideLoading(); return toast('Wrong password', 'error'); }
+      let ok = false;
+      if (user.password_salt && user.password_hash) {
+        ok = (await hashPassword(p, user.password_salt)) === user.password_hash;
+      } else if (user.password_hash) {
+        // legacy Base64 record — verify, then transparently upgrade to salted hash
+        ok = user.password_hash === legacyB64(p);
+        if (ok) {
+          const salt = genSalt();
+          const newHash = await hashPassword(p, salt);
+          fsUpdate('auction_users', user.id, { password_hash: newHash, password_salt: salt }).catch(()=>{});
+        }
+      }
+      if (!ok) { hideLoading(); return toast('Wrong password', 'error'); }
       if (user.status === 'pending') { hideLoading(); setSession({ username: u, status: 'pending', full_name: user.full_name }); showPendingScreen(u); return; }
       if (user.status === 'suspended') { hideLoading(); return toast('Account suspended. Contact admin.', 'error'); }
       if (user.expiry_date && new Date(user.expiry_date) < new Date()) { hideLoading(); setSession({ username: u, status: 'pending', full_name: user.full_name }); showPendingScreen(u); return; }
@@ -1096,6 +1197,7 @@ function showPendingScreen(username) {
   showScreen('pending');
 }
 
+let ownUserDocUnsub = null;
 function enterApp(session) {
   showScreen('app');
   applyBranding();
@@ -1107,17 +1209,34 @@ function enterApp(session) {
   document.getElementById('settings-superadmin-section').style.display = isSA ? 'block' : 'none';
   loadDashboard();
   subscribeRealtime();
-  if (isSA) checkPendingUsers();
+  if (isSA) subscribePendingUsers();
   loadTimerSettings();
   loadNotifications();
   applyRolePermissions(session.role || 'event_owner');
   checkSubscriptionStatus(session);
+  // FIX #10: live-updating session status (suspension/expiry) instead of only at login
+  subscribeOwnUserDoc(session);
   document.getElementById('display-url-text').textContent = window.location.href.replace('admin.html', 'live.html');
+}
+
+function subscribeOwnUserDoc(session) {
+  if (ownUserDocUnsub) { try { ownUserDocUnsub(); } catch(e){} ownUserDocUnsub = null; }
+  if (!session.id) return; // superadmin has no doc
+  ownUserDocUnsub = onSnapshot(docRef('auction_users', session.id), snap => {
+    if (!snap.exists()) return;
+    const u = snap.data();
+    if (u.status === 'suspended') { toast('Your account was suspended by admin.', 'error'); doLogout(); return; }
+    const updated = { ...session, expiry_date: u.expiry_date || null, role: u.role || session.role };
+    setSession(updated);
+    checkSubscriptionStatus(updated);
+  }, err => console.warn('own user doc listener error', err));
 }
 
 function doLogout() {
   stopCountdownTimer();
   unsubscribeRealtime();
+  if (ownUserDocUnsub) { try { ownUserDocUnsub(); } catch(e){} ownUserDocUnsub = null; }
+  if (pendingUsersUnsub) { try { pendingUsersUnsub(); } catch(e){} pendingUsersUnsub = null; }
   clearSession();
   showScreen('auth');
   document.getElementById('login-username').value = '';
@@ -1137,29 +1256,38 @@ function applyBranding() {
   const sicon = document.getElementById('sidebar-brand-icon');
   if (logo) { simg.src = logo; simg.style.display = 'block'; sicon.style.display = 'none'; }
   else { simg.style.display = 'none'; sicon.style.display = 'block'; }
-  if (logo) { document.getElementById('login-logo-display').innerHTML = `<img src="${logo}" style="width:56px;height:56px;object-fit:contain;border-radius:10px">`; }
+  if (logo) { document.getElementById('login-logo-display').innerHTML = `<img src="${escapeHtml(logo)}" style="width:56px;height:56px;object-fit:contain;border-radius:10px">`; }
   else { document.getElementById('login-logo-display').textContent = '⚡'; }
   const sln = document.getElementById('set-league-name');
   if (sln) { sln.value = s.leagueName || ''; document.getElementById('set-league-logo').value = s.leagueLogo || ''; document.getElementById('set-admin-user').value = s.adminUser || 'admin'; document.getElementById('set-whatsapp').value = s.whatsappNumber || ''; document.getElementById('set-whatsapp-msg').value = s.whatsappMessage || ''; }
 }
 
-function saveLeagueSettings() {
+async function saveLeagueSettings() {
+  if (!guardEdit()) return;
   const name = v('set-league-name'), logo = v('set-league-logo');
   if (!name) return toast('League name cannot be empty', 'error');
-  saveSettings({ leagueName: name, leagueLogo: logo });
-  applyBranding(); toast('Branding saved ✓');
+  await saveSettings({ leagueName: name, leagueLogo: logo });
+  applyBranding(); toast('Branding saved ✓ (synced to all devices)');
 }
-function saveAdminCreds() {
+async function saveAdminCreds() {
+  if (!guardEdit()) return;
   const user = v('set-admin-user'), pass = v('set-admin-pass');
   if (!user) return toast('Username cannot be empty', 'error');
-  const u = { adminUser: user }; if (pass) u.adminPass = pass;
-  saveSettings(u); document.getElementById('set-admin-pass').value = '';
+  const u = { adminUser: user };
+  if (pass) {
+    const salt = genSalt();
+    u.adminPassHash = await hashPassword(pass, salt);
+    u.adminPassSalt = salt;
+    u.adminPass = null; // clear any legacy plaintext
+  }
+  await saveSettings(u); document.getElementById('set-admin-pass').value = '';
   toast('Credentials updated ✓');
 }
-function saveWhatsappSettings() {
+async function saveWhatsappSettings() {
+  if (!guardEdit()) return;
   const num = v('set-whatsapp'), msg = v('set-whatsapp-msg');
   if (!num) return toast('WhatsApp number required', 'error');
-  saveSettings({ whatsappNumber: num, whatsappMessage: msg }); toast('WhatsApp settings saved ✓');
+  await saveSettings({ whatsappNumber: num, whatsappMessage: msg }); toast('WhatsApp settings saved ✓');
 }
 
 // ════════════════════════════════════════════════════
@@ -1199,15 +1327,16 @@ function updateTimerUI(secs) {
   }
 }
 
-function saveTimerSettings() {
+async function saveTimerSettings() {
+  if (!guardEdit()) return;
   const customWrap = document.getElementById('custom-timer-wrap');
   if (customWrap.style.display !== 'none') {
     const custom = parseInt(document.getElementById('custom-timer-input').value);
     if (!custom || custom < 5 || custom > 300) return toast('Enter a valid duration (5–300 seconds)', 'error');
     selectedTimerSecs = custom;
   }
-  saveSettings({ timerDuration: selectedTimerSecs });
-  toast(`Timer set to ${selectedTimerSecs} seconds ✓`);
+  await saveSettings({ timerDuration: selectedTimerSecs });
+  toast(`Timer set to ${selectedTimerSecs} seconds ✓ (synced to all devices)`);
 }
 
 // ════════════════════════════════════════════════════
@@ -1242,6 +1371,13 @@ const fmtDateTime = s => s ? new Date(s).toLocaleTimeString('en-IN',{hour:'2-dig
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 
+// FIX #6/#7: single, consistently-used escaper for ALL user-supplied text
+// interpolated into innerHTML anywhere in the app (players/teams/results/queue/users).
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
 function toast(msg, type = 'success') {
   const el = document.createElement('div');
   el.className = 'toast ' + type; el.textContent = msg;
@@ -1251,7 +1387,7 @@ function toast(msg, type = 'success') {
 }
 
 // ════════════════════════════════════════════════════
-// NOTIFICATION CENTRE
+// NOTIFICATION CENTRE (FIX #4: single global instance — see #global-notif-bar)
 // ════════════════════════════════════════════════════
 let notifList = [];
 
@@ -1272,25 +1408,19 @@ function pushNotification(title, sub, icon = '🔔') {
 
 function renderNotifPanel() {
   const unreadCount = notifList.filter(n => n.unread).length;
-  ['notif-count','notif-count-2'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.style.display = unreadCount > 0 ? 'flex' : 'none';
-    el.textContent = unreadCount;
-  });
-  ['notif-bell-btn','notif-bell-btn-2'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('has-new', unreadCount > 0);
-  });
+  const countEl = document.getElementById('notif-count');
+  if (countEl) { countEl.style.display = unreadCount > 0 ? 'flex' : 'none'; countEl.textContent = unreadCount; }
+  const bellEl = document.getElementById('notif-bell-btn');
+  if (bellEl) bellEl.classList.toggle('has-new', unreadCount > 0);
   const list = document.getElementById('notif-list');
   if (!list) return;
   if (!notifList.length) { list.innerHTML = '<div class="empty-state" style="padding:20px;font-size:12px">No notifications yet</div>'; return; }
   list.innerHTML = notifList.map(n => `
     <div class="notif-item ${n.unread ? 'unread' : ''}">
-      <div class="notif-icon">${n.icon}</div>
+      <div class="notif-icon">${escapeHtml(n.icon)}</div>
       <div class="notif-body">
-        <div class="notif-title">${n.title}</div>
-        <div class="notif-sub">${n.sub}</div>
+        <div class="notif-title">${escapeHtml(n.title)}</div>
+        <div class="notif-sub">${escapeHtml(n.sub)}</div>
         <div class="notif-time">${fmtDateTime(n.time)}</div>
       </div>
     </div>`).join('');
@@ -1303,8 +1433,7 @@ function toggleNotifPanel() {
     notifList.forEach(n => n.unread = false);
     localStorage.setItem('auctionNotifs', JSON.stringify(notifList));
     renderNotifPanel();
-    const p = document.getElementById('notif-panel');
-    if (p) p.classList.add('open'); // keep open after re-render
+    panel.classList.add('open'); // keep open after re-render
   }
 }
 
@@ -1360,15 +1489,16 @@ function loadLog() {
   container.innerHTML = activityLog.map(e => `
     <div class="log-item">
       <div class="log-time">${fmtDateTime(e.time)}</div>
-      <div class="log-icon">${e.icon}</div>
+      <div class="log-icon">${escapeHtml(e.icon)}</div>
       <div class="log-text">
-        ${e.action}${e.player ? ` · <strong>${e.player}</strong>` : ''}${e.team ? ` → ${e.team}` : ''}
+        ${escapeHtml(e.action)}${e.player ? ` · <strong>${escapeHtml(e.player)}</strong>` : ''}${e.team ? ` → ${escapeHtml(e.team)}` : ''}
         ${e.amount ? `<span class="log-amount"> ${fmt(e.amount)}</span>` : ''}
       </div>
     </div>`).join('');
 }
 
 function clearLog() {
+  if (!guardEdit()) return;
   if (!confirm('Clear the entire activity log?')) return;
   activityLog = []; localStorage.removeItem('auctionLog'); loadLog(); toast('Log cleared');
 }
@@ -1381,6 +1511,7 @@ let undoStack = [];
 function pushUndo(action) { undoStack.push(action); if (undoStack.length > 20) undoStack.shift(); }
 
 async function undoLastAction() {
+  if (!guardEdit()) return;
   if (!undoStack.length) return toast('Nothing to undo', 'info');
   const action = undoStack.pop();
   try {
@@ -1408,7 +1539,11 @@ async function undoLastAction() {
 }
 
 // ════════════════════════════════════════════════════
-// COUNTDOWN TIMER
+// COUNTDOWN TIMER (FIX #3: countdown is now always derived from the
+// authoritative Firestore auction_state timestamps — countdown_start /
+// countdown_seconds — rather than a purely-local counter. This means a page
+// reload or re-login mid-auction re-syncs to the true remaining time instead
+// of silently resetting to the full duration.)
 // ════════════════════════════════════════════════════
 let countdownInterval = null;
 let countdownRemaining = 0;
@@ -1423,7 +1558,7 @@ function setAuctionButtonsRunning(isRunning) {
     startBtn.style.display = 'none';
     pauseBtn.style.display = 'inline-flex';
     pauseBtn.disabled = false;
-    pauseBtn.textContent = '⏸ Pause';
+    pauseBtn.textContent = countdownPaused ? '▶ Resume' : '⏸ Pause';
     stopBtn.style.display = 'inline-flex';
   } else {
     startBtn.style.display = 'inline-flex';
@@ -1432,7 +1567,8 @@ function setAuctionButtonsRunning(isRunning) {
   }
 }
 
-function startCountdown() {
+async function startCountdown() {
+  if (!guardEdit()) return;
   const s = getSettings();
   const duration = s.timerDuration || 15;
   countdownRemaining = duration;
@@ -1442,17 +1578,19 @@ function startCountdown() {
   setAuctionButtonsRunning(true);
   document.getElementById('btn-start-countdown').disabled = true;
   updateAuctionStateUI('live');
-  
-  // Update state with is_paused: false
-  fsSet('auction_state', 'main', { is_live: true, is_paused: false, countdown_start: new Date().toISOString(), countdown_seconds: duration }).catch(()=>{});
-  
+
+  await fsSet('auction_state', 'main', { is_live: true, is_paused: false, countdown_start: new Date().toISOString(), countdown_seconds: duration }).catch(()=>{});
+
   addLog('▶ Countdown started', document.getElementById('ctrl-player-name').textContent, '', 0, '▶');
+  runLocalTicker();
+}
+
+function runLocalTicker() {
   clearInterval(countdownInterval);
   countdownInterval = setInterval(() => {
     if (countdownPaused) return;
     countdownRemaining--;
     updateCountdownUI(countdownRemaining, countdownRemaining <= 3 ? 'critical' : countdownRemaining <= 5 ? 'warning' : 'ticking');
-    // Notify admin BEFORE auto sold/unsold actually fires
     if (countdownRemaining === 3 && !finalizeNotifSent) {
       finalizeNotifSent = true;
       const pname = document.getElementById('ctrl-player-name').textContent;
@@ -1468,24 +1606,49 @@ function startCountdown() {
   }, 1000);
 }
 
+// Recomputes the true remaining time from Firestore's auction_state doc
+// (elapsed-time based, like leader.html/display.html), instead of blindly
+// resetting the timer to full duration. Safe to call on: page load/re-login
+// while an auction is mid-flight, or any state resync event.
+async function syncCountdownFromState() {
+  try {
+    const state = await fsGetOne('auction_state', 'main');
+    if (!state || !state.is_live || !state.current_player_id) { return; }
+    const duration = state.countdown_seconds || (getSettings().timerDuration || 15);
+    let remaining = duration;
+    if (state.countdown_start && !state.is_paused) {
+      const elapsed = (Date.now() - new Date(state.countdown_start).getTime()) / 1000;
+      remaining = Math.max(0, duration - Math.floor(elapsed));
+    } else if (state.is_paused) {
+      remaining = state.countdown_seconds ?? duration;
+    }
+    countdownRemaining = remaining;
+    countdownPaused = !!state.is_paused;
+    finalizeNotifSent = remaining <= 3;
+    updateCountdownUI(countdownRemaining, countdownRemaining <= 3 ? 'critical' : countdownRemaining <= 5 ? 'warning' : 'ticking');
+    setAuctionButtonsRunning(true);
+    document.getElementById('btn-start-countdown').disabled = true;
+    updateAuctionStateUI('live');
+    if (countdownRemaining > 0) runLocalTicker();
+    else { clearInterval(countdownInterval); }
+  } catch(e) { console.warn('syncCountdownFromState failed', e); }
+}
+
 async function pauseCountdown() {
+  if (!guardEdit()) return;
   if (countdownPaused) {
-    // RESUME
     countdownPaused = false; 
     document.getElementById('btn-pause').textContent = '⏸ Pause'; 
     toast('Countdown resumed');
-    // Send resume to database with fresh start time
     await fsSet('auction_state', 'main', {
       is_paused: false,
       countdown_start: new Date().toISOString(),
       countdown_seconds: countdownRemaining
     });
   } else {
-    // PAUSE
     countdownPaused = true; 
     document.getElementById('btn-pause').textContent = '▶ Resume'; 
     toast('Countdown paused');
-    // Send pause state to database
     await fsSet('auction_state', 'main', {
       is_paused: true,
       countdown_seconds: countdownRemaining
@@ -1494,6 +1657,7 @@ async function pauseCountdown() {
 }
 
 function stopCountdownManually() {
+  if (!guardEdit()) return;
   stopCountdownTimer();
   countdownPaused = false;
   updateCountdownUI('—', '');
@@ -1506,15 +1670,6 @@ function stopCountdownManually() {
 
 function stopCountdownTimer() { clearInterval(countdownInterval); countdownInterval = null; }
 
-function resetCountdown() {
-  const s = getSettings();
-  const duration = s.timerDuration || 15;
-  countdownRemaining = duration;
-  countdownPaused = false;
-  finalizeNotifSent = false;
-  updateCountdownUI(countdownRemaining, 'ticking');
-}
-
 function updateCountdownUI(secs, state) {
   const el = document.getElementById('countdown-display');
   const num = document.getElementById('countdown-num');
@@ -1523,6 +1678,7 @@ function updateCountdownUI(secs, state) {
 }
 
 async function autoFinalize() {
+  if (!guardEdit()) return;
   try {
     const s = await fsGetOne('auction_state', 'main');
     if (!s || !s.current_player_id) { setAuctionButtonsRunning(false); return; }
@@ -1600,31 +1756,38 @@ async function loadQueue() {
     document.getElementById('ctrl-player-role').textContent = current?.role || '';
     document.getElementById('ctrl-bid').textContent = state.current_bid ? fmt(state.current_bid) : '—';
     document.getElementById('ctrl-leader').textContent = leader ? `🏟️ ${leader.name}` : 'No bids yet';
-    document.getElementById('btn-start-countdown').disabled = !current;
+    document.getElementById('btn-start-countdown').disabled = !current || isReadOnly();
 
     const active = players.filter(p => p.status !== 'unsold' && p.status !== 'sold');
     const unsold = players.filter(p => p.status === 'unsold');
     const sold = players.filter(p => p.status === 'sold');
     const sorted = [...active, ...unsold, ...sold];
+    const ro = isReadOnly();
 
     document.getElementById('queue-body').innerHTML = sorted.map((p, idx) => {
       const isLive = p.status === 'live', isUnsold = p.status === 'unsold', isSold = p.status === 'sold', isPending = p.status === 'pending';
       const displayNum = isSold ? '✓' : isUnsold ? '↓' : (p.lot_number || idx + 1);
       const numClass = isLive ? 'lot-num live-num' : isPending ? 'lot-num pending-num' : 'lot-num';
-      return `<tr draggable="${!isSold}" data-id="${p.id}" class="${isLive?'row-live':isUnsold?'row-unsold':isSold?'row-sold':''}"
+      let actionCell = '—';
+      if (!ro) {
+        if (isPending) actionCell = `<button class="btn btn-primary btn-xs" onclick="setLivePreviewById('${p.id}')">Set Live</button>`;
+        else if (isUnsold) actionCell = `<button class="btn btn-outline btn-xs" onclick="requeuePlayer('${p.id}')">Re-queue</button>`;
+      }
+      return `<tr draggable="${!isSold && !ro}" data-id="${p.id}" class="${isLive?'row-live':isUnsold?'row-unsold':isSold?'row-sold':''}"
           ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dropRow(event)" ondragend="dragEnd(event)">
         <td><span class="${numClass}">${displayNum}</span></td>
-        <td><strong>${p.name}</strong>${isLive?' <span style="font-size:10px;color:var(--green);font-weight:800;margin-left:4px">● LIVE</span>':''}</td>
-        <td style="color:var(--text2)">${p.role}</td>
+        <td><strong>${escapeHtml(p.name)}</strong>${isLive?' <span style="font-size:10px;color:var(--green);font-weight:800;margin-left:4px">● LIVE</span>':''}</td>
+        <td style="color:var(--text2)">${escapeHtml(p.role)}</td>
         <td style="font-family:var(--mono)">${fmt(p.base_price)}</td>
-        <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
-        <td>${isPending?`<button class="btn btn-primary btn-xs" onclick="setLivePreview('${p.id}','${(p.name||'').replace(/'/g,"\\'")}',${p.base_price},'${p.role}')">Set Live</button>`:isUnsold?`<button class="btn btn-outline btn-xs" onclick="requeuePlayer('${p.id}')">Re-queue</button>`:'—'}</td>
+        <td><span class="badge badge-${p.status}">${escapeHtml((p.status||'').toUpperCase())}</span></td>
+        <td>${actionCell}</td>
       </tr>`;
     }).join('') || '<tr><td colspan="6" class="empty-state"><span class="empty-state-icon">⚽</span>No players added</td></tr>';
   } catch(e) { console.warn(e); toast('Error loading queue: ' + e.message, 'error'); }
 }
 
 async function setLivePreview(playerId, name, base, role) {
+  if (!guardEdit()) return;
   try {
     const livePlayers = await fsGetAll('players', where('status','==','live'));
     for (const lp of livePlayers) {
@@ -1646,7 +1809,18 @@ async function setLivePreview(playerId, name, base, role) {
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
+// FIX #7: looks the player up from the already-fetched queue instead of embedding
+// JSON.stringify(...) inside an onclick attribute (which breaks on apostrophes).
+async function setLivePreviewById(playerId) {
+  try {
+    const p = await fsGetOne('players', playerId);
+    if (!p) return toast('Player not found', 'error');
+    await setLivePreview(p.id, p.name, p.base_price, p.role);
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
 async function nextPlayer() {
+  if (!guardEdit()) return;
   try {
     stopCountdownTimer();
     setAuctionButtonsRunning(false);
@@ -1661,6 +1835,7 @@ async function nextPlayer() {
 }
 
 async function soldPlayer() {
+  if (!guardEdit()) return;
   stopCountdownTimer();
   setAuctionButtonsRunning(false);
   try {
@@ -1672,6 +1847,7 @@ async function soldPlayer() {
 }
 
 async function unsoldPlayer() {
+  if (!guardEdit()) return;
   stopCountdownTimer();
   setAuctionButtonsRunning(false);
   try {
@@ -1683,6 +1859,7 @@ async function unsoldPlayer() {
 }
 
 async function requeuePlayer(playerId) {
+  if (!guardEdit()) return;
   try {
     const all = await fsGetAll('players', orderBy('lot_number','desc'), fsLimit(1));
     const maxLot = all?.[0]?.lot_number || 0;
@@ -1696,7 +1873,7 @@ async function requeuePlayer(playerId) {
 // ════════════════════════════════════════════════════
 let dragSrc = null;
 
-function dragStart(e) { dragSrc = e.currentTarget; e.currentTarget.style.opacity = '.4'; e.dataTransfer.effectAllowed = 'move'; }
+function dragStart(e) { if (isReadOnly()) { e.preventDefault(); return; } dragSrc = e.currentTarget; e.currentTarget.style.opacity = '.4'; e.dataTransfer.effectAllowed = 'move'; }
 function dragEnd(e) { e.currentTarget.style.opacity = '1'; document.querySelectorAll('#queue-body tr').forEach(r => r.classList.remove('drag-over')); }
 function dragOver(e) {
   e.preventDefault(); e.dataTransfer.dropEffect = 'move';
@@ -1712,6 +1889,7 @@ function dragOver(e) {
 function dropRow(e) { e.preventDefault(); document.querySelectorAll('#queue-body tr').forEach(r => r.classList.remove('drag-over')); }
 
 async function saveQueueOrder() {
+  if (!guardEdit()) return;
   const rows = [...document.getElementById('queue-body').children];
   const ids = rows.map(r => r.dataset.id).filter(Boolean);
   if (!ids.length) return toast('No players in queue', 'error');
@@ -1745,14 +1923,13 @@ async function loadDashboard() {
     document.getElementById('stat-avg').textContent = sold.length ? fmt(Math.round(spent / sold.length)) : '—';
     const tbody = document.getElementById('recent-bids-body');
     if (!bids?.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No bids yet</td></tr>'; return; }
-    // bids may store player_name/team_name/team_color directly, or just IDs — handle both
     const rows = await Promise.all(bids.map(async b => {
       let playerName = b.player_name, teamName = b.team_name, teamColor = b.team_color;
       if (!playerName && b.player_id) { const pl = await fsGetOne('players', b.player_id); playerName = pl?.name; }
       if (!teamName && b.team_id) { const tm = await getTeamCached(b.team_id); teamName = tm?.name; teamColor = tm?.color; }
       return `<tr>
-        <td>${playerName || '—'}</td>
-        <td><span class="team-dot" style="background:${teamColor||'#64748b'}"></span>${teamName || '—'}</td>
+        <td>${escapeHtml(playerName) || '—'}</td>
+        <td><span class="team-dot" style="background:${escapeHtml(teamColor||'#64748b')}"></span>${escapeHtml(teamName) || '—'}</td>
         <td style="font-weight:700;color:var(--green);font-family:var(--mono)">${fmt(b.amount)}</td>
         <td style="color:var(--muted);font-size:12px">${fmtDate(b.created_at)}</td>
       </tr>`;
@@ -1776,23 +1953,25 @@ async function loadPlayers() {
 }
 
 async function renderPlayers(players) {
+  const ro = isReadOnly();
   const rows = await Promise.all(players.map(async p => {
     const soldTeam = p.sold_to ? await getTeamCached(p.sold_to) : null;
+    const actions = ro ? '<span style="color:var(--muted);font-size:11px">View only</span>' : `<div style="display:flex;gap:4px">
+        <button class="btn btn-outline btn-xs" onclick="editPlayerById('${p.id}')">Edit</button>
+        <button class="btn btn-danger btn-xs" onclick="deletePlayer('${p.id}','${p.status}','${p.sold_to||''}',${p.final_price||0})">Del</button>
+      </div>`;
     return `<tr>
       <td><div class="player-cell">
-        <div class="avatar">${p.photo_url?`<img src="${p.photo_url}" alt="${p.name[0]}" loading="lazy" onerror="this.style.display='none'">`:(p.name?.[0]||'?')}</div>
-        <div><strong>${p.name}</strong><div style="font-size:11px;color:var(--muted)">Lot #${p.lot_number||'—'}</div></div>
+        <div class="avatar">${p.photo_url?`<img src="${escapeHtml(p.photo_url)}" alt="${escapeHtml(p.name?.[0]||'?')}" loading="lazy" onerror="this.style.display='none'">`:escapeHtml(p.name?.[0]||'?')}</div>
+        <div><strong>${escapeHtml(p.name)}</strong><div style="font-size:11px;color:var(--muted)">Lot #${p.lot_number||'—'}</div></div>
       </div></td>
-      <td style="color:var(--text2)">${p.role}</td>
-      <td style="color:var(--text2)">${p.nationality||'—'}</td>
-      <td style="color:var(--text2)">${p.played_for||'—'}</td>
+      <td style="color:var(--text2)">${escapeHtml(p.role)}</td>
+      <td style="color:var(--text2)">${escapeHtml(p.nationality||'—')}</td>
+      <td style="color:var(--text2)">${escapeHtml(p.played_for||'—')}</td>
       <td style="font-family:var(--mono)">${fmt(p.base_price)}</td>
-      <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
-      <td>${soldTeam?`<span class="team-dot" style="background:${soldTeam.color||'#64748b'}"></span>${soldTeam.name}`:'—'}</td>
-      <td><div style="display:flex;gap:4px">
-        <button class="btn btn-outline btn-xs" onclick='editPlayer(${JSON.stringify(p)})'>Edit</button>
-        <button class="btn btn-danger btn-xs" onclick="deletePlayer('${p.id}','${p.status}','${p.sold_to||''}',${p.final_price||0})">Del</button>
-      </div></td>
+      <td><span class="badge badge-${p.status}">${escapeHtml((p.status||'').toUpperCase())}</span></td>
+      <td>${soldTeam?`<span class="team-dot" style="background:${escapeHtml(soldTeam.color||'#64748b')}"></span>${escapeHtml(soldTeam.name)}`:'—'}</td>
+      <td>${actions}</td>
     </tr>`;
   }));
   document.getElementById('players-body').innerHTML = rows.join('') || '<tr><td colspan="8" class="empty-state"><span class="empty-state-icon">⚽</span>No players. Add some!</td></tr>';
@@ -1804,6 +1983,7 @@ function filterPlayers(q) {
 }
 
 function openAddPlayer() {
+  if (!guardEdit()) return;
   document.getElementById('player-id').value = '';
   document.getElementById('modal-player-title').textContent = 'Add Player';
   ['player-name','player-nation','player-played-for','player-photo'].forEach(id => document.getElementById(id).value = '');
@@ -1815,7 +1995,17 @@ function openAddPlayer() {
   openModal('modal-player');
 }
 
+// FIX #7: no more JSON.stringify(p) embedded in an onclick attribute — lookup
+// from the already-loaded allPlayers array by id instead. Apostrophes/quotes
+// in names can no longer break the generated markup.
+function editPlayerById(id) {
+  const p = allPlayers.find(x => x.id === id);
+  if (!p) return toast('Player not found', 'error');
+  editPlayer(p);
+}
+
 function editPlayer(p) {
+  if (!guardEdit()) return;
   document.getElementById('player-id').value = p.id;
   document.getElementById('modal-player-title').textContent = 'Edit Player';
   document.getElementById('player-name').value = p.name;
@@ -1939,6 +2129,7 @@ async function uploadTeamLogo(file) {
 }
 
 async function savePlayer() {
+  if (!guardEdit()) return;
   const id = v('player-id'), name = v('player-name');
   clearFieldError('player-name');
   if (!name) { showFieldError('player-name'); return toast('Player name is required', 'error'); }
@@ -1959,6 +2150,7 @@ async function savePlayer() {
 }
 
 async function deletePlayer(id, status, soldToId, finalPrice) {
+  if (!guardEdit()) return;
   if (!confirm(status === 'sold' ? 'Delete this SOLD player? The sale amount will be refunded to the buying team.' : 'Delete this player? This cannot be undone.')) return;
   try {
     const bidDocs = await fsGetAll('bids', where('player_id','==',id));
@@ -1986,6 +2178,7 @@ function exportPlayers() {
 }
 
 function importPlayers(event) {
+  if (!guardEdit()) { event.target.value = ''; return; }
   const file = event.target.files[0]; if (!file) return;
   Papa.parse(file, { header: true, skipEmptyLines: true, complete: async result => {
     const rows = result.data.map(r => ({ name: r.Name||r.name, role: r.Role||r.role||'Other', nationality: r.Nationality||r.nationality||null, base_price: parseInt(r['Base Price']||r.base_price)||500000, status: 'pending', lot_number: null })).filter(r => r.name);
@@ -1997,6 +2190,8 @@ function importPlayers(event) {
 // ════════════════════════════════════════════════════
 // TEAMS
 // ════════════════════════════════════════════════════
+let allTeams = [];
+
 function handleTeamLogoSelect(event) {
   const file = event.target.files[0]; if (!file) return;
   if (file.size > 5 * 1024 * 1024) return toast('File too large — max 5MB', 'error');
@@ -2018,41 +2213,57 @@ function previewTeamLogoUrl(url) {
 
 async function loadTeams() {
   try {
-    const teams = await fsGetAll('teams', orderBy('created_at','asc')).catch(() => fsGetAll('teams'));
-    teams.forEach(t => teamCache[t.id] = t);
-    document.getElementById('teams-body').innerHTML = teams.map(t => {
-      const logoContent = t.logo_url ? `<img src="${t.logo_url}" alt="${t.short_code}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">` : t.short_code;
+    allTeams = await fsGetAll('teams', orderBy('created_at','asc')).catch(() => fsGetAll('teams'));
+    allTeams.forEach(t => teamCache[t.id] = t);
+    const ro = isReadOnly();
+    document.getElementById('teams-body').innerHTML = allTeams.map(t => {
+      const logoContent = t.logo_url ? `<img src="${escapeHtml(t.logo_url)}" alt="${escapeHtml(t.short_code)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">` : escapeHtml(t.short_code);
+      const suspended = t.account_status === 'suspended';
+      const expired = t.plan_expiry && new Date(t.plan_expiry) < new Date();
+      const statusBadge = suspended ? '<span class="badge badge-suspended">SUSPENDED</span>' : expired ? '<span class="badge badge-unsold">EXPIRED</span>' : '<span class="badge badge-approved">ACTIVE</span>';
+      const actions = ro ? '<span style="color:var(--muted);font-size:11px">View only</span>' : `<div style="display:flex;gap:4px">
+          <button class="btn btn-outline btn-xs" onclick="editTeamById('${t.id}')">Edit</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteTeam('${t.id}')">Del</button>
+        </div>`;
       return `<tr>
         <td><div class="player-cell">
-          <div class="avatar circle" style="background:${t.color||'#4f8ef7'};color:white;font-size:13px">${logoContent}</div>
-          <div><strong>${t.name}</strong><div style="font-size:11px;color:var(--muted)">${t.short_code}</div></div>
+          <div class="avatar circle" style="background:${escapeHtml(t.color||'#4f8ef7')};color:white;font-size:13px">${logoContent}</div>
+          <div><strong>${escapeHtml(t.name)}</strong><div style="font-size:11px;color:var(--muted)">${escapeHtml(t.short_code)}</div></div>
         </div></td>
-        <td><div>${t.leader_name||'—'}</div><div style="font-size:11px;color:var(--muted)">@${t.leader_username||'(not set)'}</div></td>
-        <td>${t.owner_name||'—'}</td>
+        <td><div>${escapeHtml(t.leader_name||'—')}</div><div style="font-size:11px;color:var(--muted)">@${escapeHtml(t.leader_username||'(not set)')}</div></td>
+        <td>${escapeHtml(t.owner_name||'—')}</td>
         <td style="font-family:var(--mono)">${fmt(t.purse_total)}</td>
         <td style="font-family:var(--mono);color:${(t.purse_remaining||0)>0?'var(--green)':'var(--red)'};font-weight:700">${fmt(t.purse_remaining)}</td>
-        <td><div style="display:flex;gap:4px">
-          <button class="btn btn-outline btn-xs" onclick='editTeam(${JSON.stringify(t)})'>Edit</button>
-          <button class="btn btn-danger btn-xs" onclick="deleteTeam('${t.id}')">Del</button>
-        </div></td>
+        <td>${statusBadge}</td>
+        <td>${actions}</td>
       </tr>`;
-    }).join('') || '<tr><td colspan="6" class="empty-state"><span class="empty-state-icon">🏟️</span>No teams. Add some!</td></tr>';
+    }).join('') || '<tr><td colspan="7" class="empty-state"><span class="empty-state-icon">🏟️</span>No teams. Add some!</td></tr>';
   } catch(e) { console.warn(e); toast('Error loading teams: ' + e.message, 'error'); }
 }
 
 function openAddTeam() {
+  if (!guardEdit()) return;
   document.getElementById('team-id').value = '';
   document.getElementById('modal-team-title').textContent = 'Add Team';
-  ['team-name','team-code','team-leader','team-leader-username','team-leader-pass','team-owner','team-logo','team-logo-data'].forEach(id => document.getElementById(id).value = '');
+  ['team-name','team-code','team-leader','team-leader-username','team-leader-pass','team-owner','team-logo','team-logo-data','team-plan-expiry'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('team-color').value = '#4f8ef7';
   document.getElementById('team-purse').value = '100000000';
+  document.getElementById('team-suspended').checked = false;
   document.getElementById('team-logo-thumb').style.display = 'none';
   document.getElementById('team-logo-placeholder').style.display = 'flex';
   document.getElementById('team-logo-name').textContent = 'Or enter URL below';
   pendingTeamLogoFile = null; openModal('modal-team');
 }
 
+// FIX #7: lookup by id instead of JSON.stringify(t) embedded in onclick.
+function editTeamById(id) {
+  const t = allTeams.find(x => x.id === id) || teamCache[id];
+  if (!t) return toast('Team not found', 'error');
+  editTeam(t);
+}
+
 function editTeam(t) {
+  if (!guardEdit()) return;
   document.getElementById('team-id').value = t.id;
   document.getElementById('modal-team-title').textContent = 'Edit Team';
   document.getElementById('team-name').value = t.name;
@@ -2065,6 +2276,8 @@ function editTeam(t) {
   document.getElementById('team-purse').value = t.purse_total;
   document.getElementById('team-logo').value = t.logo_url || '';
   document.getElementById('team-logo-data').value = '';
+  document.getElementById('team-plan-expiry').value = t.plan_expiry || '';
+  document.getElementById('team-suspended').checked = t.account_status === 'suspended';
   pendingTeamLogoFile = null;
   const thumb = document.getElementById('team-logo-thumb'), ph = document.getElementById('team-logo-placeholder');
   if (t.logo_url) { thumb.src = t.logo_url; thumb.style.display = 'block'; ph.style.display = 'none'; document.getElementById('team-logo-name').textContent = 'Current logo'; }
@@ -2073,6 +2286,7 @@ function editTeam(t) {
 }
 
 async function saveTeam() {
+  if (!guardEdit()) return;
   const id = v('team-id'), purse = parseInt(document.getElementById('team-purse').value) || 100000000;
   const btn = document.getElementById('save-team-btn');
   clearFieldError('team-name'); clearFieldError('team-code');
@@ -2080,8 +2294,22 @@ async function saveTeam() {
   try {
     let logoUrl = v('team-logo') || null;
     if (pendingTeamLogoFile) { logoUrl = await uploadTeamLogo(pendingTeamLogoFile); pendingTeamLogoFile = null; }
-    const data = { name: v('team-name'), short_code: v('team-code').toUpperCase(), color: document.getElementById('team-color').value, leader_name: v('team-leader') || null, leader_username: v('team-leader-username') || null, owner_name: v('team-owner') || null, purse_total: purse, logo_url: logoUrl };
-    const pass = v('team-leader-pass'); if (pass) data.leader_password = pass;
+    const data = {
+      name: v('team-name'), short_code: v('team-code').toUpperCase(), color: document.getElementById('team-color').value,
+      leader_name: v('team-leader') || null, leader_username: v('team-leader-username') || null, owner_name: v('team-owner') || null,
+      purse_total: purse, logo_url: logoUrl,
+      // FIX #11: team status/expiry fields now editable here and consumed by leader.html's banner
+      account_status: document.getElementById('team-suspended').checked ? 'suspended' : 'active',
+      plan_expiry: v('team-plan-expiry') || null
+    };
+    const pass = v('team-leader-pass');
+    if (pass) {
+      // FIX #9: salted hash instead of storing the team leader password in plaintext
+      const salt = genSalt();
+      data.leader_password_hash = await hashPassword(pass, salt);
+      data.leader_password_salt = salt;
+      data.leader_password = null; // clear legacy plaintext field if present
+    }
     if (!data.name || !data.short_code) {
       if (!data.name) showFieldError('team-name');
       if (!data.short_code) showFieldError('team-code');
@@ -2095,6 +2323,7 @@ async function saveTeam() {
 }
 
 async function deleteTeam(id) {
+  if (!guardEdit()) return;
   if (!confirm('Delete this team? Sold players will NOT automatically be refunded. This cannot be undone.')) return;
   try { await fsDelete('teams', id); } catch(e) { return toast('Delete failed: ' + friendlyError(e), 'error'); }
   delete teamCache[id];
@@ -2111,9 +2340,9 @@ async function loadResults() {
       const soldTeam = p.sold_to ? await getTeamCached(p.sold_to) : null;
       const pct = p.base_price ? ((p.final_price - p.base_price) / p.base_price * 100).toFixed(0) : 0;
       return `<tr>
-        <td><strong>${p.name}</strong></td>
-        <td style="color:var(--text2)">${p.role}</td>
-        <td><span class="team-dot" style="background:${soldTeam?.color||'#64748b'}"></span>${soldTeam?.name||'—'}</td>
+        <td><strong>${escapeHtml(p.name)}</strong></td>
+        <td style="color:var(--text2)">${escapeHtml(p.role)}</td>
+        <td><span class="team-dot" style="background:${escapeHtml(soldTeam?.color||'#64748b')}"></span>${escapeHtml(soldTeam?.name||'—')}</td>
         <td style="font-family:var(--mono);color:var(--muted)">${fmt(p.base_price)}</td>
         <td style="font-weight:700;color:var(--green);font-family:var(--mono)">${fmt(p.final_price)}</td>
         <td style="color:${pct>0?'var(--green)':'var(--muted)'};font-weight:700">+${pct}%</td>
@@ -2140,19 +2369,27 @@ function exportResults() {
 // USER MANAGEMENT
 // ════════════════════════════════════════════════════
 let allUsers = [];
+let pendingUsersUnsub = null;
 
-async function checkPendingUsers() {
-  try {
-    const users = await fsGetAll('auction_users', where('status','==','pending'));
+// FIX #10: pending-user badge now stays live via a Firestore listener instead
+// of being computed once at login.
+function subscribePendingUsers() {
+  if (pendingUsersUnsub) { try { pendingUsersUnsub(); } catch(e){} }
+  pendingUsersUnsub = onSnapshot(query(col('auction_users'), where('status','==','pending')), snap => {
+    const n = snap.size;
     const badge = document.getElementById('pending-badge');
-    badge.style.display = users.length > 0 ? 'block' : 'none';
-    badge.textContent = users.length;
-  } catch(e) {}
+    if (badge) { badge.style.display = n > 0 ? 'block' : 'none'; badge.textContent = n; }
+    const countBox = document.getElementById('pending-count-box');
+    if (countBox && document.getElementById('page-users').classList.contains('active')) {
+      if (n) { countBox.style.display = 'block'; countBox.innerHTML = `⏳ <strong>${n} account${n > 1 ? 's' : ''} awaiting approval.</strong> Review below.`; }
+      else countBox.style.display = 'none';
+    }
+  }, err => console.warn('pending users listener error', err));
 }
 
 async function loadUsers() {
   const tbody = document.getElementById('users-body');
-  tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Loading...</td></tr>';
   try {
     allUsers = await fsGetAll('auction_users', orderBy('created_at','desc')).catch(() => fsGetAll('auction_users'));
   } catch(e) { allUsers = []; }
@@ -2168,25 +2405,30 @@ async function loadUsers() {
 function renderUsers(users) {
   const tbody = document.getElementById('users-body');
   if (!users.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No users registered yet</td></tr>'; return; }
+  const ro = isReadOnly();
   tbody.innerHTML = users.map(u => {
     const expired = u.expiry_date && new Date(u.expiry_date) < new Date();
     const soon = !expired && u.expiry_date && (new Date(u.expiry_date) - new Date()) < 7*24*60*60*1000;
+    let actions = '<span style="color:var(--muted);font-size:11px">View only</span>';
+    if (!ro) {
+      actions = `<div style="display:flex;gap:4px;flex-wrap:wrap">
+        ${u.status==='pending'?`<button class="btn btn-success btn-xs" onclick="openApproveModalById('${u.id}')">✓ Approve</button>`:''}
+        ${u.status==='approved'?`<button class="btn btn-outline btn-xs" onclick="openRenewModalById('${u.id}')">🔄 Renew</button>`:''}
+        ${u.status==='approved'?`<button class="btn btn-amber btn-xs" onclick="suspendUser('${u.id}')">Suspend</button>`:''}
+        ${u.status==='suspended'?`<button class="btn btn-success btn-xs" onclick="unsuspendUser('${u.id}')">Reactivate</button>`:''}
+        <button class="btn btn-danger btn-xs" onclick="deleteUser('${u.id}')">Del</button>
+      </div>`;
+    }
     return `<tr class="${u.status==='pending'?'user-row-pending':''}">
     <td><div style="font-weight:600">${escapeHtml(u.full_name||u.username)}</div><div style="font-size:11px;color:var(--muted)">@${escapeHtml(u.username)}</div></td>
-    <td>${u.phone?`<a href="https://wa.me/${u.phone.replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none;font-size:12px">💬 ${escapeHtml(u.phone)}</a>`:'—'}</td>
+    <td>${u.phone?`<a href="https://wa.me/${escapeHtml(u.phone.replace(/\D/g,''))}" target="_blank" style="color:var(--green);text-decoration:none;font-size:12px">💬 ${escapeHtml(u.phone)}</a>`:'—'}</td>
     <td style="font-size:12px;color:var(--text2)">${escapeHtml(u.event_name||'—')}</td>
-    <td><span class="badge badge-${u.status==='approved'?'approved':u.status==='pending'?'waiting':u.status==='suspended'?'suspended':'rejected'}">${u.status.toUpperCase()}</span></td>
-    <td>${u.plan?`<span class="plan-badge">${planLabel(u.plan)}</span>`:'—'}</td>
-    <td><span class="role-badge role-${u.role||'event_owner'}">${roleLabel(u.role).replace(/^[^\s]+\s/,'')}</span></td>
+    <td><span class="badge badge-${u.status==='approved'?'approved':u.status==='pending'?'waiting':u.status==='suspended'?'suspended':'rejected'}">${escapeHtml((u.status||'').toUpperCase())}</span></td>
+    <td>${u.plan?`<span class="plan-badge">${escapeHtml(planLabel(u.plan))}</span>`:'—'}</td>
+    <td><span class="role-badge role-${u.role||'event_owner'}">${escapeHtml(roleLabel(u.role).replace(/^[^\s]+\s/,''))}</span></td>
     <td style="font-size:12px;color:var(--muted)">${escapeHtml(u.approved_by||'—')}</td>
     <td class="${expired?'expiry-expired':soon?'expiry-soon':''}" style="font-size:12px">${fmtDateShort(u.expiry_date)}</td>
-    <td><div style="display:flex;gap:4px;flex-wrap:wrap">
-      ${u.status==='pending'?`<button class="btn btn-success btn-xs" onclick='openApproveModal("${u.id}", ${JSON.stringify(u)})'>✓ Approve</button>`:''}
-      ${u.status==='approved'?`<button class="btn btn-outline btn-xs" onclick='openRenewModal("${u.id}", ${JSON.stringify(u)})'>🔄 Renew</button>`:''}
-      ${u.status==='approved'?`<button class="btn btn-amber btn-xs" onclick="suspendUser('${u.id}')">Suspend</button>`:''}
-      ${u.status==='suspended'?`<button class="btn btn-success btn-xs" onclick="unsuspendUser('${u.id}')">Reactivate</button>`:''}
-      <button class="btn btn-danger btn-xs" onclick="deleteUser('${u.id}')">Del</button>
-    </div></td>
+    <td>${actions}</td>
   </tr>`;
   }).join('');
 }
@@ -2196,7 +2438,20 @@ function filterUsers(q) {
   renderUsers(f);
 }
 
+// FIX #7: id-based lookups instead of JSON.stringify(u) in onclick attributes.
+function openApproveModalById(id) {
+  const u = allUsers.find(x => x.id === id);
+  if (!u) return toast('User not found', 'error');
+  openApproveModal(id, u);
+}
+function openRenewModalById(id) {
+  const u = allUsers.find(x => x.id === id);
+  if (!u) return toast('User not found', 'error');
+  openRenewModal(id, u);
+}
+
 function openApproveModal(id, user) {
+  if (!guardEdit()) return;
   document.getElementById('approve-user-id').value = id;
   document.getElementById('approve-user-info').innerHTML = `<strong>${escapeHtml(user.full_name||user.username)}</strong> (@${escapeHtml(user.username)})<br>📱 ${escapeHtml(user.phone||'No phone')} &nbsp;|&nbsp; Event: ${escapeHtml(user.event_name||'Not set')}<br>Registered: ${fmtDateShort(user.created_at)}`;
   const d = new Date(); d.setDate(d.getDate() + 30);
@@ -2208,6 +2463,7 @@ function openApproveModal(id, user) {
 }
 
 async function confirmApprove() {
+  if (!guardEdit()) return;
   const id = v('approve-user-id'), expiry = v('approve-expiry'), plan = v('approve-plan');
   const planType = document.getElementById('approve-plan-select').value;
   const role = document.getElementById('approve-role-select').value;
@@ -2225,6 +2481,7 @@ async function confirmApprove() {
 }
 
 function openRenewModal(id, user) {
+  if (!guardEdit()) return;
   document.getElementById('renew-user-id').value = id;
   document.getElementById('renew-user-info').innerHTML = `<strong>${escapeHtml(user.full_name||user.username)}</strong> (@${escapeHtml(user.username)})<br>Current expiry: ${fmtDateShort(user.expiry_date)}`;
   document.getElementById('renew-plan-select').value = '';
@@ -2233,6 +2490,7 @@ function openRenewModal(id, user) {
 }
 
 async function confirmRenew() {
+  if (!guardEdit()) return;
   const id = v('renew-user-id'), expiry = v('renew-expiry');
   const planType = document.getElementById('renew-plan-select').value;
   if (!expiry) return toast('Set a new expiry date', 'error');
@@ -2248,23 +2506,27 @@ async function confirmRenew() {
 }
 
 async function suspendUser(id) {
+  if (!guardEdit()) return;
   if (!confirm('Suspend this user?')) return;
   try { await fsUpdate('auction_users', id, { status: 'suspended' }); } catch(e) { return toast('Error: ' + friendlyError(e), 'error'); }
   toast('User suspended'); loadUsers();
 }
 
 async function unsuspendUser(id) {
+  if (!guardEdit()) return;
   try { await fsUpdate('auction_users', id, { status: 'approved' }); } catch(e) { return toast('Error: ' + friendlyError(e), 'error'); }
   toast('User reactivated ✓'); loadUsers();
 }
 
 async function deleteUser(id) {
+  if (!guardEdit()) return;
   if (!confirm('Permanently delete this user? This cannot be undone.')) return;
   try { await fsDelete('auction_users', id); } catch(e) { return toast('Error: ' + friendlyError(e), 'error'); }
   toast('User deleted'); loadUsers();
 }
 
 function openAddUserModal() {
+  if (!guardEdit()) return;
   ['new-user-name','new-user-username','new-user-event','new-user-phone','new-user-pass'].forEach(id=>document.getElementById(id).value='');
   const d=new Date(); d.setDate(d.getDate()+30); document.getElementById('new-user-expiry').value=d.toISOString().split('T')[0];
   document.getElementById('new-user-plan').value = '';
@@ -2273,13 +2535,16 @@ function openAddUserModal() {
 }
 
 async function saveNewUser() {
+  if (!guardEdit()) return;
   const username = v('new-user-username').toLowerCase(), pass = v('new-user-pass'), name = v('new-user-name');
   const status = document.getElementById('new-user-status').value, expiry = v('new-user-expiry'), phone = v('new-user-phone'), event = v('new-user-event');
   const plan = document.getElementById('new-user-plan').value, role = document.getElementById('new-user-role').value;
   clearFieldError('new-user-username');
   if (!username || !pass) return toast('Username and password required', 'error');
   if (pass.length < 6) return toast('Password must be at least 6 characters', 'error');
-  const data = { username, full_name: name||username, phone: phone||null, event_name: event||null, password_hash: btoa(unescape(encodeURIComponent(pass))), status, plan: plan||null, role: role||'event_owner', expiry_date: status==='approved'?expiry:null, approved_by: status==='approved'?(getSession()?.username||'admin'):null, created_at: new Date().toISOString() };
+  const salt = genSalt();
+  const hash = await hashPassword(pass, salt);
+  const data = { username, full_name: name||username, phone: phone||null, event_name: event||null, password_hash: hash, password_salt: salt, status, plan: plan||null, role: role||'event_owner', expiry_date: status==='approved'?expiry:null, approved_by: status==='approved'?(getSession()?.username||'admin'):null, created_at: new Date().toISOString() };
   const btn = document.getElementById('save-new-user-btn');
   setBtnLoading(btn, true);
   try { await fsAdd('auction_users', data); toast('User created ✓'); }
@@ -2289,7 +2554,7 @@ async function saveNewUser() {
 }
 
 // ════════════════════════════════════════════════════
-// NEW: SUBSCRIPTION PLANS, ROLES, LOADING, VALIDATION, REPORTS, BACKUP
+// SUBSCRIPTION PLANS, ROLES, LOADING, VALIDATION, REPORTS, BACKUP
 // ════════════════════════════════════════════════════
 const PLAN_DAYS = { monthly: 30, '3months': 90, '6months': 182, '1year': 365, lifetime: 36500 };
 function planLabel(p) {
@@ -2305,19 +2570,23 @@ function autoSetExpiry(selectId, dateId) {
   document.getElementById(dateId).value = d.toISOString().split('T')[0];
 }
 
-// ── Role-based UI permissions (Admin Panel scope only) ──
+// ── Role-based UI permissions (Admin Panel scope only). FIX #1: this now
+// runs at LOGIN (as before, hiding whole sections like Settings for
+// operators) but the *real* enforcement lives in guardEdit() calls inside
+// every mutating function, plus render-time hiding of action buttons in
+// each table (players/teams/users/queue). That combination means read-only
+// users cannot mutate data even via buttons that render after this function
+// has already run. ──
 function applyRolePermissions(role) {
   const readOnly = role === 'readonly';
   const operator = role === 'operator';
-  document.querySelectorAll('.main button, .main input, .main select').forEach(el => {
-    if (el.closest('#page-dashboard') && el.id === 'dash-global-search') return;
-  });
   if (readOnly) {
-    document.querySelectorAll('.main .btn:not(.btn-outline), .header-actions .btn-primary, .header-actions .btn-success').forEach(btn => {
-      if (btn.textContent.includes('Refresh') || btn.onclick?.toString().includes('showPage')) return;
+    document.querySelectorAll('.header-actions .btn-primary, .header-actions .btn-success').forEach(btn => {
+      if (btn.textContent.includes('Refresh')) return;
       btn.setAttribute('disabled', 'true');
       btn.title = 'Read Only role — view access only';
     });
+    ['btn-start-countdown'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
   }
   if (operator) {
     const settingsNav = document.querySelector('.nav-item[onclick*="settings"]');
@@ -2325,7 +2594,8 @@ function applyRolePermissions(role) {
   }
 }
 
-// ── Subscription status banner (for non-superadmin users) ──
+// ── Subscription status banner (for non-superadmin users), now refreshed
+// live via subscribeOwnUserDoc() in addition to at login (FIX #10). ──
 function checkSubscriptionStatus(session) {
   const banner = document.getElementById('dash-subscription-banner');
   if (!banner) return;
@@ -2337,7 +2607,6 @@ function checkSubscriptionStatus(session) {
   } else if (days <= 7) {
     banner.textContent = `⏳ Your subscription expires in ${days} day${days===1?'':'s'} (${fmtDateShort(session.expiry_date)}). Renew soon to avoid interruption.`;
     banner.classList.add('show'); banner.classList.remove('critical');
-    pushNotification('Subscription Expiring Soon', `Expires in ${days} day(s)`, '⏳');
   } else {
     banner.classList.remove('show', 'critical');
   }
@@ -2375,20 +2644,15 @@ function clearFieldError(fieldId) {
   if (err) err.classList.remove('show');
 }
 
-// ── Security: escape user-supplied text before innerHTML insertion ──
-function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-  return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-}
-
 // ── Auto Save (Settings → League Branding) ──
 let autoSaveTimer = null;
 function debounceAutoSave() {
   clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(() => {
+  autoSaveTimer = setTimeout(async () => {
+    if (isReadOnly()) return;
     const name = v('set-league-name'), logo = v('set-league-logo');
     if (!name) return;
-    saveSettings({ leagueName: name, leagueLogo: logo });
+    await saveSettings({ leagueName: name, leagueLogo: logo });
     applyBranding();
     const tag = document.getElementById('autosave-tag-branding');
     if (tag) { tag.classList.add('show'); setTimeout(() => tag.classList.remove('show'), 2000); }
@@ -2432,7 +2696,7 @@ async function loadReports() {
     const teamRows = teams.map(t => {
       const bought = sold.filter(p => p.sold_to === t.id);
       const spent = bought.reduce((a,p) => a + (p.final_price||0), 0);
-      return `<tr><td><span class="team-dot" style="background:${t.color||'#64748b'}"></span>${escapeHtml(t.name)}</td><td>${fmt(t.purse_total)}</td><td>${fmt(spent)}</td><td>${fmt(t.purse_remaining)}</td><td>${bought.length}</td></tr>`;
+      return `<tr><td><span class="team-dot" style="background:${escapeHtml(t.color||'#64748b')}"></span>${escapeHtml(t.name)}</td><td>${fmt(t.purse_total)}</td><td>${fmt(spent)}</td><td>${fmt(t.purse_remaining)}</td><td>${bought.length}</td></tr>`;
     });
     document.getElementById('report-teams-body').innerHTML = teamRows.length ? teamRows.join('') : '<tr><td colspan="5" class="empty-state">No teams yet</td></tr>';
 
@@ -2442,7 +2706,7 @@ async function loadReports() {
       const users = await fsGetAll('auction_users');
       const counts = { approved:0, pending:0, suspended:0 };
       users.forEach(u => { counts[u.status] = (counts[u.status]||0) + 1; });
-      usersBody.innerHTML = Object.entries(counts).map(([k,v]) => `<tr><td style="text-transform:capitalize">${k}</td><td>${v}</td></tr>`).join('') || '<tr><td colspan="2" class="empty-state">No users</td></tr>';
+      usersBody.innerHTML = Object.entries(counts).map(([k,val]) => `<tr><td style="text-transform:capitalize">${escapeHtml(k)}</td><td>${val}</td></tr>`).join('') || '<tr><td colspan="2" class="empty-state">No users</td></tr>';
     } else {
       usersBody.innerHTML = '<tr><td colspan="2" class="empty-state">Available to Super Admin only</td></tr>';
     }
@@ -2461,14 +2725,20 @@ function exportReportCSV() {
   }).catch(e => toast('Export failed: ' + friendlyError(e), 'error'));
 }
 
-// ── Backup & Restore ──
+// ── Backup & Restore (FIX #5: idempotent restore) ──
+// Export now keeps each record's original Firestore document id. Import uses
+// setDoc(..., {merge:true}) with that same id (fsSet) instead of addDoc, so
+// re-running a restore — or restoring onto non-empty data — updates existing
+// records in place rather than creating duplicates. Legacy backups that don't
+// carry an id still work; those records are added as new documents.
 async function exportBackup() {
+  if (!guardEdit()) return;
   const btn = document.getElementById('backup-export-btn');
   setBtnLoading(btn, true);
   try {
     const isSA = getSession()?.role === 'superadmin';
     const [players, teams] = await Promise.all([fsGetAll('players'), fsGetAll('teams')]);
-    const backup = { exported_at: new Date().toISOString(), settings: getSettings(), players, teams };
+    const backup = { exported_at: new Date().toISOString(), version: 2, settings: getSettings(), players, teams };
     if (isSA) backup.users = await fsGetAll('auction_users');
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `auction-backup-${new Date().toISOString().split('T')[0]}.json`; a.click();
@@ -2478,17 +2748,18 @@ async function exportBackup() {
 }
 
 async function importBackup(event) {
+  if (!guardEdit()) { event.target.value = ''; return; }
   const file = event.target.files[0];
   if (!file) return;
-  if (!confirm('Restoring will ADD records from this backup file (players, teams, settings, and users). Existing records are not removed. Continue?')) { event.target.value=''; return; }
+  if (!confirm('Restore from this backup? Records are matched by their original ID and upserted (safe to run more than once — existing records are overwritten in place, not duplicated). Continue?')) { event.target.value=''; return; }
   showLoading();
   try {
     const text = await file.text();
     const data = JSON.parse(text);
-    if (data.settings) saveSettings(data.settings);
-    if (Array.isArray(data.players)) for (const p of data.players) { const { id, ...rest } = p; await fsAdd('players', rest); }
-    if (Array.isArray(data.teams)) for (const t of data.teams) { const { id, ...rest } = t; await fsAdd('teams', rest); }
-    if (Array.isArray(data.users) && getSession()?.role === 'superadmin') for (const u of data.users) { const { id, ...rest } = u; await fsAdd('auction_users', rest); }
+    if (data.settings) await saveSettings(data.settings);
+    if (Array.isArray(data.players)) for (const p of data.players) { const { id, ...rest } = p; if (id) await fsSet('players', id, rest); else await fsAdd('players', rest); }
+    if (Array.isArray(data.teams)) for (const t of data.teams) { const { id, ...rest } = t; if (id) await fsSet('teams', id, rest); else await fsAdd('teams', rest); }
+    if (Array.isArray(data.users) && getSession()?.role === 'superadmin') for (const u of data.users) { const { id, ...rest } = u; if (id) await fsSet('auction_users', id, rest); else await fsAdd('auction_users', rest); }
     hideLoading();
     toast('Backup restored ✓'); applyBranding(); loadDashboard();
   } catch(e) { hideLoading(); toast('Restore failed: ' + friendlyError(e), 'error'); }
@@ -2499,13 +2770,23 @@ async function importBackup(event) {
 // REALTIME
 // ════════════════════════════════════════════════════
 let unsubFns = [];
+let bidsSnapshotInitialized = false; // FIX #3
 
 function subscribeRealtime() {
   unsubscribeRealtime();
+  bidsSnapshotInitialized = false;
   try {
-    const unsubState = onSnapshot(docRef('auction_state','main'), () => { loadQueue(); });
+    const unsubState = onSnapshot(docRef('auction_state','main'), () => { loadQueue(); syncCountdownFromState(); });
     const unsubBids = onSnapshot(query(col('bids'), orderBy('created_at','desc'), fsLimit(1)), (snap) => {
-      if (!snap.empty) { resetCountdown(); loadQueue(); loadDashboard(); }
+      if (!bidsSnapshotInitialized) {
+        // First event fires immediately with whatever bid already exists (even
+        // on a reload/re-login mid-auction) — resync from the true server
+        // state instead of resetting the countdown to a full new duration.
+        bidsSnapshotInitialized = true;
+        syncCountdownFromState();
+        return;
+      }
+      if (!snap.empty) { syncCountdownFromState(); loadQueue(); loadDashboard(); }
     });
     unsubFns = [unsubState, unsubBids];
   } catch(e) { console.warn('Realtime subscription failed', e); }
@@ -2516,6 +2797,7 @@ function unsubscribeRealtime() { unsubFns.forEach(fn => { try { fn(); } catch(e)
 // INIT
 // ════════════════════════════════════════════════════
 (function init() {
+  subscribeSettings(); // FIX #2: live settings from Firestore, from the very first paint (login screen included)
   applyBranding();
   try { activityLog = JSON.parse(localStorage.getItem('auctionLog') || '[]'); } catch { activityLog = []; }
   const session = getSession();
@@ -2535,9 +2817,9 @@ Object.assign(window, {
   selectTimer, saveTimerSettings, saveAdminCreds, saveWhatsappSettings, copyDisplayUrl,
   openDisplayPage, saveTeam, closeModal, handleTeamLogoSelect, previewTeamLogoUrl,
   savePlayer, handlePhotoSelect, updateCropZoom, cancelCrop, applyCrop, saveNewUser,
-  confirmApprove, filterUsers, setLivePreview, requeuePlayer, saveQueueOrder,
-  dragStart, dragOver, dropRow, dragEnd, editPlayer, deletePlayer, editTeam, deleteTeam,
-  openApproveModal, suspendUser, unsuspendUser, deleteUser, showPage,
+  confirmApprove, filterUsers, setLivePreview, setLivePreviewById, requeuePlayer, saveQueueOrder,
+  dragStart, dragOver, dropRow, dragEnd, editPlayer, editPlayerById, deletePlayer, editTeam, editTeamById, deleteTeam,
+  openApproveModal, openApproveModalById, openRenewModalById, suspendUser, unsuspendUser, deleteUser, showPage,
   toggleNotifPanel, clearAllNotifs,
   autoSetExpiry, openRenewModal, confirmRenew, globalSearch, loadReports, exportReportCSV,
   exportBackup, importBackup, debounceAutoSave
