@@ -943,8 +943,30 @@ async function fsGetAll(name, ...constraints) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-const getSettings = () => { try { return JSON.parse(localStorage.getItem('auctionSettings') || '{}'); } catch { return {}; } };
+// FIX #2: settings now live-sync from Firestore `settings/main` (same document
+// admin.html writes to) instead of being trapped in this device's localStorage.
+// getSettings() keeps its name/shape so every existing caller keeps working;
+// localStorage is now only an instant-paint cache for before the first
+// snapshot arrives.
+let settingsCache = {};
+try { settingsCache = JSON.parse(localStorage.getItem('auctionSettings') || '{}'); } catch { settingsCache = {}; }
+const getSettings = () => settingsCache;
+function subscribeSettings() {
+  onSnapshot(docRef('settings', 'main'), snap => {
+    settingsCache = snap.exists() ? snap.data() : settingsCache;
+    try { localStorage.setItem('auctionSettings', JSON.stringify(settingsCache)); } catch(e) {}
+    applyBranding();
+    countdownMax = settingsCache.timerDuration || 15;
+  }, err => console.warn('settings listener error', err));
+}
 const fmt = n => n ? '₹' + Number(n).toLocaleString('en-IN') : '—';
+
+// FIX #6: consistent HTML-escaping for any player/team text interpolated into
+// innerHTML (player meta chips, recent-bids strip) to avoid stored-content injection.
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
 
 // ══════════════════════════════════════════════════════════
 // NEW: LOADING OVERLAY / CONNECTION STATUS / ERROR HANDLING
@@ -1128,8 +1150,8 @@ function renderBidChips() {
   }
   container.innerHTML = recentBids.map((b, i) => `
     <div class="bid-chip${i === 0 ? ' latest' : ''}">
-      <div class="bid-chip-dot" style="background:${b.color}"></div>
-      <div class="bid-chip-team">${b.name}</div>
+      <div class="bid-chip-dot" style="background:${escapeHtml(b.color)}"></div>
+      <div class="bid-chip-team">${escapeHtml(b.name)}</div>
       <div class="bid-chip-amount">${fmt(b.amount)}</div>
     </div>
   `).join('');
@@ -1225,8 +1247,8 @@ async function renderState(state) {
 
       // meta chips
       const meta = [];
-      if (player.nationality) meta.push(`🌍 ${player.nationality}`);
-      if (player.played_for) meta.push(`🏟️ ${player.played_for.split(',')[0]}`);
+      if (player.nationality) meta.push(`🌍 ${escapeHtml(player.nationality)}`);
+      if (player.played_for) meta.push(`🏟️ ${escapeHtml(player.played_for.split(',')[0])}`);
       document.getElementById('player-meta').innerHTML = meta.map(m =>
         `<div class="meta-chip">${m}</div>`
       ).join('');
@@ -1328,6 +1350,7 @@ function watchSoldTransition() {
 // ── REALTIME LISTENERS ──
 const settings = getSettings();
 countdownMax = settings.timerDuration || 15;
+subscribeSettings();
 
 // Watch auction_state
 onSnapshot(docRef('auction_state','main'), async snap => {
