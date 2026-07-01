@@ -288,9 +288,38 @@ select.form-input option{background:var(--surface2)}
   .timer-options{grid-template-columns:repeat(3,1fr)}
   .notif-panel{width:280px;right:-40px}
 }
+
+/* ── New: Subscription / Roles / Reports / Backup / Validation / Loading ── */
+.plan-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;background:rgba(124,106,244,.15);color:var(--accent2);border:1px solid rgba(124,106,244,.25)}
+.role-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;background:rgba(6,182,212,.12);color:var(--cyan);border:1px solid rgba(6,182,212,.22)}
+.role-badge.role-superadmin{background:rgba(245,158,11,.15);color:var(--amber);border-color:rgba(245,158,11,.25)}
+.role-badge.role-readonly{background:rgba(90,103,125,.18);color:var(--muted);border-color:var(--border2)}
+.field-error{color:var(--red);font-size:11px;margin-top:5px;display:none;font-weight:600}
+.field-error.show{display:block}
+.form-input.invalid{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(244,63,94,.1)}
+.autosave-tag{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;font-weight:600;margin-left:8px}
+.autosave-tag.show{opacity:1}
+.loading-overlay{position:fixed;inset:0;background:rgba(8,9,13,.55);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:999}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:42px;height:42px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-loading{position:relative;color:transparent!important;pointer-events:none}
+.btn-loading::after{content:'';position:absolute;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;left:50%;top:50%;margin:-7px 0 0 -7px}
+.search-global{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:18px}
+.search-global input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:13px;font-family:var(--font)}
+.report-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+.report-card h4{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px}
+.backup-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.expiry-soon{color:var(--amber)!important;font-weight:700}
+.expiry-expired{color:var(--red)!important;font-weight:700}
+.subscription-banner{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:var(--amber);display:none;align-items:center;gap:10px}
+.subscription-banner.show{display:flex}
+.subscription-banner.critical{background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.3);color:var(--red)}
 </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="global-loading"><div class="loading-spinner"></div></div>
 
 <div id="screen-auth" class="auth-screen active">
   <div class="auth-logo-area">
@@ -323,6 +352,7 @@ select.form-input option{background:var(--surface2)}
         <div class="form-group">
           <label class="form-label">Username *</label>
           <input class="form-input" id="reg-username" placeholder="e.g. keralacricket">
+          <div class="field-error" id="err-reg-username">Username is required</div>
         </div>
         <div class="form-group">
           <label class="form-label">WhatsApp Phone</label>
@@ -333,10 +363,12 @@ select.form-input option{background:var(--surface2)}
         <div class="form-group">
           <label class="form-label">Password *</label>
           <input class="form-input" type="password" id="reg-password" placeholder="Min 6 characters">
+          <div class="field-error" id="err-reg-password">Password must be at least 6 characters</div>
         </div>
         <div class="form-group">
           <label class="form-label">Confirm Password *</label>
           <input class="form-input" type="password" id="reg-confirm" placeholder="Repeat">
+          <div class="field-error" id="err-reg-confirm">Passwords do not match</div>
         </div>
       </div>
       <div class="form-group">
@@ -392,6 +424,7 @@ select.form-input option{background:var(--surface2)}
       <div class="nav-item" onclick="showPage('players',this)"><span class="nav-icon">⚽</span> Players</div>
       <div class="nav-item" onclick="showPage('teams',this)"><span class="nav-icon">🏟️</span> Teams</div>
       <div class="nav-item" onclick="showPage('results',this)"><span class="nav-icon">📋</span> Results</div>
+      <div class="nav-item" onclick="showPage('reports',this)"><span class="nav-icon">📈</span> Reports</div>
       <div id="nav-users" class="nav-item" style="display:none" onclick="showPage('users',this)">
         <span class="nav-icon">👥</span> Users <span id="pending-badge" class="nav-badge" style="display:none">0</span>
       </div>
@@ -414,6 +447,7 @@ select.form-input option{background:var(--surface2)}
   <main class="main">
 
     <div id="page-dashboard" class="page active">
+      <div class="subscription-banner" id="dash-subscription-banner"></div>
       <div class="page-header">
         <div><div class="page-title">Dashboard</div><div class="page-sub">Auction overview at a glance</div></div>
         <div class="header-actions">
@@ -427,12 +461,14 @@ select.form-input option{background:var(--surface2)}
           <button class="btn btn-outline btn-sm" onclick="loadDashboard()">↻ Refresh</button>
         </div>
       </div>
+      <div class="search-global">🔎 <input id="dash-global-search" placeholder="Quick search players, teams, or users... (press Enter)" onkeydown="if(event.key==='Enter')globalSearch(this.value)"></div>
       <div class="stats-row">
         <div class="stat-card c-accent"><div class="stat-label">Total Players</div><div class="stat-val accent" id="stat-total">—</div></div>
         <div class="stat-card c-green"><div class="stat-label">Sold</div><div class="stat-val green" id="stat-sold">—</div></div>
         <div class="stat-card c-amber"><div class="stat-label">Pending</div><div class="stat-val amber" id="stat-pending">—</div></div>
         <div class="stat-card c-cyan"><div class="stat-label">Teams</div><div class="stat-val" id="stat-teams">—</div></div>
         <div class="stat-card c-red"><div class="stat-label">Total Spent</div><div class="stat-val accent" id="stat-spent">—</div></div>
+        <div class="stat-card c-green"><div class="stat-label">Avg Sale Price</div><div class="stat-val green" id="stat-avg">—</div></div>
       </div>
       <div class="table-wrap">
         <div class="table-head"><div class="table-head-title">Recent Bids</div></div>
@@ -550,6 +586,30 @@ select.form-input option{background:var(--surface2)}
       </div>
     </div>
 
+    <div id="page-reports" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Reports</div><div class="page-sub">Summary analytics for this auction</div></div>
+        <button class="btn btn-outline btn-sm" onclick="exportReportCSV()">⬇ Export Report CSV</button>
+      </div>
+      <div class="stats-row" id="report-stats">
+        <div class="stat-card c-accent"><div class="stat-label">Players Sold</div><div class="stat-val accent" id="rep-sold">—</div></div>
+        <div class="stat-card c-red"><div class="stat-label">Players Unsold</div><div class="stat-val" id="rep-unsold">—</div></div>
+        <div class="stat-card c-amber"><div class="stat-label">Players Pending</div><div class="stat-val amber" id="rep-pending">—</div></div>
+        <div class="stat-card c-cyan"><div class="stat-label">Highest Sale</div><div class="stat-val" id="rep-highest">—</div></div>
+      </div>
+      <div class="report-card">
+        <h4>💰 Team-wise Spend</h4>
+        <table><thead><tr><th>Team</th><th>Purse Total</th><th>Purse Spent</th><th>Purse Left</th><th>Players Bought</th></tr></thead>
+        <tbody id="report-teams-body"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody></table>
+      </div>
+      <div class="report-card">
+        <h4>👥 User / Subscription Summary</h4>
+        <table><thead><tr><th>Status</th><th>Count</th></tr></thead>
+        <tbody id="report-users-body"><tr><td colspan="2" class="empty-state">Loading...</td></tr></tbody></table>
+      </div>
+    </div>
+
+
     <div id="page-users" class="page">
       <div class="page-header">
         <div><div class="page-title">User Management</div><div class="page-sub">Approve, suspend, and manage subscriber accounts</div></div>
@@ -561,8 +621,8 @@ select.form-input option{background:var(--surface2)}
           <div class="table-head-title">All Accounts</div>
           <input class="form-input" placeholder="Search users..." style="width:200px;padding:6px 10px;font-size:12px" oninput="filterUsers(this.value)">
         </div>
-        <table><thead><tr><th>User</th><th>Phone</th><th>Event</th><th>Status</th><th>Approved By</th><th>Expiry</th><th>Actions</th></tr></thead>
-        <tbody id="users-body"><tr><td colspan="7" class="empty-state">Loading...</td></tr></tbody>
+        <table><thead><tr><th>User</th><th>Phone</th><th>Event</th><th>Status</th><th>Plan</th><th>Role</th><th>Approved By</th><th>Expiry</th><th>Actions</th></tr></thead>
+        <tbody id="users-body"><tr><td colspan="9" class="empty-state">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -576,10 +636,10 @@ select.form-input option{background:var(--surface2)}
         <h3>🏆 League Branding</h3>
         <div class="info-box">Updates the league name and logo across all pages and the live display screen.</div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">League Name</label><input class="form-input" id="set-league-name" placeholder="e.g. IPL Auction 2026"></div>
-          <div class="form-group"><label class="form-label">League Logo URL</label><input class="form-input" id="set-league-logo" placeholder="https://... (image URL)"></div>
+          <div class="form-group"><label class="form-label">League Name</label><input class="form-input" id="set-league-name" placeholder="e.g. IPL Auction 2026" oninput="debounceAutoSave()"></div>
+          <div class="form-group"><label class="form-label">League Logo URL</label><input class="form-input" id="set-league-logo" placeholder="https://... (image URL)" oninput="debounceAutoSave()"></div>
         </div>
-        <button class="btn btn-primary" onclick="saveLeagueSettings()">Save Branding</button>
+        <button class="btn btn-primary" onclick="saveLeagueSettings()">Save Branding</button><span class="autosave-tag" id="autosave-tag-branding">✓ Auto-saved</span>
       </div>
 
       <div class="settings-section">
@@ -630,6 +690,17 @@ select.form-input option{background:var(--surface2)}
         </div>
         <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="openDisplayPage()">↗ Open Display Screen</button>
       </div>
+
+      <div class="settings-section">
+        <h3>💾 Backup &amp; Restore</h3>
+        <div class="info-box">Export a full JSON backup of players, teams, and settings (and users, if Super Admin). Restoring re-adds records from a backup file — use with care.</div>
+        <div class="backup-row">
+          <button class="btn btn-primary btn-sm" id="backup-export-btn" onclick="exportBackup()">⬇ Export Backup (JSON)</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('backup-restore-input').click()">⬆ Restore from Backup</button>
+          <input type="file" id="backup-restore-input" accept=".json" style="display:none" onchange="importBackup(event)">
+          <span class="autosave-tag" id="autosave-tag">✓ Auto-saved</span>
+        </div>
+      </div>
     </div>
 
   </main>
@@ -641,8 +712,8 @@ select.form-input option{background:var(--surface2)}
     <h3>🏟️ <span id="modal-team-title">Add Team</span></h3>
     <input type="hidden" id="team-id">
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Team Name *</label><input class="form-input" id="team-name" placeholder="e.g. Arsenal FC"></div>
-      <div class="form-group"><label class="form-label">Short Code *</label><input class="form-input" id="team-code" placeholder="ARS" maxlength="4"></div>
+      <div class="form-group"><label class="form-label">Team Name *</label><input class="form-input" id="team-name" placeholder="e.g. Arsenal FC"><div class="field-error" id="err-team-name">Team name is required</div></div>
+      <div class="form-group"><label class="form-label">Short Code *</label><input class="form-input" id="team-code" placeholder="ARS" maxlength="4"><div class="field-error" id="err-team-code">Short code is required</div></div>
     </div>
     <div class="form-group"><label class="form-label">Team Color</label><input type="color" class="form-input" id="team-color" value="#4f8ef7" style="height:42px;padding:4px;cursor:pointer"></div>
     <div class="form-group">
@@ -679,7 +750,7 @@ select.form-input option{background:var(--surface2)}
     <h3>⚽ <span id="modal-player-title">Add Player</span></h3>
     <input type="hidden" id="player-id">
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="player-name" placeholder="Player name"></div>
+      <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="player-name" placeholder="Player name"><div class="field-error" id="err-player-name">Player name is required</div></div>
       <div class="form-group"><label class="form-label">Role *</label>
         <select class="form-input" id="player-role">
           <option>Batsman</option><option>Bowler</option><option>All-Rounder</option><option>Wicket-Keeper</option>
@@ -760,6 +831,26 @@ select.form-input option{background:var(--surface2)}
     </div>
     <div class="form-group"><label class="form-label">Event / League Name</label><input class="form-input" id="new-user-event" placeholder="e.g. IPL College League"></div>
     <div class="form-row">
+      <div class="form-group"><label class="form-label">Subscription Plan</label>
+        <select class="form-input" id="new-user-plan" onchange="autoSetExpiry('new-user-plan','new-user-expiry')">
+          <option value="">— Select Plan —</option>
+          <option value="monthly">Monthly</option>
+          <option value="3months">3 Months</option>
+          <option value="6months">6 Months</option>
+          <option value="1year">1 Year</option>
+          <option value="lifetime">Lifetime</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">User Role</label>
+        <select class="form-input" id="new-user-role">
+          <option value="event_owner">Event Owner</option>
+          <option value="operator">Operator</option>
+          <option value="readonly">Read Only</option>
+          <option value="superadmin">Super Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
       <div class="form-group"><label class="form-label">Status</label>
         <select class="form-input" id="new-user-status">
           <option value="approved">Approved (immediate access)</option>
@@ -770,7 +861,7 @@ select.form-input option{background:var(--surface2)}
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-add-user')">Cancel</button>
-      <button class="btn btn-success" onclick="saveNewUser()">Create User</button>
+      <button class="btn btn-success" id="save-new-user-btn" onclick="saveNewUser()">Create User</button>
     </div>
   </div>
 </div>
@@ -780,11 +871,54 @@ select.form-input option{background:var(--surface2)}
     <h3>✅ Approve Account</h3>
     <input type="hidden" id="approve-user-id">
     <div id="approve-user-info" style="background:var(--surface2);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;line-height:1.9"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Subscription Plan</label>
+        <select class="form-input" id="approve-plan-select" onchange="autoSetExpiry('approve-plan-select','approve-expiry')">
+          <option value="">— Select Plan —</option>
+          <option value="monthly">Monthly</option>
+          <option value="3months">3 Months</option>
+          <option value="6months">6 Months</option>
+          <option value="1year">1 Year</option>
+          <option value="lifetime">Lifetime</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">User Role</label>
+        <select class="form-input" id="approve-role-select">
+          <option value="event_owner">Event Owner</option>
+          <option value="operator">Operator</option>
+          <option value="readonly">Read Only</option>
+          <option value="superadmin">Super Admin</option>
+        </select>
+      </div>
+    </div>
     <div class="form-group"><label class="form-label">Subscription Expiry Date *</label><input class="form-input" type="date" id="approve-expiry"></div>
     <div class="form-group"><label class="form-label">Plan / Note (optional)</label><input class="form-input" id="approve-plan" placeholder="e.g. Monthly plan · ₹2499 paid via WhatsApp"></div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-approve-user')">Cancel</button>
-      <button class="btn btn-success" onclick="confirmApprove()">✓ Approve &amp; Activate</button>
+      <button class="btn btn-success" id="confirm-approve-btn" onclick="confirmApprove()">✓ Approve &amp; Activate</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-renew-user">
+  <div class="modal">
+    <h3>🔄 Renew Subscription</h3>
+    <input type="hidden" id="renew-user-id">
+    <div id="renew-user-info" style="background:var(--surface2);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;line-height:1.9"></div>
+    <div class="form-group"><label class="form-label">Renewal Plan</label>
+      <select class="form-input" id="renew-plan-select" onchange="autoSetExpiry('renew-plan-select','renew-expiry')">
+        <option value="">— Select Plan —</option>
+        <option value="monthly">Monthly</option>
+        <option value="3months">3 Months</option>
+        <option value="6months">6 Months</option>
+        <option value="1year">1 Year</option>
+        <option value="lifetime">Lifetime</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">New Expiry Date *</label><input class="form-input" type="date" id="renew-expiry"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-renew-user')">Cancel</button>
+      <button class="btn btn-success" id="confirm-renew-btn" onclick="confirmRenew()">✓ Renew Subscription</button>
     </div>
   </div>
 </div>
@@ -905,17 +1039,22 @@ function showScreen(name) {
 async function doRegister() {
   const name = v('reg-name'), username = v('reg-username').toLowerCase(), phone = v('reg-phone');
   const pass = v('reg-password'), confirm = v('reg-confirm'), event = v('reg-event');
-  if (!username || !pass) return toast('Username and password are required', 'error');
-  if (pass.length < 6) return toast('Password must be at least 6 characters', 'error');
-  if (pass !== confirm) return toast('Passwords do not match', 'error');
+  clearFieldError('reg-username'); clearFieldError('reg-password'); clearFieldError('reg-confirm');
+  let valid = true;
+  if (!username) { showFieldError('reg-username'); valid = false; }
+  if (!pass || pass.length < 6) { showFieldError('reg-password'); valid = false; }
+  if (pass !== confirm) { showFieldError('reg-confirm'); valid = false; }
+  if (!valid) return toast('Please fix the highlighted fields', 'error');
+  showLoading();
   try {
     const existing = await fsGetAll('auction_users', where('username','==',username));
-    if (existing.length) return toast('Username already taken', 'error');
+    if (existing.length) { hideLoading(); showFieldError('reg-username'); return toast('Username already taken', 'error'); }
     await fsAdd('auction_users', {
       username, full_name: name || username, phone: phone || null, event_name: event || null,
-      password_hash: btoa(unescape(encodeURIComponent(pass))), status: 'pending', created_at: new Date().toISOString()
+      password_hash: btoa(unescape(encodeURIComponent(pass))), status: 'pending', role: 'event_owner', created_at: new Date().toISOString()
     });
-  } catch(e) { return toast('Registration failed: ' + e.message, 'error'); }
+  } catch(e) { hideLoading(); return toast('Registration failed: ' + friendlyError(e), 'error'); }
+  hideLoading();
   toast('Account created! Contact admin for approval.', 'success');
   setSession({ username, status: 'pending', full_name: name || username });
   setTimeout(() => showPendingScreen(username), 800);
@@ -930,20 +1069,22 @@ async function doLogin() {
     const sess = { username: u, status: 'approved', role: 'superadmin', full_name: 'Super Admin' };
     setSession(sess); enterApp(sess); return;
   }
+  showLoading();
   try {
     const users = await fsGetAll('auction_users', where('username','==',u));
     if (users.length) {
       const user = users[0];
       const expectedHash = btoa(unescape(encodeURIComponent(p)));
-      if (user.password_hash !== expectedHash) return toast('Wrong password', 'error');
-      if (user.status === 'pending') { setSession({ username: u, status: 'pending', full_name: user.full_name }); showPendingScreen(u); return; }
-      if (user.status === 'suspended') return toast('Account suspended. Contact admin.', 'error');
-      if (user.expiry_date && new Date(user.expiry_date) < new Date()) { setSession({ username: u, status: 'pending', full_name: user.full_name }); showPendingScreen(u); return; }
-      const sess = { username: u, status: 'approved', role: 'user', full_name: user.full_name, id: user.id };
-      setSession(sess); enterApp(sess); return;
+      if (user.password_hash !== expectedHash) { hideLoading(); return toast('Wrong password', 'error'); }
+      if (user.status === 'pending') { hideLoading(); setSession({ username: u, status: 'pending', full_name: user.full_name }); showPendingScreen(u); return; }
+      if (user.status === 'suspended') { hideLoading(); return toast('Account suspended. Contact admin.', 'error'); }
+      if (user.expiry_date && new Date(user.expiry_date) < new Date()) { hideLoading(); setSession({ username: u, status: 'pending', full_name: user.full_name }); showPendingScreen(u); return; }
+      const sess = { username: u, status: 'approved', role: user.role || 'event_owner', full_name: user.full_name, id: user.id, expiry_date: user.expiry_date || null };
+      setSession(sess); hideLoading(); enterApp(sess); return;
     }
+    hideLoading();
     toast('Invalid username or password', 'error');
-  } catch(e) { toast('Login error: ' + e.message, 'error'); }
+  } catch(e) { hideLoading(); toast('Login error: ' + friendlyError(e), 'error'); }
 }
 
 function showPendingScreen(username) {
@@ -961,7 +1102,7 @@ function enterApp(session) {
   const isSA = session.role === 'superadmin';
   document.getElementById('sidebar-username-display').textContent = session.full_name || session.username;
   document.getElementById('sidebar-avatar').textContent = (session.full_name || session.username)[0].toUpperCase();
-  document.getElementById('sidebar-role-label').textContent = isSA ? '👑 Super Admin' : '✓ Subscription Active';
+  document.getElementById('sidebar-role-label').textContent = roleLabel(session.role) ;
   document.getElementById('nav-users').style.display = isSA ? 'flex' : 'none';
   document.getElementById('settings-superadmin-section').style.display = isSA ? 'block' : 'none';
   loadDashboard();
@@ -969,6 +1110,8 @@ function enterApp(session) {
   if (isSA) checkPendingUsers();
   loadTimerSettings();
   loadNotifications();
+  applyRolePermissions(session.role || 'event_owner');
+  checkSubscriptionStatus(session);
   document.getElementById('display-url-text').textContent = window.location.href.replace('admin.html', 'live.html');
 }
 
@@ -1075,7 +1218,7 @@ function showPage(name, el) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   if (el) el.classList.add('active');
-  const loaders = { dashboard: loadDashboard, auction: loadQueue, players: loadPlayers, teams: loadTeams, results: loadResults, users: loadUsers, log: loadLog, settings: applyBranding };
+  const loaders = { dashboard: loadDashboard, auction: loadQueue, players: loadPlayers, teams: loadTeams, results: loadResults, users: loadUsers, log: loadLog, settings: applyBranding, reports: loadReports };
   if (loaders[name]) loaders[name]();
 }
 
@@ -1599,6 +1742,7 @@ async function loadDashboard() {
     document.getElementById('stat-pending').textContent = pending.length;
     document.getElementById('stat-teams').textContent = teams.length;
     document.getElementById('stat-spent').textContent = fmt(spent);
+    document.getElementById('stat-avg').textContent = sold.length ? fmt(Math.round(spent / sold.length)) : '—';
     const tbody = document.getElementById('recent-bids-body');
     if (!bids?.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No bids yet</td></tr>'; return; }
     // bids may store player_name/team_name/team_color directly, or just IDs — handle both
@@ -1796,7 +1940,8 @@ async function uploadTeamLogo(file) {
 
 async function savePlayer() {
   const id = v('player-id'), name = v('player-name');
-  if (!name) return toast('Player name is required', 'error');
+  clearFieldError('player-name');
+  if (!name) { showFieldError('player-name'); return toast('Player name is required', 'error'); }
   const btn = document.getElementById('save-player-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
@@ -1809,12 +1954,12 @@ async function savePlayer() {
     if (id) { await fsUpdate('players', id, data); toast('Player updated ✓'); addLog('✏️ Player updated', name, '', 0, '✏️'); }
     else { data.status = 'pending'; data.lot_number = null; await fsAdd('players', data); toast('Player added ✓'); addLog('➕ Player added', name, '', 0, '➕'); }
     closeModal('modal-player'); loadPlayers();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  } catch(e) { toast('Error: ' + friendlyError(e), 'error'); }
   finally { btn.disabled = false; btn.textContent = 'Save Player'; }
 }
 
 async function deletePlayer(id, status, soldToId, finalPrice) {
-  if (!confirm(status === 'sold' ? 'Delete this SOLD player? The sale amount will be refunded to the buying team.' : 'Delete this player?')) return;
+  if (!confirm(status === 'sold' ? 'Delete this SOLD player? The sale amount will be refunded to the buying team.' : 'Delete this player? This cannot be undone.')) return;
   try {
     const bidDocs = await fsGetAll('bids', where('player_id','==',id));
     await Promise.all(bidDocs.map(b => fsDelete('bids', b.id)));
@@ -1827,7 +1972,7 @@ async function deletePlayer(id, status, soldToId, finalPrice) {
     if (st?.current_player_id === id) { await fsSet('auction_state', 'main', { current_player_id: null, current_bid: 0, current_leader_team_id: null, is_live: false, is_paused: false }); }
     await fsDelete('players', id);
     toast(status === 'sold' ? 'Player deleted · Purse refunded ✓' : 'Player deleted'); loadPlayers();
-  } catch(e) { toast('Delete failed: ' + e.message, 'error'); }
+  } catch(e) { toast('Delete failed: ' + friendlyError(e), 'error'); }
 }
 
 function exportPlayers() {
@@ -1930,23 +2075,28 @@ function editTeam(t) {
 async function saveTeam() {
   const id = v('team-id'), purse = parseInt(document.getElementById('team-purse').value) || 100000000;
   const btn = document.getElementById('save-team-btn');
+  clearFieldError('team-name'); clearFieldError('team-code');
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     let logoUrl = v('team-logo') || null;
     if (pendingTeamLogoFile) { logoUrl = await uploadTeamLogo(pendingTeamLogoFile); pendingTeamLogoFile = null; }
     const data = { name: v('team-name'), short_code: v('team-code').toUpperCase(), color: document.getElementById('team-color').value, leader_name: v('team-leader') || null, leader_username: v('team-leader-username') || null, owner_name: v('team-owner') || null, purse_total: purse, logo_url: logoUrl };
     const pass = v('team-leader-pass'); if (pass) data.leader_password = pass;
-    if (!data.name || !data.short_code) { toast('Name and short code required', 'error'); btn.disabled = false; btn.textContent = 'Save Team'; return; }
+    if (!data.name || !data.short_code) {
+      if (!data.name) showFieldError('team-name');
+      if (!data.short_code) showFieldError('team-code');
+      toast('Name and short code required', 'error'); btn.disabled = false; btn.textContent = 'Save Team'; return;
+    }
     if (id) { await fsUpdate('teams', id, data); delete teamCache[id]; toast('Team updated ✓'); }
     else { data.purse_remaining = purse; data.created_at = new Date().toISOString(); await fsAdd('teams', data); toast('Team added ✓'); }
     closeModal('modal-team'); loadTeams();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  } catch(e) { toast('Error: ' + friendlyError(e), 'error'); }
   finally { btn.disabled = false; btn.textContent = 'Save Team'; }
 }
 
 async function deleteTeam(id) {
-  if (!confirm('Delete this team? Sold players will NOT automatically be refunded.')) return;
-  await fsDelete('teams', id);
+  if (!confirm('Delete this team? Sold players will NOT automatically be refunded. This cannot be undone.')) return;
+  try { await fsDelete('teams', id); } catch(e) { return toast('Delete failed: ' + friendlyError(e), 'error'); }
   delete teamCache[id];
   toast('Team deleted'); loadTeams();
 }
@@ -2017,21 +2167,28 @@ async function loadUsers() {
 
 function renderUsers(users) {
   const tbody = document.getElementById('users-body');
-  if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No users registered yet</td></tr>'; return; }
-  tbody.innerHTML = users.map(u => `<tr class="${u.status==='pending'?'user-row-pending':''}">
-    <td><div style="font-weight:600">${u.full_name||u.username}</div><div style="font-size:11px;color:var(--muted)">@${u.username}</div></td>
-    <td>${u.phone?`<a href="https://wa.me/${u.phone.replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none;font-size:12px">💬 ${u.phone}</a>`:'—'}</td>
-    <td style="font-size:12px;color:var(--text2)">${u.event_name||'—'}</td>
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No users registered yet</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => {
+    const expired = u.expiry_date && new Date(u.expiry_date) < new Date();
+    const soon = !expired && u.expiry_date && (new Date(u.expiry_date) - new Date()) < 7*24*60*60*1000;
+    return `<tr class="${u.status==='pending'?'user-row-pending':''}">
+    <td><div style="font-weight:600">${escapeHtml(u.full_name||u.username)}</div><div style="font-size:11px;color:var(--muted)">@${escapeHtml(u.username)}</div></td>
+    <td>${u.phone?`<a href="https://wa.me/${u.phone.replace(/\D/g,'')}" target="_blank" style="color:var(--green);text-decoration:none;font-size:12px">💬 ${escapeHtml(u.phone)}</a>`:'—'}</td>
+    <td style="font-size:12px;color:var(--text2)">${escapeHtml(u.event_name||'—')}</td>
     <td><span class="badge badge-${u.status==='approved'?'approved':u.status==='pending'?'waiting':u.status==='suspended'?'suspended':'rejected'}">${u.status.toUpperCase()}</span></td>
-    <td style="font-size:12px;color:var(--muted)">${u.approved_by||'—'}</td>
-    <td style="font-size:12px;color:${u.expiry_date&&new Date(u.expiry_date)<new Date()?'var(--red)':'var(--muted)'}">${fmtDateShort(u.expiry_date)}</td>
+    <td>${u.plan?`<span class="plan-badge">${planLabel(u.plan)}</span>`:'—'}</td>
+    <td><span class="role-badge role-${u.role||'event_owner'}">${roleLabel(u.role).replace(/^[^\s]+\s/,'')}</span></td>
+    <td style="font-size:12px;color:var(--muted)">${escapeHtml(u.approved_by||'—')}</td>
+    <td class="${expired?'expiry-expired':soon?'expiry-soon':''}" style="font-size:12px">${fmtDateShort(u.expiry_date)}</td>
     <td><div style="display:flex;gap:4px;flex-wrap:wrap">
       ${u.status==='pending'?`<button class="btn btn-success btn-xs" onclick='openApproveModal("${u.id}", ${JSON.stringify(u)})'>✓ Approve</button>`:''}
+      ${u.status==='approved'?`<button class="btn btn-outline btn-xs" onclick='openRenewModal("${u.id}", ${JSON.stringify(u)})'>🔄 Renew</button>`:''}
       ${u.status==='approved'?`<button class="btn btn-amber btn-xs" onclick="suspendUser('${u.id}')">Suspend</button>`:''}
       ${u.status==='suspended'?`<button class="btn btn-success btn-xs" onclick="unsuspendUser('${u.id}')">Reactivate</button>`:''}
       <button class="btn btn-danger btn-xs" onclick="deleteUser('${u.id}')">Del</button>
     </div></td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
 }
 
 function filterUsers(q) {
@@ -2041,55 +2198,301 @@ function filterUsers(q) {
 
 function openApproveModal(id, user) {
   document.getElementById('approve-user-id').value = id;
-  document.getElementById('approve-user-info').innerHTML = `<strong>${user.full_name||user.username}</strong> (@${user.username})<br>📱 ${user.phone||'No phone'} &nbsp;|&nbsp; Event: ${user.event_name||'Not set'}<br>Registered: ${fmtDateShort(user.created_at)}`;
+  document.getElementById('approve-user-info').innerHTML = `<strong>${escapeHtml(user.full_name||user.username)}</strong> (@${escapeHtml(user.username)})<br>📱 ${escapeHtml(user.phone||'No phone')} &nbsp;|&nbsp; Event: ${escapeHtml(user.event_name||'Not set')}<br>Registered: ${fmtDateShort(user.created_at)}`;
   const d = new Date(); d.setDate(d.getDate() + 30);
   document.getElementById('approve-expiry').value = d.toISOString().split('T')[0];
   document.getElementById('approve-plan').value = '';
+  document.getElementById('approve-plan-select').value = '';
+  document.getElementById('approve-role-select').value = user.role || 'event_owner';
   openModal('modal-approve-user');
 }
 
 async function confirmApprove() {
   const id = v('approve-user-id'), expiry = v('approve-expiry'), plan = v('approve-plan');
+  const planType = document.getElementById('approve-plan-select').value;
+  const role = document.getElementById('approve-role-select').value;
   if (!expiry) return toast('Set an expiry date', 'error');
   const sess = getSession();
+  const btn = document.getElementById('confirm-approve-btn');
+  setBtnLoading(btn, true);
   try {
-    await fsUpdate('auction_users', id, { status: 'approved', expiry_date: expiry, approved_by: sess?.username||'admin', plan_note: plan||null, approved_at: new Date().toISOString() });
+    await fsUpdate('auction_users', id, { status: 'approved', expiry_date: expiry, approved_by: sess?.username||'admin', plan_note: plan||null, plan: planType||null, role: role||'event_owner', approved_at: new Date().toISOString() });
     toast('Account approved ✓');
-  } catch(e) { toast('Error: ' + e.message, 'error'); return; }
+    pushNotification('Account Approved', `User approved with ${roleLabel(role)} access`, '✅');
+  } catch(e) { toast('Error: ' + friendlyError(e), 'error'); setBtnLoading(btn, false); return; }
+  setBtnLoading(btn, false);
   closeModal('modal-approve-user'); loadUsers();
+}
+
+function openRenewModal(id, user) {
+  document.getElementById('renew-user-id').value = id;
+  document.getElementById('renew-user-info').innerHTML = `<strong>${escapeHtml(user.full_name||user.username)}</strong> (@${escapeHtml(user.username)})<br>Current expiry: ${fmtDateShort(user.expiry_date)}`;
+  document.getElementById('renew-plan-select').value = '';
+  document.getElementById('renew-expiry').value = user.expiry_date || new Date().toISOString().split('T')[0];
+  openModal('modal-renew-user');
+}
+
+async function confirmRenew() {
+  const id = v('renew-user-id'), expiry = v('renew-expiry');
+  const planType = document.getElementById('renew-plan-select').value;
+  if (!expiry) return toast('Set a new expiry date', 'error');
+  const btn = document.getElementById('confirm-renew-btn');
+  setBtnLoading(btn, true);
+  try {
+    await fsUpdate('auction_users', id, { status: 'approved', expiry_date: expiry, plan: planType||null, renewed_at: new Date().toISOString() });
+    toast('Subscription renewed ✓');
+    pushNotification('Subscription Renewed', `New expiry: ${fmtDateShort(expiry)}`, '🔄');
+  } catch(e) { toast('Error: ' + friendlyError(e), 'error'); setBtnLoading(btn, false); return; }
+  setBtnLoading(btn, false);
+  closeModal('modal-renew-user'); loadUsers();
 }
 
 async function suspendUser(id) {
   if (!confirm('Suspend this user?')) return;
-  try { await fsUpdate('auction_users', id, { status: 'suspended' }); } catch(e) {}
+  try { await fsUpdate('auction_users', id, { status: 'suspended' }); } catch(e) { return toast('Error: ' + friendlyError(e), 'error'); }
   toast('User suspended'); loadUsers();
 }
 
 async function unsuspendUser(id) {
-  try { await fsUpdate('auction_users', id, { status: 'approved' }); } catch(e) {}
+  try { await fsUpdate('auction_users', id, { status: 'approved' }); } catch(e) { return toast('Error: ' + friendlyError(e), 'error'); }
   toast('User reactivated ✓'); loadUsers();
 }
 
 async function deleteUser(id) {
-  if (!confirm('Permanently delete this user?')) return;
-  try { await fsDelete('auction_users', id); } catch(e) {}
+  if (!confirm('Permanently delete this user? This cannot be undone.')) return;
+  try { await fsDelete('auction_users', id); } catch(e) { return toast('Error: ' + friendlyError(e), 'error'); }
   toast('User deleted'); loadUsers();
 }
 
 function openAddUserModal() {
   ['new-user-name','new-user-username','new-user-event','new-user-phone','new-user-pass'].forEach(id=>document.getElementById(id).value='');
   const d=new Date(); d.setDate(d.getDate()+30); document.getElementById('new-user-expiry').value=d.toISOString().split('T')[0];
+  document.getElementById('new-user-plan').value = '';
+  document.getElementById('new-user-role').value = 'event_owner';
   openModal('modal-add-user');
 }
 
 async function saveNewUser() {
   const username = v('new-user-username').toLowerCase(), pass = v('new-user-pass'), name = v('new-user-name');
   const status = document.getElementById('new-user-status').value, expiry = v('new-user-expiry'), phone = v('new-user-phone'), event = v('new-user-event');
+  const plan = document.getElementById('new-user-plan').value, role = document.getElementById('new-user-role').value;
+  clearFieldError('new-user-username');
   if (!username || !pass) return toast('Username and password required', 'error');
-  const data = { username, full_name: name||username, phone: phone||null, event_name: event||null, password_hash: btoa(unescape(encodeURIComponent(pass))), status, expiry_date: status==='approved'?expiry:null, approved_by: status==='approved'?(getSession()?.username||'admin'):null, created_at: new Date().toISOString() };
+  if (pass.length < 6) return toast('Password must be at least 6 characters', 'error');
+  const data = { username, full_name: name||username, phone: phone||null, event_name: event||null, password_hash: btoa(unescape(encodeURIComponent(pass))), status, plan: plan||null, role: role||'event_owner', expiry_date: status==='approved'?expiry:null, approved_by: status==='approved'?(getSession()?.username||'admin'):null, created_at: new Date().toISOString() };
+  const btn = document.getElementById('save-new-user-btn');
+  setBtnLoading(btn, true);
   try { await fsAdd('auction_users', data); toast('User created ✓'); }
-  catch(e) { toast('Error: ' + e.message, 'error'); return; }
+  catch(e) { toast('Error: ' + friendlyError(e), 'error'); setBtnLoading(btn, false); return; }
+  setBtnLoading(btn, false);
   closeModal('modal-add-user'); loadUsers();
+}
+
+// ════════════════════════════════════════════════════
+// NEW: SUBSCRIPTION PLANS, ROLES, LOADING, VALIDATION, REPORTS, BACKUP
+// ════════════════════════════════════════════════════
+const PLAN_DAYS = { monthly: 30, '3months': 90, '6months': 182, '1year': 365, lifetime: 36500 };
+function planLabel(p) {
+  return ({ monthly:'Monthly', '3months':'3 Months', '6months':'6 Months', '1year':'1 Year', lifetime:'Lifetime' })[p] || p || '—';
+}
+function roleLabel(r) {
+  return ({ superadmin:'👑 Super Admin', event_owner:'🎟️ Event Owner', operator:'🛠️ Operator', readonly:'👁️ Read Only' })[r] || '✓ Subscription Active';
+}
+function autoSetExpiry(selectId, dateId) {
+  const plan = document.getElementById(selectId).value;
+  if (!plan || !PLAN_DAYS[plan]) return;
+  const d = new Date(); d.setDate(d.getDate() + PLAN_DAYS[plan]);
+  document.getElementById(dateId).value = d.toISOString().split('T')[0];
+}
+
+// ── Role-based UI permissions (Admin Panel scope only) ──
+function applyRolePermissions(role) {
+  const readOnly = role === 'readonly';
+  const operator = role === 'operator';
+  document.querySelectorAll('.main button, .main input, .main select').forEach(el => {
+    if (el.closest('#page-dashboard') && el.id === 'dash-global-search') return;
+  });
+  if (readOnly) {
+    document.querySelectorAll('.main .btn:not(.btn-outline), .header-actions .btn-primary, .header-actions .btn-success').forEach(btn => {
+      if (btn.textContent.includes('Refresh') || btn.onclick?.toString().includes('showPage')) return;
+      btn.setAttribute('disabled', 'true');
+      btn.title = 'Read Only role — view access only';
+    });
+  }
+  if (operator) {
+    const settingsNav = document.querySelector('.nav-item[onclick*="settings"]');
+    if (settingsNav) settingsNav.style.display = 'none';
+  }
+}
+
+// ── Subscription status banner (for non-superadmin users) ──
+function checkSubscriptionStatus(session) {
+  const banner = document.getElementById('dash-subscription-banner');
+  if (!banner) return;
+  if (session.role === 'superadmin' || !session.expiry_date) { banner.classList.remove('show'); return; }
+  const days = Math.ceil((new Date(session.expiry_date) - new Date()) / (1000*60*60*24));
+  if (days < 0) {
+    banner.textContent = '⚠️ Your subscription has expired. Please contact admin to renew.';
+    banner.classList.add('show', 'critical');
+  } else if (days <= 7) {
+    banner.textContent = `⏳ Your subscription expires in ${days} day${days===1?'':'s'} (${fmtDateShort(session.expiry_date)}). Renew soon to avoid interruption.`;
+    banner.classList.add('show'); banner.classList.remove('critical');
+    pushNotification('Subscription Expiring Soon', `Expires in ${days} day(s)`, '⏳');
+  } else {
+    banner.classList.remove('show', 'critical');
+  }
+}
+
+// ── Loading indicators ──
+function showLoading() { document.getElementById('global-loading')?.classList.add('show'); }
+function hideLoading() { document.getElementById('global-loading')?.classList.remove('show'); }
+function setBtnLoading(btn, loading) {
+  if (!btn) return;
+  if (loading) { btn.dataset.origText = btn.textContent; btn.classList.add('btn-loading'); btn.disabled = true; }
+  else { btn.classList.remove('btn-loading'); btn.disabled = false; }
+}
+
+// ── Better error messages ──
+function friendlyError(e) {
+  const msg = e?.message || String(e);
+  if (msg.includes('permission')) return 'You do not have permission to perform this action.';
+  if (msg.includes('network') || msg.includes('Failed to fetch')) return 'Network error — check your internet connection and try again.';
+  if (msg.includes('not-found')) return 'The requested record could not be found.';
+  return msg;
+}
+
+// ── Form validation helpers ──
+function showFieldError(fieldId) {
+  const input = document.getElementById(fieldId);
+  const err = document.getElementById('err-' + fieldId);
+  if (input) input.classList.add('invalid');
+  if (err) err.classList.add('show');
+}
+function clearFieldError(fieldId) {
+  const input = document.getElementById(fieldId);
+  const err = document.getElementById('err-' + fieldId);
+  if (input) input.classList.remove('invalid');
+  if (err) err.classList.remove('show');
+}
+
+// ── Security: escape user-supplied text before innerHTML insertion ──
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+// ── Auto Save (Settings → League Branding) ──
+let autoSaveTimer = null;
+function debounceAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    const name = v('set-league-name'), logo = v('set-league-logo');
+    if (!name) return;
+    saveSettings({ leagueName: name, leagueLogo: logo });
+    applyBranding();
+    const tag = document.getElementById('autosave-tag-branding');
+    if (tag) { tag.classList.add('show'); setTimeout(() => tag.classList.remove('show'), 2000); }
+  }, 1200);
+}
+
+// ── Global Search (Dashboard quick search across players/teams/users) ──
+async function globalSearch(qRaw) {
+  const q = (qRaw || '').trim().toLowerCase();
+  if (!q) return toast('Enter a search term', 'info');
+  try {
+    showLoading();
+    const [players, teams] = await Promise.all([fsGetAll('players'), fsGetAll('teams')]);
+    hideLoading();
+    const pMatch = players.filter(p => (p.name||'').toLowerCase().includes(q));
+    const tMatch = teams.filter(t => (t.name||'').toLowerCase().includes(q));
+    if (pMatch.length) { toast(`Found ${pMatch.length} player(s) matching "${qRaw}" — opening Players`, 'success'); showPage('players', document.querySelector('.nav-item[onclick*="players"]')); filterPlayers(qRaw); return; }
+    if (tMatch.length) { toast(`Found ${tMatch.length} team(s) matching "${qRaw}" — opening Teams`, 'success'); showPage('teams', document.querySelector('.nav-item[onclick*="teams"]')); return; }
+    const isSA = getSession()?.role === 'superadmin';
+    if (isSA) {
+      const uMatch = allUsers.filter(u => (u.username||'').includes(q) || (u.full_name||'').toLowerCase().includes(q));
+      if (uMatch.length) { toast(`Found ${uMatch.length} user(s) matching "${qRaw}" — opening Users`, 'success'); showPage('users', document.querySelector('.nav-item[onclick*="users"]')); filterUsers(qRaw); return; }
+    }
+    toast(`No results found for "${qRaw}"`, 'error');
+  } catch(e) { hideLoading(); toast('Search error: ' + friendlyError(e), 'error'); }
+}
+
+// ── Reports ──
+async function loadReports() {
+  try {
+    const [players, teams] = await Promise.all([fsGetAll('players'), fsGetAll('teams')]);
+    const sold = players.filter(p => p.status === 'sold');
+    const unsold = players.filter(p => p.status === 'unsold');
+    const pending = players.filter(p => p.status !== 'sold' && p.status !== 'unsold');
+    const highest = sold.reduce((m, p) => Math.max(m, p.final_price||0), 0);
+    document.getElementById('rep-sold').textContent = sold.length;
+    document.getElementById('rep-unsold').textContent = unsold.length;
+    document.getElementById('rep-pending').textContent = pending.length;
+    document.getElementById('rep-highest').textContent = fmt(highest);
+
+    const teamRows = teams.map(t => {
+      const bought = sold.filter(p => p.sold_to === t.id);
+      const spent = bought.reduce((a,p) => a + (p.final_price||0), 0);
+      return `<tr><td><span class="team-dot" style="background:${t.color||'#64748b'}"></span>${escapeHtml(t.name)}</td><td>${fmt(t.purse_total)}</td><td>${fmt(spent)}</td><td>${fmt(t.purse_remaining)}</td><td>${bought.length}</td></tr>`;
+    });
+    document.getElementById('report-teams-body').innerHTML = teamRows.length ? teamRows.join('') : '<tr><td colspan="5" class="empty-state">No teams yet</td></tr>';
+
+    const isSA = getSession()?.role === 'superadmin';
+    const usersBody = document.getElementById('report-users-body');
+    if (isSA) {
+      const users = await fsGetAll('auction_users');
+      const counts = { approved:0, pending:0, suspended:0 };
+      users.forEach(u => { counts[u.status] = (counts[u.status]||0) + 1; });
+      usersBody.innerHTML = Object.entries(counts).map(([k,v]) => `<tr><td style="text-transform:capitalize">${k}</td><td>${v}</td></tr>`).join('') || '<tr><td colspan="2" class="empty-state">No users</td></tr>';
+    } else {
+      usersBody.innerHTML = '<tr><td colspan="2" class="empty-state">Available to Super Admin only</td></tr>';
+    }
+  } catch(e) { toast('Error loading reports: ' + friendlyError(e), 'error'); }
+}
+
+function exportReportCSV() {
+  fsGetAll('players').then(players => {
+    const sold = players.filter(p => p.status === 'sold');
+    const csv = [['Status Summary'],['Sold', sold.length],['Unsold', players.filter(p=>p.status==='unsold').length],['Pending', players.filter(p=>p.status!=='sold'&&p.status!=='unsold').length],[],['Player','Role','Final Price']]
+      .concat(sold.map(p => [p.name, p.role, p.final_price]));
+    const csvStr = csv.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csvStr], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'auction-report.csv'; a.click();
+    toast('Report exported ✓');
+  }).catch(e => toast('Export failed: ' + friendlyError(e), 'error'));
+}
+
+// ── Backup & Restore ──
+async function exportBackup() {
+  const btn = document.getElementById('backup-export-btn');
+  setBtnLoading(btn, true);
+  try {
+    const isSA = getSession()?.role === 'superadmin';
+    const [players, teams] = await Promise.all([fsGetAll('players'), fsGetAll('teams')]);
+    const backup = { exported_at: new Date().toISOString(), settings: getSettings(), players, teams };
+    if (isSA) backup.users = await fsGetAll('auction_users');
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `auction-backup-${new Date().toISOString().split('T')[0]}.json`; a.click();
+    toast('Backup exported ✓');
+  } catch(e) { toast('Backup failed: ' + friendlyError(e), 'error'); }
+  setBtnLoading(btn, false);
+}
+
+async function importBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!confirm('Restoring will ADD records from this backup file (players, teams, settings, and users). Existing records are not removed. Continue?')) { event.target.value=''; return; }
+  showLoading();
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (data.settings) saveSettings(data.settings);
+    if (Array.isArray(data.players)) for (const p of data.players) { const { id, ...rest } = p; await fsAdd('players', rest); }
+    if (Array.isArray(data.teams)) for (const t of data.teams) { const { id, ...rest } = t; await fsAdd('teams', rest); }
+    if (Array.isArray(data.users) && getSession()?.role === 'superadmin') for (const u of data.users) { const { id, ...rest } = u; await fsAdd('auction_users', rest); }
+    hideLoading();
+    toast('Backup restored ✓'); applyBranding(); loadDashboard();
+  } catch(e) { hideLoading(); toast('Restore failed: ' + friendlyError(e), 'error'); }
+  event.target.value = '';
 }
 
 // ════════════════════════════════════════════════════
@@ -2135,7 +2538,9 @@ Object.assign(window, {
   confirmApprove, filterUsers, setLivePreview, requeuePlayer, saveQueueOrder,
   dragStart, dragOver, dropRow, dragEnd, editPlayer, deletePlayer, editTeam, deleteTeam,
   openApproveModal, suspendUser, unsuspendUser, deleteUser, showPage,
-  toggleNotifPanel, clearAllNotifs
+  toggleNotifPanel, clearAllNotifs,
+  autoSetExpiry, openRenewModal, confirmRenew, globalSearch, loadReports, exportReportCSV,
+  exportBackup, importBackup, debounceAutoSave
 });
 </script>
 </body>
