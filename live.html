@@ -524,6 +524,7 @@ body {
   gap: 20px;
   text-align: center;
   animation: fadeIn .4s;
+  overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -626,6 +627,7 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
   animation: slideIn .3s;
+  transition: border-color .3s, box-shadow .3s;
 }
 
 @keyframes slideIn {
@@ -651,13 +653,164 @@ body {
   font-weight: 700;
   color: var(--green);
 }
+
+/* ── NEW: newest bid chip gets a subtle highlight ── */
+.bid-chip.latest {
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(34, 197, 94, .35);
+}
+
+/* ── NEW: connection status badge (top bar) ── */
+.conn-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: var(--green);
+  text-transform: uppercase;
+  transition: background .3s, border-color .3s, color .3s;
+}
+
+.conn-badge .conn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
+.conn-badge.reconnecting {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: var(--amber);
+}
+.conn-badge.reconnecting .conn-dot {
+  background: var(--amber);
+  animation: pulse 1s infinite;
+}
+
+.conn-badge.offline {
+  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.25);
+  color: var(--red);
+}
+.conn-badge.offline .conn-dot {
+  background: var(--red);
+}
+
+/* ── NEW: full-screen loading overlay shown until first live data arrives ── */
+.display-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  z-index: 9999;
+  transition: opacity .4s ease, visibility .4s ease;
+}
+
+.display-loading-overlay.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.display-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: dl-spin .8s linear infinite;
+}
+
+@keyframes dl-spin { to { transform: rotate(360deg); } }
+
+.display-loading-text {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.display-loading-sub {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: .6;
+}
+
+/* ── NEW: transient error / reconnect banner ── */
+.display-error-banner {
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: var(--red);
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 500;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+
+.display-error-banner.show { display: flex; }
+
+/* ── NEW: confetti burst for SOLD celebration ── */
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 14px;
+  opacity: 0.9;
+  pointer-events: none;
+  animation: confetti-fall linear forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+}
+
+/* ── NEW: smoother image reveal ── */
+.player-photo-frame img,
+.leader-team-logo,
+.brand-logo {
+  transition: opacity .25s ease;
+}
 </style>
 </head>
 <body>
 
+<div class="display-loading-overlay" id="display-loading-overlay">
+  <div class="display-loading-spinner"></div>
+  <div class="display-loading-text">Connecting to Live Auction</div>
+  <div class="display-loading-sub">Syncing with server…</div>
+</div>
+
+<div class="display-error-banner" id="display-error-banner">
+  ⚠️ <span id="display-error-text">Connection issue — retrying…</span>
+</div>
+
 <div class="topbar">
   <div class="brand">
-    <img id="brand-logo" class="brand-logo" alt="">
+    <img id="brand-logo" class="brand-logo" alt="" loading="lazy" onerror="this.style.display='none'; document.getElementById('brand-icon').style.display='inline';">
     <span class="brand-icon" id="brand-icon">⚡</span>
     <div class="brand-text">
       <h1 id="league-name">PRO AUCTION</h1>
@@ -669,6 +822,10 @@ body {
     <div class="live-badge idle" id="live-badge">
       <div class="live-dot" id="live-dot"></div>
       <span id="live-text">IDLE</span>
+    </div>
+    <div class="conn-badge" id="conn-badge" title="Live sync status">
+      <span class="conn-dot"></span>
+      <span id="conn-badge-text">Live</span>
     </div>
   </div>
 
@@ -688,7 +845,7 @@ body {
     <div class="player-panel">
       <div class="player-photo-frame" id="photo-frame">
         <span class="lot-tag" id="lot-tag">LOT #—</span>
-        <img id="player-img" alt="">
+        <img id="player-img" alt="" onerror="this.style.display='none'; const pi=document.getElementById('player-initial'); if(pi) pi.style.display='block';">
         <span id="player-initial">🏆</span>
       </div>
       <div class="player-role-tag" id="player-role">—</div>
@@ -710,7 +867,7 @@ body {
 
       <div class="leader-block" id="leader-block">
         <div class="leader-team-dot" id="leader-dot"></div>
-        <img id="leader-logo" class="leader-team-logo" alt="">
+        <img id="leader-logo" class="leader-team-logo" alt="" loading="lazy" onerror="this.style.display='none'; const ld=document.getElementById('leader-dot'); if(ld) ld.style.display='block';">
         <div class="leader-info">
           <div class="leader-label">Leading Team</div>
           <div class="leader-name" id="leader-name">—</div>
@@ -789,6 +946,67 @@ async function fsGetAll(name, ...constraints) {
 const getSettings = () => { try { return JSON.parse(localStorage.getItem('auctionSettings') || '{}'); } catch { return {}; } };
 const fmt = n => n ? '₹' + Number(n).toLocaleString('en-IN') : '—';
 
+// ══════════════════════════════════════════════════════════
+// NEW: LOADING OVERLAY / CONNECTION STATUS / ERROR HANDLING
+// ══════════════════════════════════════════════════════════
+let firstStateReceived = false;
+function hideLoadingOverlay() {
+  if (firstStateReceived) return;
+  firstStateReceived = true;
+  const el = document.getElementById('display-loading-overlay');
+  if (el) el.classList.add('hide');
+}
+
+function setConnStatus(state) {
+  const badge = document.getElementById('conn-badge');
+  const text = document.getElementById('conn-badge-text');
+  if (!badge || !text) return;
+  badge.classList.remove('reconnecting', 'offline');
+  if (state === 'reconnecting') {
+    badge.classList.add('reconnecting');
+    text.textContent = 'Reconnecting…';
+  } else if (state === 'offline') {
+    badge.classList.add('offline');
+    text.textContent = 'Offline';
+  } else {
+    text.textContent = 'Live';
+  }
+}
+
+function showErrorBanner(msg) {
+  const el = document.getElementById('display-error-banner');
+  const txt = document.getElementById('display-error-text');
+  if (!el) return;
+  if (txt) txt.textContent = msg || 'Connection issue — retrying...';
+  el.classList.add('show');
+}
+function hideErrorBanner() {
+  const el = document.getElementById('display-error-banner');
+  if (el) el.classList.remove('show');
+}
+
+let lastSyncTime = Date.now();
+function markSynced() {
+  lastSyncTime = Date.now();
+  setConnStatus('online');
+  hideErrorBanner();
+  hideLoadingOverlay();
+}
+// Heartbeat: if no snapshot activity for 15s, surface a "reconnecting" hint.
+// Firestore's SDK auto-retries under the hood — this is a passive UI signal only
+// and never touches auction data or logic.
+setInterval(() => {
+  if (Date.now() - lastSyncTime > 15000) {
+    setConnStatus('reconnecting');
+  }
+}, 5000);
+
+// Guard against any unexpected runtime error freezing the display silently.
+window.addEventListener('error', () => {
+  showErrorBanner('Display encountered an issue — attempting to recover…');
+  setTimeout(hideErrorBanner, 6000);
+});
+
 // ── CLOCK ──
 function updateClock() {
   const now = new Date();
@@ -820,9 +1038,14 @@ let teamCache = {};
 async function getTeamCached(id) {
   if (!id) return null;
   if (teamCache[id]) return teamCache[id];
-  const t = await fsGetOne('teams', id);
-  if (t) teamCache[id] = t;
-  return t;
+  try {
+    const t = await fsGetOne('teams', id);
+    if (t) teamCache[id] = t;
+    return t;
+  } catch (e) {
+    console.warn('Team fetch failed', e);
+    return null;
+  }
 }
 
 // ── COUNTDOWN ──
@@ -904,12 +1127,32 @@ function renderBidChips() {
     return;
   }
   container.innerHTML = recentBids.map((b, i) => `
-    <div class="bid-chip">
+    <div class="bid-chip${i === 0 ? ' latest' : ''}">
       <div class="bid-chip-dot" style="background:${b.color}"></div>
       <div class="bid-chip-team">${b.name}</div>
       <div class="bid-chip-amount">${fmt(b.amount)}</div>
     </div>
   `).join('');
+}
+
+// ── NEW: CONFETTI BURST (purely decorative, sold-overlay only) ──
+function spawnConfetti() {
+  const overlay = document.getElementById('sold-overlay');
+  if (!overlay) return;
+  const colors = ['#22c55e', '#4f8ef7', '#fbbf24', '#06b6d4', '#f43f5e'];
+  const pieces = [];
+  const count = 40;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = (Math.random() * 100) + '%';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDuration = (1.8 + Math.random() * 1.4) + 's';
+    el.style.animationDelay = (Math.random() * 0.4) + 's';
+    overlay.appendChild(el);
+    pieces.push(el);
+  }
+  setTimeout(() => { pieces.forEach(p => p.remove()); }, 3600);
 }
 
 // ── SOLD OVERLAY ──
@@ -921,6 +1164,7 @@ function showSoldOverlay(playerName, teamName, price) {
   document.getElementById('sold-team-name').textContent = teamName || '—';
   document.getElementById('sold-price').textContent = fmt(price);
   overlay.style.display = 'flex';
+  spawnConfetti();
   soldOverlayTimer = setTimeout(() => {
     overlay.style.display = 'none';
   }, 5000);
@@ -955,7 +1199,12 @@ async function renderState(state) {
   // fetch player if changed
   if (state.current_player_id !== lastPlayerId) {
     lastPlayerId = state.current_player_id;
-    const player = await fsGetOne('players', state.current_player_id);
+    let player = null;
+    try {
+      player = await fsGetOne('players', state.current_player_id);
+    } catch (e) {
+      console.warn('Player fetch failed', e);
+    }
     if (player) {
       document.getElementById('lot-tag').textContent = player.lot_number ? `LOT #${player.lot_number}` : 'UPCOMING';
       document.getElementById('player-role').textContent = player.role || '—';
@@ -1082,60 +1331,99 @@ countdownMax = settings.timerDuration || 15;
 
 // Watch auction_state
 onSnapshot(docRef('auction_state','main'), async snap => {
+  markSynced();
   const state = snap.exists() ? snap.data() : null;
 
-  // Detect sold — when current_player_id disappears
-  if (!state?.current_player_id && lastPlayerId) {
-    // A player was just finalized; check if they were sold
-    const prev = await fsGetOne('players', lastPlayerId);
-    if (prev?.status === 'sold') {
-      const soldTeam = prev.sold_to ? await getTeamCached(prev.sold_to) : null;
-      showSoldOverlay(prev.name, soldTeam?.name, prev.final_price);
+  try {
+    // Detect sold — when current_player_id disappears
+    if (!state?.current_player_id && lastPlayerId) {
+      // A player was just finalized; check if they were sold
+      const prev = await fsGetOne('players', lastPlayerId);
+      if (prev?.status === 'sold') {
+        const soldTeam = prev.sold_to ? await getTeamCached(prev.sold_to) : null;
+        showSoldOverlay(prev.name, soldTeam?.name, prev.final_price);
+      }
     }
+  } catch (e) {
+    console.warn('Sold-transition check failed', e);
   }
 
-  await renderState(state);
+  try {
+    await renderState(state);
+  } catch (e) {
+    console.warn('Render state failed', e);
+    showErrorBanner('Trouble refreshing the display — retrying…');
+    setTimeout(hideErrorBanner, 6000);
+  }
+}, err => {
+  console.warn('auction_state listener error', err);
+  setConnStatus('offline');
+  showErrorBanner('Lost connection to auction server — retrying…');
 });
 
 // Watch bids for recent-bids strip
 onSnapshot(
   query(col('bids'), orderBy('created_at','desc'), fsLimit(10)),
   async snap => {
+    markSynced();
     const bids = snap.docs.map(d => ({id: d.id, ...d.data()}));
     if (!bids.length) return;
-    // Re-render all recent bids
-    recentBids = [];
-    for (const b of bids.slice(0, 8)) {
-      const team = b.team_id ? await getTeamCached(b.team_id) : null;
-      recentBids.push({
-        color: team?.color || b.team_color || '#64748b',
-        name: b.team_name || team?.name || 'Unknown',
-        amount: b.amount
-      });
-    }
-    renderBidChips();
-    // Also update current bid from latest
-    if (bids[0]) {
-      const bid = bids[0];
-      const st = await fsGetOne('auction_state', 'main');
-      if (st?.is_live && bid.player_id === st.current_player_id) {
-        if (bid.amount !== lastBidAmt) {
-          lastBidAmt = bid.amount;
-          flashBid(bid.amount);
-          // Reset countdown on new bid
-          if (st.countdown_seconds) {
-            startLocalCountdown(st.countdown_seconds, st.countdown_seconds);
+    try {
+      // Re-render all recent bids
+      recentBids = [];
+      for (const b of bids.slice(0, 8)) {
+        const team = b.team_id ? await getTeamCached(b.team_id) : null;
+        recentBids.push({
+          color: team?.color || b.team_color || '#64748b',
+          name: b.team_name || team?.name || 'Unknown',
+          amount: b.amount
+        });
+      }
+      renderBidChips();
+      // Also update current bid from latest
+      if (bids[0]) {
+        const bid = bids[0];
+        const st = await fsGetOne('auction_state', 'main');
+        if (st?.is_live && bid.player_id === st.current_player_id) {
+          if (bid.amount !== lastBidAmt) {
+            lastBidAmt = bid.amount;
+            flashBid(bid.amount);
+            // Reset countdown on new bid
+            if (st.countdown_seconds) {
+              startLocalCountdown(st.countdown_seconds, st.countdown_seconds);
+            }
           }
         }
       }
+    } catch (e) {
+      console.warn('Bids render failed', e);
     }
+  },
+  err => {
+    console.warn('bids listener error', err);
+    setConnStatus('reconnecting');
   }
 );
 
 // Watch teams for purse updates (invalidate cache)
 onSnapshot(col('teams'), snap => {
+  markSynced();
   snap.docs.forEach(d => { teamCache[d.id] = { id: d.id, ...d.data() }; });
+}, err => {
+  console.warn('teams listener error', err);
+  setConnStatus('reconnecting');
 });
+
+// Safety net: if for any reason no snapshot ever arrives (e.g. offline network
+// on load), stop showing the loading overlay after a reasonable timeout so the
+// idle screen underneath is still visible instead of a blocked splash screen.
+setTimeout(() => {
+  if (!firstStateReceived) {
+    hideLoadingOverlay();
+    setConnStatus('reconnecting');
+    showErrorBanner('Still trying to reach the auction server…');
+  }
+}, 8000);
 </script>
 </body>
 </html>
