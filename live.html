@@ -141,6 +141,43 @@ body {
   50% { opacity: 0.2; }
 }
 
+/* ── NEW: connection / sync status badge ── */
+.rt-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  transition: .2s;
+}
+.rt-badge .rt-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.5s infinite;
+  flex-shrink: 0;
+}
+.rt-badge.reconnecting {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: var(--amber);
+}
+.rt-badge.reconnecting .rt-dot { background: var(--amber); animation: pulse .8s infinite; }
+.rt-badge.offline {
+  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.25);
+  color: var(--red);
+}
+.rt-badge.offline .rt-dot { background: var(--red); animation: none; }
+
 .topbar-clock {
   font-family: var(--mono);
   font-size: 22px;
@@ -149,6 +186,40 @@ body {
   letter-spacing: 2px;
   min-width: 90px;
   text-align: right;
+}
+
+/* ── NEW: initial loading overlay ── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  transition: opacity .4s ease;
+}
+.loading-overlay.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+.loading-spinner {
+  width: 46px;
+  height: 46px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 /* ── MAIN CONTENT ── */
@@ -247,6 +318,17 @@ body {
   height: 100%;
   object-fit: cover;
   display: none;
+}
+
+/* NEW: skeleton shimmer for photo while loading */
+.player-photo-frame.loading-skel {
+  background: linear-gradient(90deg, var(--surface2) 25%, #1a2138 50%, var(--surface2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .lot-tag {
@@ -544,6 +626,13 @@ body {
   transform: rotate(-5deg);
   text-shadow: 0 0 40px rgba(34,197,94,.4);
   box-shadow: 0 0 40px rgba(34,197,94,.2);
+  animation: stampIn .5s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes stampIn {
+  0% { transform: rotate(-5deg) scale(2.2); opacity: 0; }
+  60% { transform: rotate(-5deg) scale(.94); opacity: 1; }
+  100% { transform: rotate(-5deg) scale(1); opacity: 1; }
 }
 
 .sold-player-name {
@@ -577,6 +666,30 @@ body {
   font-weight: 900;
   color: var(--green);
   margin-top: 12px;
+}
+
+/* ── NEW: confetti burst for sold overlay ── */
+.confetti-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 14px;
+  opacity: .9;
+  animation-name: confettiFall;
+  animation-timing-function: cubic-bezier(.4,0,.6,1);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
 }
 
 /* ── RECENT BIDS STRIP ── */
@@ -627,7 +740,6 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
   animation: slideIn .3s;
-  transition: border-color .3s, box-shadow .3s;
 }
 
 @keyframes slideIn {
@@ -654,163 +766,47 @@ body {
   color: var(--green);
 }
 
-/* ── NEW: newest bid chip gets a subtle highlight ── */
-.bid-chip.latest {
-  border-color: var(--green);
-  box-shadow: 0 0 12px rgba(34, 197, 94, .35);
-}
-
-/* ── NEW: connection status badge (top bar) ── */
-.conn-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 14px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .5px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  color: var(--green);
-  text-transform: uppercase;
-  transition: background .3s, border-color .3s, color .3s;
-}
-
-.conn-badge .conn-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  flex-shrink: 0;
-}
-
-.conn-badge.reconnecting {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.25);
-  color: var(--amber);
-}
-.conn-badge.reconnecting .conn-dot {
-  background: var(--amber);
-  animation: pulse 1s infinite;
-}
-
-.conn-badge.offline {
-  background: rgba(244, 63, 94, 0.1);
-  border-color: rgba(244, 63, 94, 0.25);
-  color: var(--red);
-}
-.conn-badge.offline .conn-dot {
-  background: var(--red);
-}
-
-/* ── NEW: full-screen loading overlay shown until first live data arrives ── */
-.display-loading-overlay {
+/* ── NEW: lightweight toast for non-intrusive error notices ── */
+.toast-wrap {
   position: fixed;
-  inset: 0;
-  background: var(--bg);
+  bottom: 66px;
+  right: 20px;
+  z-index: 998;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  z-index: 9999;
-  transition: opacity .4s ease, visibility .4s ease;
-}
-
-.display-loading-overlay.hide {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.display-loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: dl-spin .8s linear infinite;
-}
-
-@keyframes dl-spin { to { transform: rotate(360deg); } }
-
-.display-loading-text {
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-
-.display-loading-sub {
-  font-size: 11px;
-  color: var(--muted);
-  opacity: .6;
-}
-
-/* ── NEW: transient error / reconnect banner ── */
-.display-error-banner {
-  position: fixed;
-  top: 84px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(244, 63, 94, 0.12);
-  border: 1px solid rgba(244, 63, 94, 0.35);
-  color: var(--red);
-  padding: 8px 20px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  z-index: 500;
-  display: none;
-  align-items: center;
   gap: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.4);
-}
-
-.display-error-banner.show { display: flex; }
-
-/* ── NEW: confetti burst for SOLD celebration ── */
-.confetti-piece {
-  position: absolute;
-  top: -20px;
-  width: 8px;
-  height: 14px;
-  opacity: 0.9;
   pointer-events: none;
-  animation: confetti-fall linear forwards;
-  will-change: transform, opacity;
 }
-
-@keyframes confetti-fall {
-  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--text2);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  animation: toastIn .25s;
+  max-width: 320px;
 }
-
-/* ── NEW: smoother image reveal ── */
-.player-photo-frame img,
-.leader-team-logo,
-.brand-logo {
-  transition: opacity .25s ease;
+.toast.error { border-left-color: var(--red); }
+.toast.success { border-left-color: var(--green); }
+@keyframes toastIn {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }
 </style>
 </head>
 <body>
 
-<div class="display-loading-overlay" id="display-loading-overlay">
-  <div class="display-loading-spinner"></div>
-  <div class="display-loading-text">Connecting to Live Auction</div>
-  <div class="display-loading-sub">Syncing with server…</div>
-</div>
-
-<div class="display-error-banner" id="display-error-banner">
-  ⚠️ <span id="display-error-text">Connection issue — retrying…</span>
+<div class="loading-overlay" id="initial-loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">Connecting to auction…</div>
 </div>
 
 <div class="topbar">
   <div class="brand">
-    <img id="brand-logo" class="brand-logo" alt="" loading="lazy" onerror="this.style.display='none'; document.getElementById('brand-icon').style.display='inline';">
+    <img id="brand-logo" class="brand-logo" alt="">
     <span class="brand-icon" id="brand-icon">⚡</span>
     <div class="brand-text">
       <h1 id="league-name">PRO AUCTION</h1>
@@ -823,9 +819,9 @@ body {
       <div class="live-dot" id="live-dot"></div>
       <span id="live-text">IDLE</span>
     </div>
-    <div class="conn-badge" id="conn-badge" title="Live sync status">
-      <span class="conn-dot"></span>
-      <span id="conn-badge-text">Live</span>
+    <div class="rt-badge" id="rt-badge" title="Live sync status">
+      <div class="rt-dot"></div>
+      <span id="rt-badge-text">Syncing</span>
     </div>
   </div>
 
@@ -845,7 +841,7 @@ body {
     <div class="player-panel">
       <div class="player-photo-frame" id="photo-frame">
         <span class="lot-tag" id="lot-tag">LOT #—</span>
-        <img id="player-img" alt="" onerror="this.style.display='none'; const pi=document.getElementById('player-initial'); if(pi) pi.style.display='block';">
+        <img id="player-img" alt="">
         <span id="player-initial">🏆</span>
       </div>
       <div class="player-role-tag" id="player-role">—</div>
@@ -867,7 +863,7 @@ body {
 
       <div class="leader-block" id="leader-block">
         <div class="leader-team-dot" id="leader-dot"></div>
-        <img id="leader-logo" class="leader-team-logo" alt="" loading="lazy" onerror="this.style.display='none'; const ld=document.getElementById('leader-dot'); if(ld) ld.style.display='block';">
+        <img id="leader-logo" class="leader-team-logo" alt="">
         <div class="leader-info">
           <div class="leader-label">Leading Team</div>
           <div class="leader-name" id="leader-name">—</div>
@@ -892,6 +888,7 @@ body {
     </div>
 
     <div class="sold-overlay" id="sold-overlay">
+      <div class="confetti-layer" id="confetti-layer"></div>
       <div class="sold-stamp">SOLD!</div>
       <div class="sold-player-name" id="sold-player-name">—</div>
       <div class="sold-to-row">
@@ -910,6 +907,8 @@ body {
     <span style="font-size:12px;color:var(--muted);font-style:italic">Bids will appear here...</span>
   </div>
 </div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
@@ -943,91 +942,58 @@ async function fsGetAll(name, ...constraints) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-// FIX #2: settings now live-sync from Firestore `settings/main` (same document
-// admin.html writes to) instead of being trapped in this device's localStorage.
-// getSettings() keeps its name/shape so every existing caller keeps working;
-// localStorage is now only an instant-paint cache for before the first
-// snapshot arrives.
-let settingsCache = {};
-try { settingsCache = JSON.parse(localStorage.getItem('auctionSettings') || '{}'); } catch { settingsCache = {}; }
-const getSettings = () => settingsCache;
-function subscribeSettings() {
-  onSnapshot(docRef('settings', 'main'), snap => {
-    settingsCache = snap.exists() ? snap.data() : settingsCache;
-    try { localStorage.setItem('auctionSettings', JSON.stringify(settingsCache)); } catch(e) {}
-    applyBranding();
-    countdownMax = settingsCache.timerDuration || 15;
-  }, err => console.warn('settings listener error', err));
-}
+const getSettings = () => { try { return JSON.parse(localStorage.getItem('auctionSettings') || '{}'); } catch { return {}; } };
 const fmt = n => n ? '₹' + Number(n).toLocaleString('en-IN') : '—';
 
-// FIX #6: consistent HTML-escaping for any player/team text interpolated into
-// innerHTML (player meta chips, recent-bids strip) to avoid stored-content injection.
-function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-  return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+// ── NEW: toast (non-intrusive error/info notices — does not block the display) ──
+function toast(msg, type = 'info') {
+  const wrap = document.getElementById('toast-wrap');
+  if (!wrap) return;
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = '.3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(20px)';
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
 }
 
-// ══════════════════════════════════════════════════════════
-// NEW: LOADING OVERLAY / CONNECTION STATUS / ERROR HANDLING
-// ══════════════════════════════════════════════════════════
-let firstStateReceived = false;
-function hideLoadingOverlay() {
-  if (firstStateReceived) return;
-  firstStateReceived = true;
-  const el = document.getElementById('display-loading-overlay');
-  if (el) el.classList.add('hide');
+// ── NEW: initial loading overlay + sync status badge ──
+let hasLoadedOnce = false;
+function hideInitialLoading() {
+  if (hasLoadedOnce) return;
+  hasLoadedOnce = true;
+  const overlay = document.getElementById('initial-loading');
+  if (overlay) {
+    overlay.classList.add('hide');
+    setTimeout(() => { overlay.style.display = 'none'; }, 450);
+  }
 }
 
+let connStatusTimer = null;
 function setConnStatus(state) {
-  const badge = document.getElementById('conn-badge');
-  const text = document.getElementById('conn-badge-text');
+  const badge = document.getElementById('rt-badge');
+  const text = document.getElementById('rt-badge-text');
   if (!badge || !text) return;
-  badge.classList.remove('reconnecting', 'offline');
-  if (state === 'reconnecting') {
-    badge.classList.add('reconnecting');
+  clearTimeout(connStatusTimer);
+  if (state === 'online') {
+    badge.className = 'rt-badge';
+    text.textContent = 'Live Sync';
+  } else if (state === 'reconnecting') {
+    badge.className = 'rt-badge reconnecting';
     text.textContent = 'Reconnecting…';
-  } else if (state === 'offline') {
-    badge.classList.add('offline');
-    text.textContent = 'Offline';
   } else {
-    text.textContent = 'Live';
+    badge.className = 'rt-badge offline';
+    text.textContent = 'Offline';
   }
 }
 
-function showErrorBanner(msg) {
-  const el = document.getElementById('display-error-banner');
-  const txt = document.getElementById('display-error-text');
-  if (!el) return;
-  if (txt) txt.textContent = msg || 'Connection issue — retrying...';
-  el.classList.add('show');
-}
-function hideErrorBanner() {
-  const el = document.getElementById('display-error-banner');
-  if (el) el.classList.remove('show');
-}
-
-let lastSyncTime = Date.now();
-function markSynced() {
-  lastSyncTime = Date.now();
-  setConnStatus('online');
-  hideErrorBanner();
-  hideLoadingOverlay();
-}
-// Heartbeat: if no snapshot activity for 15s, surface a "reconnecting" hint.
-// Firestore's SDK auto-retries under the hood — this is a passive UI signal only
-// and never touches auction data or logic.
-setInterval(() => {
-  if (Date.now() - lastSyncTime > 15000) {
-    setConnStatus('reconnecting');
-  }
-}, 5000);
-
-// Guard against any unexpected runtime error freezing the display silently.
-window.addEventListener('error', () => {
-  showErrorBanner('Display encountered an issue — attempting to recover…');
-  setTimeout(hideErrorBanner, 6000);
-});
+// Reflect browser-level connectivity too (helps on flaky projector Wi-Fi)
+window.addEventListener('online', () => setConnStatus('reconnecting'));
+window.addEventListener('offline', () => { setConnStatus('offline'); toast('Network connection lost. Waiting to reconnect…', 'error'); });
 
 // ── CLOCK ──
 function updateClock() {
@@ -1048,12 +1014,18 @@ function applyBranding() {
   document.getElementById('league-name').textContent = name;
   document.title = name + ' — Live';
   if (logo) {
-    document.getElementById('brand-logo').src = logo;
-    document.getElementById('brand-logo').style.display = 'block';
+    const logoEl = document.getElementById('brand-logo');
+    logoEl.onerror = () => { logoEl.style.display = 'none'; document.getElementById('brand-icon').style.display = 'block'; };
+    logoEl.src = logo;
+    logoEl.style.display = 'block';
     document.getElementById('brand-icon').style.display = 'none';
   }
 }
 applyBranding();
+// Re-apply branding if admin updates it while display stays open on a projector
+window.addEventListener('storage', (e) => {
+  if (e.key === 'auctionSettings') applyBranding();
+});
 
 // ── TEAM CACHE ──
 let teamCache = {};
@@ -1065,7 +1037,7 @@ async function getTeamCached(id) {
     if (t) teamCache[id] = t;
     return t;
   } catch (e) {
-    console.warn('Team fetch failed', e);
+    console.warn('getTeamCached failed', e);
     return null;
   }
 }
@@ -1149,32 +1121,35 @@ function renderBidChips() {
     return;
   }
   container.innerHTML = recentBids.map((b, i) => `
-    <div class="bid-chip${i === 0 ? ' latest' : ''}">
-      <div class="bid-chip-dot" style="background:${escapeHtml(b.color)}"></div>
-      <div class="bid-chip-team">${escapeHtml(b.name)}</div>
+    <div class="bid-chip">
+      <div class="bid-chip-dot" style="background:${b.color}"></div>
+      <div class="bid-chip-team">${b.name}</div>
       <div class="bid-chip-amount">${fmt(b.amount)}</div>
     </div>
   `).join('');
 }
 
-// ── NEW: CONFETTI BURST (purely decorative, sold-overlay only) ──
-function spawnConfetti() {
-  const overlay = document.getElementById('sold-overlay');
-  if (!overlay) return;
-  const colors = ['#22c55e', '#4f8ef7', '#fbbf24', '#06b6d4', '#f43f5e'];
-  const pieces = [];
-  const count = 40;
-  for (let i = 0; i < count; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    el.style.left = (Math.random() * 100) + '%';
-    el.style.background = colors[Math.floor(Math.random() * colors.length)];
-    el.style.animationDuration = (1.8 + Math.random() * 1.4) + 's';
-    el.style.animationDelay = (Math.random() * 0.4) + 's';
-    overlay.appendChild(el);
-    pieces.push(el);
+// ── NEW: lightweight confetti burst (pure CSS/JS, no external libs) ──
+const CONFETTI_COLORS = ['#4f8ef7', '#22c55e', '#fbbf24', '#f43f5e', '#06b6d4', '#f0f4ff'];
+function launchConfetti() {
+  const layer = document.getElementById('confetti-layer');
+  if (!layer) return;
+  layer.innerHTML = '';
+  const pieceCount = 60;
+  for (let i = 0; i < pieceCount; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+    piece.style.background = color;
+    piece.style.left = (Math.random() * 100) + '%';
+    const duration = 2.4 + Math.random() * 1.6;
+    const delay = Math.random() * 0.5;
+    piece.style.animationDuration = duration + 's';
+    piece.style.animationDelay = delay + 's';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(piece);
   }
-  setTimeout(() => { pieces.forEach(p => p.remove()); }, 3600);
+  setTimeout(() => { layer.innerHTML = ''; }, 5200);
 }
 
 // ── SOLD OVERLAY ──
@@ -1186,7 +1161,7 @@ function showSoldOverlay(playerName, teamName, price) {
   document.getElementById('sold-team-name').textContent = teamName || '—';
   document.getElementById('sold-price').textContent = fmt(price);
   overlay.style.display = 'flex';
-  spawnConfetti();
+  launchConfetti();
   soldOverlayTimer = setTimeout(() => {
     overlay.style.display = 'none';
   }, 5000);
@@ -1221,12 +1196,16 @@ async function renderState(state) {
   // fetch player if changed
   if (state.current_player_id !== lastPlayerId) {
     lastPlayerId = state.current_player_id;
+    const photoFrame = document.getElementById('photo-frame');
+    photoFrame.classList.add('loading-skel');
     let player = null;
     try {
       player = await fsGetOne('players', state.current_player_id);
     } catch (e) {
-      console.warn('Player fetch failed', e);
+      console.warn('Failed to load player', e);
+      toast('Could not load player details — retrying…', 'error');
     }
+    photoFrame.classList.remove('loading-skel');
     if (player) {
       document.getElementById('lot-tag').textContent = player.lot_number ? `LOT #${player.lot_number}` : 'UPCOMING';
       document.getElementById('player-role').textContent = player.role || '—';
@@ -1236,6 +1215,7 @@ async function renderState(state) {
       const img = document.getElementById('player-img');
       const init = document.getElementById('player-initial');
       if (player.photo_url) {
+        img.onerror = () => { img.style.display = 'none'; init.textContent = (player.name || '?')[0].toUpperCase(); init.style.display = 'block'; };
         img.src = player.photo_url;
         img.style.display = 'block';
         init.style.display = 'none';
@@ -1247,8 +1227,8 @@ async function renderState(state) {
 
       // meta chips
       const meta = [];
-      if (player.nationality) meta.push(`🌍 ${escapeHtml(player.nationality)}`);
-      if (player.played_for) meta.push(`🏟️ ${escapeHtml(player.played_for.split(',')[0])}`);
+      if (player.nationality) meta.push(`🌍 ${player.nationality}`);
+      if (player.played_for) meta.push(`🏟️ ${player.played_for.split(',')[0]}`);
       document.getElementById('player-meta').innerHTML = meta.map(m =>
         `<div class="meta-chip">${m}</div>`
       ).join('');
@@ -1285,6 +1265,7 @@ async function renderState(state) {
     leaderName.style.display = 'block';
     leaderCode.style.display = 'block';
     if (team?.logo_url) {
+      leaderLogo.onerror = () => { leaderLogo.style.display = 'none'; leaderDot.style.display = 'block'; };
       leaderLogo.src = team.logo_url;
       leaderLogo.style.display = 'block';
       leaderDot.style.display = 'none';
@@ -1350,62 +1331,57 @@ function watchSoldTransition() {
 // ── REALTIME LISTENERS ──
 const settings = getSettings();
 countdownMax = settings.timerDuration || 15;
-subscribeSettings();
 
 // Watch auction_state
 onSnapshot(docRef('auction_state','main'), async snap => {
-  markSynced();
+  setConnStatus('online');
+  hideInitialLoading();
   const state = snap.exists() ? snap.data() : null;
 
-  try {
-    // Detect sold — when current_player_id disappears
-    if (!state?.current_player_id && lastPlayerId) {
-      // A player was just finalized; check if they were sold
+  // Detect sold — when current_player_id disappears
+  if (!state?.current_player_id && lastPlayerId) {
+    // A player was just finalized; check if they were sold
+    try {
       const prev = await fsGetOne('players', lastPlayerId);
       if (prev?.status === 'sold') {
         const soldTeam = prev.sold_to ? await getTeamCached(prev.sold_to) : null;
         showSoldOverlay(prev.name, soldTeam?.name, prev.final_price);
       }
+    } catch (e) {
+      console.warn('Sold-transition lookup failed', e);
     }
-  } catch (e) {
-    console.warn('Sold-transition check failed', e);
   }
 
-  try {
-    await renderState(state);
-  } catch (e) {
-    console.warn('Render state failed', e);
-    showErrorBanner('Trouble refreshing the display — retrying…');
-    setTimeout(hideErrorBanner, 6000);
-  }
+  await renderState(state);
 }, err => {
   console.warn('auction_state listener error', err);
-  setConnStatus('offline');
-  showErrorBanner('Lost connection to auction server — retrying…');
+  setConnStatus('reconnecting');
+  toast('Lost connection to auction state — reconnecting…', 'error');
 });
 
 // Watch bids for recent-bids strip
 onSnapshot(
   query(col('bids'), orderBy('created_at','desc'), fsLimit(10)),
   async snap => {
-    markSynced();
+    setConnStatus('online');
+    hideInitialLoading();
     const bids = snap.docs.map(d => ({id: d.id, ...d.data()}));
     if (!bids.length) return;
-    try {
-      // Re-render all recent bids
-      recentBids = [];
-      for (const b of bids.slice(0, 8)) {
-        const team = b.team_id ? await getTeamCached(b.team_id) : null;
-        recentBids.push({
-          color: team?.color || b.team_color || '#64748b',
-          name: b.team_name || team?.name || 'Unknown',
-          amount: b.amount
-        });
-      }
-      renderBidChips();
-      // Also update current bid from latest
-      if (bids[0]) {
-        const bid = bids[0];
+    // Re-render all recent bids
+    recentBids = [];
+    for (const b of bids.slice(0, 8)) {
+      const team = b.team_id ? await getTeamCached(b.team_id) : null;
+      recentBids.push({
+        color: team?.color || b.team_color || '#64748b',
+        name: b.team_name || team?.name || 'Unknown',
+        amount: b.amount
+      });
+    }
+    renderBidChips();
+    // Also update current bid from latest
+    if (bids[0]) {
+      const bid = bids[0];
+      try {
         const st = await fsGetOne('auction_state', 'main');
         if (st?.is_live && bid.player_id === st.current_player_id) {
           if (bid.amount !== lastBidAmt) {
@@ -1417,36 +1393,29 @@ onSnapshot(
             }
           }
         }
+      } catch (e) {
+        console.warn('Could not refresh state on new bid', e);
       }
-    } catch (e) {
-      console.warn('Bids render failed', e);
     }
   },
   err => {
     console.warn('bids listener error', err);
     setConnStatus('reconnecting');
+    toast('Lost connection to bid feed — reconnecting…', 'error');
   }
 );
 
 // Watch teams for purse updates (invalidate cache)
 onSnapshot(col('teams'), snap => {
-  markSynced();
+  setConnStatus('online');
   snap.docs.forEach(d => { teamCache[d.id] = { id: d.id, ...d.data() }; });
 }, err => {
   console.warn('teams listener error', err);
   setConnStatus('reconnecting');
 });
 
-// Safety net: if for any reason no snapshot ever arrives (e.g. offline network
-// on load), stop showing the loading overlay after a reasonable timeout so the
-// idle screen underneath is still visible instead of a blocked splash screen.
-setTimeout(() => {
-  if (!firstStateReceived) {
-    hideLoadingOverlay();
-    setConnStatus('reconnecting');
-    showErrorBanner('Still trying to reach the auction server…');
-  }
-}, 8000);
+// ── NEW: safety-net — hide the loading overlay even if Firestore is slow, so the screen never stays stuck black on a projector ──
+setTimeout(hideInitialLoading, 6000);
 </script>
 </body>
 </html>
